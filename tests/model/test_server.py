@@ -23,13 +23,20 @@ import soundfile as sf
 
 from app.alignment import MAX_CUE_CHARS, MAX_CUE_SAMPLES
 from app.chunking import MIN_AUDIO_SAMPLES
-from app.config import SAMPLE_RATE
-from app.engine import MIN_FORWARD_SAMPLES, SherpaEngine
+from app.config import Config, SAMPLE_RATE
+from app.engine import MIN_FORWARD_SAMPLES
 from scripts.scoring import wer
 from scripts.smoke_server import LONG_MAX_WER
 from tests.fake_engine import config
 from tests.live_server import parse_cues, serve, wav_file
-from tests.model.conftest import FIXTURES, MODELS, reference_text, ROOT
+from tests.model.conftest import (
+    default_engine,
+    default_settings,
+    FIXTURES,
+    MODELS,
+    reference_text,
+    ROOT,
+)
 
 URL = "/v1/audio/transcriptions"
 MODEL = "viet-asr"
@@ -45,8 +52,7 @@ SHIFTS_S = (0.25, 0.5, 0.75)  # small enough that the first cue stays under the 
 
 @pytest.fixture(scope="module")
 def srv():
-    engine = SherpaEngine(MODELS, "modified_beam_search", 4, 4, warmup_seconds=config().max_chunk_seconds)
-    with serve(engine, ready_timeout=300, http_timeout=300, models_dir=MODELS) as s:
+    with serve(default_engine(), ready_timeout=300, http_timeout=300, models_dir=MODELS) as s:
         yield s
 
 
@@ -74,7 +80,7 @@ def gate():
         dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=ROOT,
                                capture_output=True, text=True).stdout.strip()
         report = {"commit": commit + ("-dirty" if dirty else ""), "sherpa_onnx": sherpa_onnx.__version__,
-                  "settings": "viet-asr int8, modified_beam_search, beam 4, 4 threads",
+                  "settings": default_settings(),
                   "max_chunk_seconds": config().max_chunk_seconds, **sections}
         REPORT.write_text(json.dumps(report, indent=2) + "\n")
 
@@ -106,7 +112,7 @@ def test_json_text_and_sse_equal_the_reference(srv):
     assert srv.client.get("/ready").status_code == 200
     for name in ("vi_a.wav", "vi_b.wav"):
         path = FIXTURES / name
-        expected = reference_text(path, "modified_beam_search")
+        expected = reference_text(path, Config.decoding_method)
         body = post(srv, path).json()
         assert body["text"] == expected and body["usage"]["seconds"] > 0
         assert post(srv, path, response_format="text").text == expected
@@ -117,7 +123,7 @@ def test_json_text_and_sse_equal_the_reference(srv):
 def test_silence_and_short_clip_match_the_reference(srv):
     # Digital silence is not forced to "": the model's own output is returned, as in the reference script.
     silence = FIXTURES / "silence_2s.wav"
-    expected = reference_text(silence, "modified_beam_search")
+    expected = reference_text(silence, Config.decoding_method)
     assert post(srv, silence).json()["text"] == expected
     assert stream(srv, silence)[1] == expected
     assert isinstance(post(srv, FIXTURES / "short_200ms.wav").json()["text"], str)
@@ -169,10 +175,11 @@ def test_timed_formats_agree_with_json_on_every_fixture(srv, gate):
 
 
 def test_no_cue_straddles_the_silence_at_a_chunk_cut(srv, tmp_path, gate):
-    """vi_a | 1 s | vi_b | 1 s | vi_a | 1 s | vi_b (37.7 s): two chunks, cut inside the middle silence."""
+    """vi_a | silence | vi_b: two chunks, cut inside the silence. The silence (>= 1 s) runs until 1 s past
+    GATEWAY_MAX_CHUNK_SECONDS, so the splitter's search window ends inside it."""
     a, b = (sf.read(FIXTURES / n, dtype="float32")[0] for n in ("vi_a.wav", "vi_b.wav"))
-    gap = np.zeros(SAMPLE_RATE, np.float32)
-    parts = [a, gap, b, gap, a, gap, b]
+    gap = np.zeros(max(SAMPLE_RATE, config().max_chunk_samples + SAMPLE_RATE - len(a)), np.float32)
+    parts = [a, gap, b]
     edges = np.cumsum([0] + [len(p) for p in parts]) / SAMPLE_RATE
     path = wav_file(tmp_path / "composite.wav", np.concatenate(parts))
     body = post(srv, path).json()
@@ -180,7 +187,7 @@ def test_no_cue_straddles_the_silence_at_a_chunk_cut(srv, tmp_path, gate):
     deltas, done = stream(srv, path)
     assert len(deltas) == 2 and done == body["text"]
     cues = cues_of(srv, path, body["text"], duration)
-    g0, g1 = edges[3], edges[4]
+    g0, g1 = edges[1], edges[2]
     before = [c for c in cues if c[0] < g0]
     after = [c for c in cues if c[0] >= g0]
     assert before and after
@@ -213,7 +220,9 @@ def test_cue_times_follow_a_shift_of_the_audio(srv, tmp_path, gate):
     # cue lists are compared. viet-asr may change a word after the shift (seen in the vi_b half), so only edges in
     # the common leading words count.
     a, b = (sf.read(FIXTURES / n, dtype="float32")[0] for n in ("vi_a.wav", "vi_b.wav"))
-    x = np.concatenate([a, np.zeros(SAMPLE_RATE, np.float32), b])  # 18.3 s: one chunk, also when shifted
+    # vi_a | 1 s | vi_b, cut so it stays one chunk when shifted.
+    fit = config().max_chunk_samples - int((max(SHIFTS_S) + 0.1) * SAMPLE_RATE)
+    x = np.concatenate([a, np.zeros(SAMPLE_RATE, np.float32), b])[:fit]
     base_path = wav_file(tmp_path / "base.wav", x)
     base_text = post(srv, base_path).json()["text"]
     base = cues_of(srv, base_path, base_text, len(x) / SAMPLE_RATE)

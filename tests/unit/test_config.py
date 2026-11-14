@@ -14,7 +14,7 @@ def test_defaults_with_one_key():
     assert cfg.api_keys == (KEY,) and cfg.whisper_alias is False
     assert cfg.queue_max_buffered_samples == int(cfg.queue_max_buffered_seconds * 16000)
     assert KEY not in repr(cfg)
-    assert (cfg.decoding_method, cfg.beam_size, cfg.num_threads) == ("modified_beam_search", 4, 4)
+    assert (cfg.decoding_method, cfg.beam_size, cfg.num_threads) == ("modified_beam_search", 4, 2)
 
 
 def test_parses_typed_values():
@@ -22,9 +22,9 @@ def test_parses_typed_values():
         "GATEWAY_API_KEYS": f" {KEY} , {'j' * 20} ", "GATEWAY_WHISPER_ALIAS": "true", "GATEWAY_QUEUE_MAX_JOBS": "8",
         "GATEWAY_MAX_CHUNK_SECONDS": "20.5", "GATEWAY_MODELS_DIR": "/srv/models", "GATEWAY_LOG_LEVEL": "debug",
         "GATEWAY_SPOOL_DIR": "/var/spool/gateway",
-        "GATEWAY_DECODING_METHOD": "greedy_search", "GATEWAY_BEAM_SIZE": "8", "GATEWAY_NUM_THREADS": "2",
+        "GATEWAY_DECODING_METHOD": "greedy_search", "GATEWAY_BEAM_SIZE": "8", "GATEWAY_NUM_THREADS": "8",
     })
-    assert (cfg.decoding_method, cfg.beam_size, cfg.num_threads) == ("greedy_search", 8, 2)
+    assert (cfg.decoding_method, cfg.beam_size, cfg.num_threads) == ("greedy_search", 8, 8)
     assert cfg.api_keys == (KEY, "j" * 20) and cfg.whisper_alias is True and cfg.queue_max_jobs == 8
     assert cfg.max_chunk_seconds == 20.5 and cfg.models_dir == Path("/srv/models") and cfg.log_level == "DEBUG"
     assert cfg.max_chunk_samples == 328000 and cfg.spool_dir == Path("/var/spool/gateway")

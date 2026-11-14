@@ -71,11 +71,18 @@ def stats(values) -> dict:
     }
 
 
-def engine(decoding="modified_beam_search", warmup_seconds=1.0):
+def engine(decoding=None, warmup_seconds=1.0):
+    from app.config import Config
     from app.engine import SherpaEngine
 
     models = Path(os.environ.get("GATEWAY_MODELS_DIR", ROOT / "models"))
-    e = SherpaEngine(models, decoding, 4, 4, warmup_seconds)
+    e = SherpaEngine(
+        models,
+        decoding or Config.decoding_method,
+        Config.beam_size,
+        Config.num_threads,
+        warmup_seconds,
+    )
     e.load()
     return e
 
@@ -256,7 +263,13 @@ def main() -> int:
     e = engine(warmup_seconds=Config.max_chunk_seconds)
     report = {
         "sherpa_onnx": sherpa_onnx.__version__,
-        "settings": "viet-asr int8, modified_beam_search, beam 4, 4 threads (except a)",
+        "settings": {
+            "model": "viet-asr int8",
+            "decoding_method": Config.decoding_method,
+            "beam_size": Config.beam_size,
+            "threads": Config.num_threads,
+            "note": "(a) runs every decoding method",
+        },
         "max_chunk_seconds": Config.max_chunk_seconds,
         "a_resolution": resolution,
         "b_shift": probe_shift(e, clips, step),

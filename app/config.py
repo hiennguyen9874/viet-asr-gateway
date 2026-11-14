@@ -32,7 +32,7 @@ class Config:
     models_dir: Path = Path("models")
     decoding_method: str = "modified_beam_search"  # or greedy_search
     beam_size: int = 4  # active paths of modified_beam_search; ignored by greedy_search
-    num_threads: int = 4  # intra-op threads of the one recognizer; measured: docs/baseline.vi.md §4
+    num_threads: int = 2  # intra-op threads of the one recognizer; measured: docs/baseline.vi.md §4
     whisper_alias: bool = False  # opt-in alias `whisper-1` (docs/api-contract.vi.md §3)
     log_level: str = "INFO"
 
@@ -43,7 +43,7 @@ class Config:
     max_audio_seconds: float = (
         1800.0  # decoded duration; FFmpeg is stopped as soon as it is exceeded
     )
-    max_chunk_seconds: float = 20.0  # measured: docs/baseline.vi.md §5
+    max_chunk_seconds: float = 15.0  # measured: docs/baseline.vi.md §5
     decode_timeout_seconds: float = 60.0
     max_concurrent_decodes: int = 2
     max_decoded_seconds: float = (
@@ -55,7 +55,7 @@ class Config:
     queue_max_jobs: int = 64
     queue_max_jobs_per_lane: int = 2
     queue_max_buffered_seconds: float = (
-        600.0  # audio held by queued + running jobs; measured: docs/baseline.vi.md §4
+        450.0  # audio held by queued + running jobs; measured: docs/baseline.vi.md §4
     )
     queue_timeout_seconds: float = 30.0  # max wait for queue capacity before 429
     live_priority_ratio: int = 3  # live jobs dispatched per file job when both are waiting

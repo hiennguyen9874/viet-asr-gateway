@@ -3,7 +3,8 @@ decoding method, a thread sweep for the default settings, and the capacity defau
 
     uv run scripts/baseline_offline.py --out docs/baseline/offline.json
 
-CPU only; needs the staged model (scripts/stage_models.py) and fixtures-large/vi_long.wav (scripts/fetch_fixtures.py).
+CPU only; needs the staged model (scripts/stage_models.py), fixtures-large/vi_long.wav and the local eval set
+(scripts/fetch_fixtures.py [--eval]).
 Every measurement runs in a fresh process, so load time and peak RSS belong to that setting only. The engine is
 used exactly as the gateway uses it: warm-up on GATEWAY_MAX_CHUNK_SECONDS of zeros, fixtures as one chunk each,
 vi_long.wav split by `app.chunking.split` and joined by `app.transcription.Joiner`. The report holds numbers, counts
@@ -11,11 +12,13 @@ and SHA256 of transcripts only (no audio, no text); scripts/smoke_server.py comp
 the hashes of the default setting.
 
 (a) Settings: modified_beam_search/greedy_search (int8 weights) at `--threads`: load, warm-up, per fixture median latency
-    over the repeats, real-time factor (RTF = latency / audio seconds), determinism, WER against FLEURS.
-(b) Threads: the default setting at 1, 2, 4, 8, 16 threads: latency of one max-length chunk (the worst single call:
-    the longest a realtime job waits behind a running file chunk) and RTF of vi_long.wav.
-(c) Derived: the default thread count and the bounds the queue defaults must respect (rules in `derive`,
-    docs/baseline.vi.md §4).
+    over the repeats, real-time factor (RTF = latency / audio seconds), determinism, WER against FLEURS; on the eval
+    set (one pass, each clip split and joined as the gateway does): normalized corpus WER against the FLEURS
+    `transcription` column, RTF, and how many non-speech clips yield text.
+(b) Threads: the default decoding (derived from (a)) at 1, 2, 4, 8, 16 threads: latency of one max-length chunk (the
+    worst single call: the longest a realtime job waits behind a running file chunk) and RTF of vi_long.wav.
+(c) Derived: the default decoding method (`choose_decoding`), the default thread count and the bounds the queue defaults must
+    respect (rules in `derive`, docs/baseline.vi.md §4).
 
 This is a single-stream offline measurement on a shared host, not a capacity claim (docs/roadmap.md §1). Exit 1
 when the defaults in `app.config.Config` differ from the derived ones, or a decode is not deterministic.
@@ -54,6 +57,8 @@ LONG_REPEATS = 3
 MIN_THREAD_EFFICIENCY = 0.5
 # (c): a call this many times the worst max-chunk latency measured (any setting, any thread count) counts as hung.
 HANG_MARGIN = 20
+# (c): greedy_search becomes the default when its eval WER is at most this much (absolute) above beam search's.
+GREEDY_MAX_WER_LOSS = 0.005
 
 
 def models_dir() -> Path:
@@ -93,7 +98,7 @@ def child(decoding: str, threads: int, part: str) -> dict:
     from app.chunking import split
     from app.engine import SherpaEngine
     from app.transcription import Joiner
-    from scripts.scoring import wer
+    from scripts.scoring import errors, wer
 
     cfg = Config(api_keys=("x" * 16,))
     refs = json.loads((FIXTURES / "manifest.json").read_text())["files"]
@@ -136,6 +141,7 @@ def child(decoding: str, threads: int, part: str) -> dict:
         "text_sha256": sha256(text),
     }
     if part == "settings":
+        out["eval"] = eval_rows(e, cfg.max_chunk_samples, errors)
         for name in SMALL:
             wav = sf.read(FIXTURES / name, dtype="float32")[0]
             times, outs = timed(lambda wav=wav: e.transcribe(wav).text, REPEATS)
@@ -151,6 +157,77 @@ def child(decoding: str, threads: int, part: str) -> dict:
             out[name] = row
     out["peak_rss_mb"] = peak_rss_mb()
     return out
+
+
+def eval_rows(e, max_chunk: int, errors) -> dict:
+    """One pass over the eval set: corpus WER, RTF, text on non-speech (counts and one hash, no text)."""
+    from app.chunking import split
+    from app.transcription import Joiner
+    from scripts.fetch_fixtures import eval_set
+
+    speech, silent = eval_set()
+
+    def transcribe(path: Path) -> tuple[str, float, float]:
+        x = sf.read(path, dtype="float32")[0]
+        joiner = Joiner()
+        t0 = time.monotonic()
+        for s in split(x, max_chunk):
+            joiner.add(e.transcribe(x[s.start : s.end]).text)
+        return joiner.text, time.monotonic() - t0, len(x) / SR
+
+    edits = words = 0
+    busy = audio = 0.0
+    digest = hashlib.sha256()
+    for path, ref in speech.items():
+        text, dt, dur = transcribe(path)
+        busy, audio = busy + dt, audio + dur
+        n_e, n_w = errors(ref["reference"], text)
+        edits, words = edits + n_e, words + n_w
+        digest.update(text.encode() + b"\n")
+    kinds: dict[str, dict] = {}
+    for name, path in silent.items():
+        text, _, _ = transcribe(path)
+        k = kinds.setdefault(name.rsplit("_", 1)[0], {"clips": 0, "with_text": 0, "words": 0})
+        k["clips"] += 1
+        k["with_text"] += bool(text)
+        k["words"] += len(text.split())
+        digest.update(text.encode() + b"\n")
+    clips = sum(k["clips"] for k in kinds.values())
+    with_text = sum(k["with_text"] for k in kinds.values())
+    return {
+        "speech": {
+            "clips": len(speech),
+            "audio_s": round(audio, 1),
+            "words": words,
+            "wer": round(edits / words, 4),
+            "rtf": round(busy / audio, 4),
+        },
+        "nonspeech": {
+            "clips": clips,
+            "with_text": with_text,
+            "text_rate": round(with_text / clips, 4),
+            "kinds": kinds,
+        },
+        "texts_sha256": digest.hexdigest(),
+    }
+
+
+def choose_decoding(settings: dict) -> dict:
+    """Default decoding method: greedy_search unless it loses more than GREEDY_MAX_WER_LOSS of eval WER."""
+    beam = settings["modified_beam_search"]["eval"]
+    greedy = settings["greedy_search"]["eval"]
+    loss = round(greedy["speech"]["wer"] - beam["speech"]["wer"], 4)
+    return {
+        "rule": {"greedy_max_wer_loss": GREEDY_MAX_WER_LOSS},
+        "greedy_wer_loss": loss,
+        "nonspeech_text_rate": {
+            "modified_beam_search": beam["nonspeech"]["text_rate"],
+            "greedy_search": greedy["nonspeech"]["text_rate"],
+        },
+        "decoding_method": "greedy_search"
+        if loss <= GREEDY_MAX_WER_LOSS
+        else "modified_beam_search",
+    }
 
 
 def run_child(decoding: str, threads: int, part: str) -> dict:
@@ -235,7 +312,9 @@ def main() -> int:
     import sherpa_onnx
 
     cfg = Config(api_keys=("x" * 16,))
-    default = cfg.decoding_method
+    settings = {d: run_child(d, args.threads, "settings") for d in DECODINGS}
+    chosen = choose_decoding(settings)
+    default = chosen["decoding_method"]
     manifest = json.loads((ROOT / "assets/manifest.json").read_text())
     report = {
         "commit": git_commit(),
@@ -250,11 +329,11 @@ def main() -> int:
         "default": default,
         "a_settings": {
             "threads": args.threads,
-            "rows": {d: run_child(d, args.threads, "settings") for d in DECODINGS},
+            "rows": settings,
         },
         "b_threads": {
             "setting": default,
-            "rows": {str(t): run_child(cfg.decoding_method, t, "threads") for t in THREADS},
+            "rows": {str(t): run_child(default, t, "threads") for t in THREADS},
         },
     }
     worst = max(
@@ -262,7 +341,7 @@ def main() -> int:
         for part in ("a_settings", "b_threads")
         for r in report[part]["rows"].values()
     )
-    report["c_derived"] = derive(report["b_threads"]["rows"], worst)
+    report["c_derived"] = {"decoding": chosen, **derive(report["b_threads"]["rows"], worst)}
     report["load_average_end"] = [round(v, 1) for v in os.getloadavg()]
 
     d = report["c_derived"]
@@ -274,6 +353,7 @@ def main() -> int:
             for v in r.values()
             if isinstance(v, dict) and "deterministic" in v
         ),
+        "decoding_method": cfg.decoding_method == default,
         "num_threads": cfg.num_threads == d["num_threads"],
         "queue_max_buffered_seconds": cfg.queue_max_buffered_seconds
         <= d["queue_max_buffered_seconds_max"],

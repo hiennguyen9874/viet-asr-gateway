@@ -2,21 +2,25 @@
 
     uv run scripts/probe_limits.py --out docs/baseline/limits_probe.json
 
-CPU only; needs the staged model (scripts/stage_models.py) and, for part (c), fixtures-large/vi_long.wav
-(scripts/fetch_fixtures.py). Reports numbers and counts only: no audio, no transcripts.
+CPU only; needs the staged model (scripts/stage_models.py), fixtures-large/vi_long.wav and the local eval set
+(scripts/fetch_fixtures.py [--eval]). Reports numbers and counts only: no audio, no transcripts. Parts (b)-(d) use the
+default engine settings of `app.config.Config` (decoding method, beam size, threads).
 
 (a) Shortest input: for every decoding method, the smallest waveform length (samples at 16 kHz) the
     recognizer accepts, for digital zeros and for noise, found by bisection and then checked exhaustively around it
     and on a grid up to 3 s above it (a length below it must fail, every length checked above it must succeed).
 (b) Short speech: cuts of the speech fixtures at several lengths and offsets -> how many cuts yield any text.
-(c) Chunk length: for each length, a fresh process loads the default engine (modified_beam_search, beam 4,
-    `--threads`), warms up on that length (as the gateway does with GATEWAY_MAX_CHUNK_SECONDS) and decodes speech
-    of that length (vi_long.wav, tiled when shorter): latency, real-time factor, RSS after load and peak RSS.
-(d) Accuracy against chunk length: vi_long.wav split by app.chunking.split at each length -> WER.
+(c) Chunk length: for each length (up to 30 s, the model's training length), a fresh process loads the default
+    engine, warms up on that length (as the gateway does with GATEWAY_MAX_CHUNK_SECONDS) and decodes speech of that
+    length (vi_long.wav, tiled when shorter): latency, real-time factor, RSS after load and peak RSS.
+(d) Accuracy against chunk length: the eval set's FLEURS clips joined into recordings of EVAL_GROUP utterances
+    (0.3 s of digital zeros between them, as vi_long.wav) and vi_long.wav, split by app.chunking.split at each length
+    -> normalized corpus WER, and at each chunk cut whether the chunk before ends in punctuation and the chunk after
+    starts with a capital letter, for cuts inside an utterance and cuts between utterances.
+(e) Derived GATEWAY_MAX_CHUNK_SECONDS (rules in `derive`, docs/baseline.vi.md §5).
 
-Exit 1 unless the floor is the same for every setting and input, equals `app.engine.MIN_FORWARD_SAMPLES`, and the
-short-audio rule (`app.chunking.MIN_AUDIO_SAMPLES`) never forwards less. The constants and the decision drawn from
-this report: docs/baseline.vi.md §5.
+Exit 1 unless the floor is the same for every setting and input, equals `app.engine.MIN_FORWARD_SAMPLES`, the
+short-audio rule (`app.chunking.MIN_AUDIO_SAMPLES`) never forwards less, and `Config.max_chunk_seconds` equals (e).
 """
 
 import argparse
@@ -27,6 +31,7 @@ import statistics
 import subprocess
 import sys
 import time
+import unicodedata
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -43,18 +48,34 @@ DECODINGS = ("modified_beam_search", "greedy_search")
 SPEECH = ("vi_a.wav", "vi_b.wav")
 SHORT_LENGTHS = (1360, 1600, 1601, 2400, 3200, 4800, 8000)
 SHORT_OFFSETS = 20  # cuts per clip and length, evenly spaced over the clip
-CHUNK_SECONDS = (5, 10, 15, 20, 30, 45, 60, 90, 120, 180)
+CHUNK_SECONDS = (5, 10, 15, 20, 25, 30)  # the model was trained on utterances of at most 30 s
 REPEATS = 3
+EVAL_GROUP = 10  # utterances per eval recording in (d)
+GAP = int(0.3 * SR)
+# A cut is inside a sentence when there is speech (a 50 ms window within SPEECH_DB of the clip's loudest one) on both
+# sides of it in the same utterance (each FLEURS clip is one sentence), at least MARGIN away from the cut.
+SPEECH_DB = -30.0
+MARGIN = SR // 5
+# (e): a LIVE job may wait behind one running FILE chunk, so a chunk's worst latency must stay under this.
+MAX_CHUNK_LATENCY_S = 1.0
+# (e): a chunk length may raise the process's peak RSS by at most this factor over the load peak.
+MAX_RSS_GROWTH = 1.25
+# (e): corpus WERs this close to the best one are a tie (one 200-clip set); the longest tied length wins, since every
+# chunk cut costs a written-form artifact (the model ends each chunk as a sentence).
+WER_TIE = 0.005
 
 
 def models_dir() -> Path:
     return Path(os.environ.get("GATEWAY_MODELS_DIR", ROOT / "models"))
 
 
-def engine(decoding="modified_beam_search", threads=4, warmup_seconds=1.0):
+def engine(decoding=None, threads=None, warmup_seconds=1.0):
+    from app.config import Config
     from app.engine import SherpaEngine
 
-    e = SherpaEngine(models_dir(), decoding, 4, threads, warmup_seconds)
+    decoding = decoding or Config.decoding_method
+    threads = threads or Config.num_threads
+    e = SherpaEngine(models_dir(), decoding, Config.beam_size, threads, warmup_seconds)
     e.load()
     return e
 
@@ -157,36 +178,139 @@ def probe_chunks(threads: int) -> list[dict]:
     return rows
 
 
-def probe_chunk_wer() -> list[dict]:
-    from app.chunking import split
-    from scripts.scoring import wer
+def recordings() -> list[tuple[np.ndarray, str, list[tuple[int, int]]]]:
+    """(audio, reference, utterance intervals): the eval clips in groups of EVAL_GROUP, then vi_long.wav."""
+    from scripts.fetch_fixtures import eval_set
 
-    reference = json.loads((FIXTURES / "manifest.json").read_text())["files"]["vi_long.wav"][
-        "reference"
-    ]
+    speech, _ = eval_set()
+    items = list(speech.items())
+    out = []
+    for i in range(0, len(items), EVAL_GROUP):
+        parts, refs, utts, pos = [], [], [], 0
+        for path, ref in items[i : i + EVAL_GROUP]:
+            x = sf.read(path, dtype="float32")[0]
+            utts.append((pos, pos + len(x)))
+            parts += [x, np.zeros(GAP, np.float32)]
+            refs.append(ref["reference"])
+            pos += len(x) + GAP
+        out.append((np.concatenate(parts[:-1]), " ".join(refs), utts))
     x = sf.read(LONG, dtype="float32")[0]
+    ref = json.loads((FIXTURES / "manifest.json").read_text())["files"]["vi_long.wav"]["reference"]
+    z = np.diff(np.concatenate(([0], (x == 0).astype(np.int8), [0])))
+    gaps = [
+        (a, b)
+        for a, b in zip(np.flatnonzero(z == 1), np.flatnonzero(z == -1), strict=True)
+        if b - a >= GAP
+    ]
+    bounds = [0] + [int(v) for g in gaps for v in g] + [len(x)]
+    out.append((x, ref, list(zip(bounds[::2], bounds[1::2], strict=True))))
+    return out
+
+
+def loudest(x: np.ndarray) -> float:
+    """RMS of the loudest 50 ms window (0 for less than one window)."""
+    win = SR // 20
+    n = len(x) // win
+    if n == 0:
+        return 0.0
+    return float(np.sqrt((x[: n * win].astype(np.float64).reshape(n, win) ** 2).mean(1)).max())
+
+
+def wer_child(seconds: float) -> dict:
+    """(d) at one chunk length, in a fresh process (the lengths run in parallel)."""
+    from app.chunking import split
+    from scripts.scoring import errors
+
     e = engine()
-    rows = []
-    for seconds in CHUNK_SECONDS:
+    cuts = {k: {"cuts": 0, "punct_before": 0, "capital_after": 0} for k in ("inside", "between")}
+    totals = {"eval": [0, 0, 0], "vi_long": [0, 0, 0]}  # edits, reference words, chunks
+    recs = recordings()
+    for i, (x, ref, utts) in enumerate(recs):
         spans = split(x, int(seconds * SR))
-        hyp = " ".join(t for s in spans if (t := e.transcribe(x[s.start : s.end]).text))
-        # The model's vocabulary is upper case; FLEURS references are lower case.
-        rows.append(
-            {"seconds": seconds, "chunks": len(spans), "wer": round(wer(reference, hyp), 4)}
+        texts = [e.transcribe(x[s.start : s.end]).text for s in spans]
+        edits, words = errors(ref, " ".join(t for t in texts if t))
+        t = totals["vi_long" if i == len(recs) - 1 else "eval"]
+        t[0], t[1], t[2] = t[0] + edits, t[1] + words, t[2] + len(spans)
+        for k in range(1, len(spans)):
+            c, before, after = spans[k].start, texts[k - 1], texts[k]
+            inside = any(
+                a < c < b
+                and min(loudest(x[a : c - MARGIN]), loudest(x[c + MARGIN : b]))
+                >= loudest(x[a:b]) * 10 ** (SPEECH_DB / 20)
+                for a, b in utts
+            )
+            row = cuts["inside" if inside else "between"]
+            row["cuts"] += 1
+            row["punct_before"] += bool(before) and unicodedata.category(before[-1]).startswith("P")
+            row["capital_after"] += bool(after) and after[0].isupper()
+    return {
+        "seconds": seconds,
+        **{
+            name: {"chunks": t[2], "words": t[1], "wer": round(t[0] / max(t[1], 1), 4)}
+            for name, t in totals.items()
+        },
+        "eval_recordings": len(recs) - 1,
+        "cuts": cuts,
+    }
+
+
+def probe_chunk_wer() -> list[dict]:
+    procs = [
+        subprocess.Popen(
+            [sys.executable, __file__, "--wer-child", str(s)], stdout=subprocess.PIPE, text=True
         )
+        for s in CHUNK_SECONDS
+    ]
+    rows = []
+    for p in procs:
+        out, _ = p.communicate()
+        if p.returncode:
+            raise SystemExit(f"wer child failed: {p.args}")
+        rows.append(json.loads(out))
+        print(rows[-1], file=sys.stderr)
     return rows
+
+
+def derive(chunks: list[dict], wers: list[dict]) -> dict:
+    """Default GATEWAY_MAX_CHUNK_SECONDS: among the lengths whose worst latency and peak RSS stay in bounds, the
+    longest whose eval WER ties the best one (fewer chunk cuts)."""
+    wer = {r["seconds"]: r["eval"]["wer"] for r in wers}
+    ok = [
+        r["seconds"]
+        for r in chunks
+        if r["latency_max_s"] <= MAX_CHUNK_LATENCY_S
+        and r["peak_rss_mb"] <= MAX_RSS_GROWTH * r["peak_rss_load_mb"]
+    ]
+    best = min((wer[s] for s in ok), default=None)
+    chosen = max((s for s in ok if wer[s] <= best + WER_TIE), default=None)
+    return {
+        "rules": {
+            "max_chunk_latency_s": MAX_CHUNK_LATENCY_S,
+            "max_rss_growth": MAX_RSS_GROWTH,
+            "wer_tie": WER_TIE,
+        },
+        "within_bounds": ok,
+        "best_eval_wer": best,
+        "max_chunk_seconds": chosen,
+    }
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    ap.add_argument("--threads", type=int, default=4, help="GATEWAY_NUM_THREADS for part (c)")
+    ap.add_argument(
+        "--threads", type=int, help="GATEWAY_NUM_THREADS for part (c) (default: the config's)"
+    )
     ap.add_argument("--out", type=Path)
     ap.add_argument("--child", type=float, help=argparse.SUPPRESS)
+    ap.add_argument("--wer-child", type=float, help=argparse.SUPPRESS)
     args = ap.parse_args()
     if args.child is not None:
         print(json.dumps(child(args.child, args.threads)))
+        return 0
+    if args.wer_child is not None:
+        print(json.dumps(wer_child(args.wer_child)))
         return 0
     if not LONG.is_file():
         sys.exit(f"{LONG} missing: run scripts/fetch_fixtures.py")
@@ -197,8 +321,14 @@ def main() -> int:
     from app.config import Config
     from app.engine import MIN_FORWARD_SAMPLES
 
+    threads = args.threads or Config.num_threads
     report = {
         "sherpa_onnx": sherpa_onnx.__version__,
+        "settings": {
+            "decoding_method": Config.decoding_method,
+            "beam_size": Config.beam_size,
+            "threads": threads,
+        },
         "constants": {
             "MIN_FORWARD_SAMPLES": MIN_FORWARD_SAMPLES,
             "MIN_AUDIO_SAMPLES": MIN_AUDIO_SAMPLES,
@@ -208,16 +338,13 @@ def main() -> int:
         "a_shortest_input": probe_floor(),
         "b_short_speech": probe_short_speech(),
         "c_chunk_length": {
-            "threads": args.threads,
+            "threads": threads,
             "repeats": REPEATS,
-            "rows": probe_chunks(args.threads),
+            "rows": probe_chunks(threads),
         },
-        "d_chunk_wer_vi_long": probe_chunk_wer(),
+        "d_chunk_wer": probe_chunk_wer(),
     }
-    text = json.dumps(report, indent=2, ensure_ascii=False) + "\n"
-    if args.out:
-        args.out.write_text(text)
-    print(text)
+    report["e_derived"] = derive(report["c_chunk_length"]["rows"], report["d_chunk_wer"])
     floors = {
         k: v[kind]["first_accepted"] for k, v in report["a_shortest_input"].items() for kind in v
     }
@@ -231,7 +358,13 @@ def main() -> int:
         consistent
         and set(floors.values()) == {MIN_FORWARD_SAMPLES}
         and MIN_AUDIO_SAMPLES >= MIN_FORWARD_SAMPLES
+        and report["e_derived"]["max_chunk_seconds"] == Config.max_chunk_seconds
     )
+    report["checks_ok"] = ok
+    text = json.dumps(report, indent=2, ensure_ascii=False) + "\n"
+    if args.out:
+        args.out.write_text(text)
+    print(text)
     return 0 if ok else 1
 
 

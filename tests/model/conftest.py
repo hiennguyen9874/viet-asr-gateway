@@ -11,6 +11,23 @@ MODEL_DIR = MODELS / "viet-asr/int8"
 FIXTURES = ROOT / "tests/fixtures"
 
 
+def default_engine():
+    """The engine the server builds with the default settings (decoding, beam, threads, warm-up length)."""
+    from app.config import Config
+    from app.engine import SherpaEngine
+
+    return SherpaEngine(MODELS, Config.decoding_method, Config.beam_size, Config.num_threads,
+                        warmup_seconds=Config.max_chunk_seconds)
+
+
+def default_settings() -> str:
+    """Report label of `default_engine`."""
+    from app.config import Config
+
+    beam = f", beam {Config.beam_size}" if Config.decoding_method == "modified_beam_search" else ""
+    return f"viet-asr int8, {Config.decoding_method}{beam}, {Config.num_threads} threads"
+
+
 def pytest_collection_modifyitems(items):
     skip = pytest.mark.skip(reason="model not staged (scripts/stage_models.py)")
     for item in items:

@@ -1,0 +1,1174 @@
+{
+  "license": "FLEURS: CC BY 4.0 (https://huggingface.co/datasets/google/fleurs); verbatim copies.",
+  "source": {
+    "dataset": "google/fleurs",
+    "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+    "split": "vi_vn/test"
+  },
+  "selection": "first 200 recordings in file-name order, one per sentence id",
+  "nonspeech": {
+    "kinds": {
+      "zeros": {
+        "noise": null,
+        "dbfs": null
+      },
+      "white_-60dB": {
+        "noise": "white",
+        "dbfs": -60
+      },
+      "white_-45dB": {
+        "noise": "white",
+        "dbfs": -45
+      },
+      "white_-30dB": {
+        "noise": "white",
+        "dbfs": -30
+      },
+      "pink_-60dB": {
+        "noise": "pink",
+        "dbfs": -60
+      },
+      "pink_-45dB": {
+        "noise": "pink",
+        "dbfs": -45
+      },
+      "pink_-30dB": {
+        "noise": "pink",
+        "dbfs": -30
+      },
+      "room_tone": {
+        "noise": "room",
+        "dbfs": -65
+      }
+    },
+    "seconds": [
+      2,
+      5,
+      10
+    ],
+    "generator": "scripts/fetch_fixtures.py:nonspeech (fixed seeds), PCM_16"
+  },
+  "references_sha256": "2bd8a2e1ceb67438ca04dd6d7015bc847e3609cd10355c6c742a9cca8680f093",
+  "files": {
+    "fleurs/10057024225045006889.wav": {
+      "sha256": "33318a8f837de6c2953248729f658292c31520b57aa36ee0fe55c234d55c4b54",
+      "samples": 181440,
+      "sample_rate": 16000
+    },
+    "fleurs/10072308967409148015.wav": {
+      "sha256": "3211626fb751053176762108ee6825501ddd4400aff42ce9633f83c71b07d1de",
+      "samples": 116160,
+      "sample_rate": 16000
+    },
+    "fleurs/10078277432407694754.wav": {
+      "sha256": "43febdf828f97a7efc3a45180a99d76747d3c45bf9143fbf8bf62d7c0adedc26",
+      "samples": 160320,
+      "sample_rate": 16000
+    },
+    "fleurs/10093159547857080890.wav": {
+      "sha256": "cca46c77040d86068a55feef4ef95b21289afba255b4a8db8b00d878545cf33f",
+      "samples": 178560,
+      "sample_rate": 16000
+    },
+    "fleurs/1015279164912843543.wav": {
+      "sha256": "37e2cb772dbdc7c4cc70aece3e508a3c56ff2cf7519f8e28d2b7e310d77fdeda",
+      "samples": 238080,
+      "sample_rate": 16000
+    },
+    "fleurs/1015563747297542961.wav": {
+      "sha256": "8ac66d54510d2481167b649134d4674708e9fc2b6aa3890287a98f5fa83db313",
+      "samples": 160320,
+      "sample_rate": 16000
+    },
+    "fleurs/10169179696365895477.wav": {
+      "sha256": "985195913a77e0889b14e85dd5628f12261d29d879ee272dd572da1a22855687",
+      "samples": 360960,
+      "sample_rate": 16000
+    },
+    "fleurs/10185666587391780903.wav": {
+      "sha256": "c06fd5f367fb476ad23068ff7dda4c5151e028c62f3f5e364fd993503e669d07",
+      "samples": 134400,
+      "sample_rate": 16000
+    },
+    "fleurs/10188670312101823236.wav": {
+      "sha256": "d1dcf34dd0757b8de5f5d891d1b4e1c0306b21372d459d7eac6c186eeb956dde",
+      "samples": 219840,
+      "sample_rate": 16000
+    },
+    "fleurs/1020360004532126324.wav": {
+      "sha256": "a7e0d97985f5e25b1ea2ccbbac32e65b1615ac330d5eaad61d4b0523495e0d2b",
+      "samples": 262080,
+      "sample_rate": 16000
+    },
+    "fleurs/10205789067921017036.wav": {
+      "sha256": "f1fbdb4228de18fd1091283ad2249be453e2a0e41a076871504721652cf8d73f",
+      "samples": 148800,
+      "sample_rate": 16000
+    },
+    "fleurs/10241630228065064831.wav": {
+      "sha256": "440adfbc6123029252dd3d875af0ea39bdebe897544e3b11fd4dac3caa711b41",
+      "samples": 160320,
+      "sample_rate": 16000
+    },
+    "fleurs/10259306006333604242.wav": {
+      "sha256": "c5e8882163f972be6313721e4fac968740caf80fb14b60cff1c0d547c67a194d",
+      "samples": 183360,
+      "sample_rate": 16000
+    },
+    "fleurs/10259532564282505455.wav": {
+      "sha256": "42b6699e96d5daada1a45135ea5cee233e5a2ee04f66494cb2bab592a39b02c5",
+      "samples": 171840,
+      "sample_rate": 16000
+    },
+    "fleurs/10315066330134186872.wav": {
+      "sha256": "5ef51e213d39fa50e2b91d00df374c8e2680c5ca633e7561f2bae04e4e0c35e3",
+      "samples": 221760,
+      "sample_rate": 16000
+    },
+    "fleurs/10342739006640083455.wav": {
+      "sha256": "6a22d09400e524e283764c8894e7e08d2ef35ae95764d576889854bb57b03507",
+      "samples": 196800,
+      "sample_rate": 16000
+    },
+    "fleurs/10348723993292846786.wav": {
+      "sha256": "ac4c65f0c644b46f0ccac83f525113b6ae4007fea169c24b05c2e891cbcce5f1",
+      "samples": 105600,
+      "sample_rate": 16000
+    },
+    "fleurs/103677662251086347.wav": {
+      "sha256": "c4462ef6fbf46f2fdec9552d6bb9027b24c76f637b66f21e55aa4c795ec1a1a2",
+      "samples": 184320,
+      "sample_rate": 16000
+    },
+    "fleurs/1036876241637854415.wav": {
+      "sha256": "b9e5bede8bba81e1a1a4561d2cd89113bf49f855f9ce9011e0b5431d41723bc6",
+      "samples": 244800,
+      "sample_rate": 16000
+    },
+    "fleurs/10402105561395439139.wav": {
+      "sha256": "8a301488f56114107e0c4b66d294a789ad409989c4b6c5e886a735eda052ecce",
+      "samples": 194880,
+      "sample_rate": 16000
+    },
+    "fleurs/10449380600207928518.wav": {
+      "sha256": "62cfa99b549b66373b0730d9a468e1cfe2118719e720ba46da0b52d421d9a111",
+      "samples": 312000,
+      "sample_rate": 16000
+    },
+    "fleurs/10453290072265880595.wav": {
+      "sha256": "9cf37663ca403e7bba2e6900172440108881d1fac74adfebb53e3597fcf9879a",
+      "samples": 190080,
+      "sample_rate": 16000
+    },
+    "fleurs/10473837320520117918.wav": {
+      "sha256": "0e0ce9990be91d7a362f894360fda3163d09a97103f08cdb2e049d1ff156d8f2",
+      "samples": 179520,
+      "sample_rate": 16000
+    },
+    "fleurs/10531082783264670622.wav": {
+      "sha256": "32f8e947c83554f8d90c337f7b1fb1eb2958740af5eb221211efc0ba3d11e820",
+      "samples": 237120,
+      "sample_rate": 16000
+    },
+    "fleurs/10531614475822620460.wav": {
+      "sha256": "216305e87245956db06704abdcb3250a82549d8bc1a81184ed33442571893073",
+      "samples": 255360,
+      "sample_rate": 16000
+    },
+    "fleurs/10578217408292407263.wav": {
+      "sha256": "63f4141cae14d1e40d151531431e238b12c17400d29f6af3295b3f75064124cd",
+      "samples": 251520,
+      "sample_rate": 16000
+    },
+    "fleurs/10618648079469862393.wav": {
+      "sha256": "c6f9f5c411c8e5b27221021f48ca5eeb06585ee872b4fa83a1734213c2626520",
+      "samples": 251520,
+      "sample_rate": 16000
+    },
+    "fleurs/10631977326382455765.wav": {
+      "sha256": "07ab27a34b0a53233c8acdd58552a8f1322b926a82082cd02eb670949380940a",
+      "samples": 208320,
+      "sample_rate": 16000
+    },
+    "fleurs/10671728061564401646.wav": {
+      "sha256": "0716d94abb5429eec6083a2d2e574beff4fac61eb14eee414403819a64464c6d",
+      "samples": 188160,
+      "sample_rate": 16000
+    },
+    "fleurs/10684685439757401963.wav": {
+      "sha256": "e1db871e77c61a9aa85eda5c94c213af140334429a55ae15186bd4cc024e3f53",
+      "samples": 289920,
+      "sample_rate": 16000
+    },
+    "fleurs/10749275134331213732.wav": {
+      "sha256": "70120d031a7fce801568622beddb70db20df8a5931515314dafc71cb4b7c6992",
+      "samples": 182400,
+      "sample_rate": 16000
+    },
+    "fleurs/1075070731814204468.wav": {
+      "sha256": "67b0af88d2994965d131a98a2d7e4e55e5c34e4905e9d6c8f9ce13b4a17d12bb",
+      "samples": 135360,
+      "sample_rate": 16000
+    },
+    "fleurs/10751146797584417593.wav": {
+      "sha256": "c873c0c31ef9ec24e5f25b5869f0c38fa5984ca7aab164ec2578d5bc7d36e861",
+      "samples": 150720,
+      "sample_rate": 16000
+    },
+    "fleurs/10751579734990864351.wav": {
+      "sha256": "6d1ba2787b56458400743e3945d8b487be97c1147417bc118619e4e296410aa4",
+      "samples": 216000,
+      "sample_rate": 16000
+    },
+    "fleurs/10751907101173251895.wav": {
+      "sha256": "d0aa8eb0a14eb4434ca8c24c45a9d641fc07818d92dc2ddec9cc9e8865546619",
+      "samples": 143040,
+      "sample_rate": 16000
+    },
+    "fleurs/10810237292880731030.wav": {
+      "sha256": "955678c7172da37e6740005ccc8b06d118236207f27c2e1367deeca6df1bfa26",
+      "samples": 186240,
+      "sample_rate": 16000
+    },
+    "fleurs/10821239110381895043.wav": {
+      "sha256": "58c1cba76b8dffc68d004caa602011f75059395391ee9bf625c0817365377d80",
+      "samples": 168960,
+      "sample_rate": 16000
+    },
+    "fleurs/10828838602453417649.wav": {
+      "sha256": "73d336c7b6a783df9cc1bb0045357a62320f765d069bb7631092e18c48fa5917",
+      "samples": 170880,
+      "sample_rate": 16000
+    },
+    "fleurs/10865708684535274985.wav": {
+      "sha256": "fc836b79cae5f19e1dca2ca7bd85ff35a946ea26661660e3d38066904c8abb6f",
+      "samples": 332160,
+      "sample_rate": 16000
+    },
+    "fleurs/1088021197531323436.wav": {
+      "sha256": "e59869f86120e8e5dcd9403c7708d4f51ca2d30a82976c34239ed997983107b8",
+      "samples": 144960,
+      "sample_rate": 16000
+    },
+    "fleurs/10934091967051776880.wav": {
+      "sha256": "0cd2b9be41ed277365118cf21dd52b60cdd32514bc1588ab9ba2a2590281e021",
+      "samples": 217920,
+      "sample_rate": 16000
+    },
+    "fleurs/10945777525729584175.wav": {
+      "sha256": "d40ccbc0937f98b1e6782774d6e048afc0dc572c789c93348b3593202344b895",
+      "samples": 178560,
+      "sample_rate": 16000
+    },
+    "fleurs/10970996098314274277.wav": {
+      "sha256": "367f3105032d93f819ae79575fd586528f0e891a8dfe2dbaa4d29a61fd082508",
+      "samples": 93120,
+      "sample_rate": 16000
+    },
+    "fleurs/11041422100213829777.wav": {
+      "sha256": "73cca54f1d63d62cc50dd1c93c22a31035f90395d977641b662ea8bb6930535d",
+      "samples": 138240,
+      "sample_rate": 16000
+    },
+    "fleurs/1104537856130539646.wav": {
+      "sha256": "06564366a6ec64aa1f873ad1de797a9b85fecffbe3837940bff6c8d48031931e",
+      "samples": 190080,
+      "sample_rate": 16000
+    },
+    "fleurs/11052182461166299983.wav": {
+      "sha256": "ae74a55f2ca062c4aff1083a3e3642e3cde7e79e285c14131ed7bae17102879f",
+      "samples": 250560,
+      "sample_rate": 16000
+    },
+    "fleurs/1106781061019781398.wav": {
+      "sha256": "9e1115ca834ce3dd3df715a918be995c82ca9cfd685acb60e1b6aa82ac0aef6e",
+      "samples": 200640,
+      "sample_rate": 16000
+    },
+    "fleurs/11073115628039396251.wav": {
+      "sha256": "e7f49a8b13cee743f5d4f8af572fc632d509294a81117b2a6f72a76eb7dc4c4b",
+      "samples": 355200,
+      "sample_rate": 16000
+    },
+    "fleurs/11087041613949188337.wav": {
+      "sha256": "9080014bcdb93db3c6955818f21710eeb03636f2803e93fd929523b68d7edcd3",
+      "samples": 338880,
+      "sample_rate": 16000
+    },
+    "fleurs/11098060233367360519.wav": {
+      "sha256": "ff64ace1eeb66ce90c1ff0d61b70c343ff6e05138cb0874c7f45f25bea2583e8",
+      "samples": 115200,
+      "sample_rate": 16000
+    },
+    "fleurs/11139384777781065720.wav": {
+      "sha256": "de01f062c326c3942cc63a0ce1148dd10d68c7d1124f6011c4f72383af8e1546",
+      "samples": 216960,
+      "sample_rate": 16000
+    },
+    "fleurs/11158540918299428613.wav": {
+      "sha256": "2bf9ad73e3572a4b50ac3f83a190dd62cda260ceb4f668a6c63a066a73a264cc",
+      "samples": 144000,
+      "sample_rate": 16000
+    },
+    "fleurs/11163757285628566794.wav": {
+      "sha256": "21878778cd82cd7cbbe2071ddcc254b20d6caca57cdc08c216c454ade3dea94a",
+      "samples": 248640,
+      "sample_rate": 16000
+    },
+    "fleurs/11166288458925932654.wav": {
+      "sha256": "bb15d9dabc7dd5b8efb63f7a491954dd243ae8d97d688783985c0a7ca43500a0",
+      "samples": 284160,
+      "sample_rate": 16000
+    },
+    "fleurs/11192011819506936629.wav": {
+      "sha256": "f02c3eb18b6e6dc87fcfb804f44922937de492c6a2a70baaff74d9e98186ffa4",
+      "samples": 243840,
+      "sample_rate": 16000
+    },
+    "fleurs/11230248186415430036.wav": {
+      "sha256": "26420eb6cdbc3690774473e115c92e0b3628015f938b1118a325b4eaf36ecc13",
+      "samples": 131520,
+      "sample_rate": 16000
+    },
+    "fleurs/11236451878010754409.wav": {
+      "sha256": "fc2e9bdd3096f60bdcc15ae7d39ed07904df5732cb17a0d009b9bf6886bea5b0",
+      "samples": 158400,
+      "sample_rate": 16000
+    },
+    "fleurs/11253569361880612464.wav": {
+      "sha256": "686036cc9abfd0f89dc3b89e58d273110f03a84906259b3639e07a5a14f3c465",
+      "samples": 280320,
+      "sample_rate": 16000
+    },
+    "fleurs/11294540912606279849.wav": {
+      "sha256": "e653187c8d48679b3598e0a26a05df402399aea5a717fb5e15bfcab69d5196f1",
+      "samples": 167040,
+      "sample_rate": 16000
+    },
+    "fleurs/11315518524428693646.wav": {
+      "sha256": "83289571bad6040d731e917ebe56b2575d0dc08e6b019f2c61576e421856dce7",
+      "samples": 133440,
+      "sample_rate": 16000
+    },
+    "fleurs/11316625460955163618.wav": {
+      "sha256": "3175451b4474745b2151948c06c93d56d0f97441c1e627576cabd54fe911852d",
+      "samples": 154560,
+      "sample_rate": 16000
+    },
+    "fleurs/11330537985623646875.wav": {
+      "sha256": "4aea86769efe43ce5833674c22d5677153b8c183bac61f1af8345ad820f4ce54",
+      "samples": 246720,
+      "sample_rate": 16000
+    },
+    "fleurs/11341242076987383094.wav": {
+      "sha256": "f8ada053a0e5adbe442062321fc211e4b637048636b371b6af3f85cbdb305df8",
+      "samples": 208320,
+      "sample_rate": 16000
+    },
+    "fleurs/11421402177781552960.wav": {
+      "sha256": "2fce39cf7e4270ab6351e6e217eb23b6ad5bd144b5f40a1f22ab411e4f969c3b",
+      "samples": 226560,
+      "sample_rate": 16000
+    },
+    "fleurs/11450293425955231943.wav": {
+      "sha256": "a976cdb5d1363554cd0d1b12e7c854f955101977424fc82fea7ab009e5bdedb1",
+      "samples": 202560,
+      "sample_rate": 16000
+    },
+    "fleurs/11453833847884158456.wav": {
+      "sha256": "ca4eba1f18316c32fa392a271eb9243f65b3df4d2517548ec362b95ca1ad4d3a",
+      "samples": 148800,
+      "sample_rate": 16000
+    },
+    "fleurs/11460046455704242163.wav": {
+      "sha256": "9147df1a112c9e1244c8cf8ad3ed7037b573d48fc56ad5df06f62172c6940851",
+      "samples": 165120,
+      "sample_rate": 16000
+    },
+    "fleurs/11489843034381096521.wav": {
+      "sha256": "aed4d7e52a4db5638f7f8f288e8fd19a1b7a1c9685a501181e3b55aa311d6fb2",
+      "samples": 186240,
+      "sample_rate": 16000
+    },
+    "fleurs/11538048669768928262.wav": {
+      "sha256": "1f3bce4d350cc55a8d16e962162a0c598a28d22320ebd4a0583417769fd488ed",
+      "samples": 201600,
+      "sample_rate": 16000
+    },
+    "fleurs/11550947945546712731.wav": {
+      "sha256": "1478b2d8b7ddf1989ca0ae2bfa44735255afe4f3e25eb5642351b3fa76031967",
+      "samples": 185280,
+      "sample_rate": 16000
+    },
+    "fleurs/11595830277981788585.wav": {
+      "sha256": "94fd5445ab30e255d5a424659416b1d6c177efc725c39a00f1b3c7011e8d9ef0",
+      "samples": 180480,
+      "sample_rate": 16000
+    },
+    "fleurs/11598357094682861067.wav": {
+      "sha256": "3c27e4b064f5431b65cb8ef9055c42d4558700afa82593904ef2e2a65fa8f4af",
+      "samples": 340800,
+      "sample_rate": 16000
+    },
+    "fleurs/11601077082806576373.wav": {
+      "sha256": "dd4ec14e6d40c81d3d196cb2d384011ae67937f2f143f62eed09027227b415af",
+      "samples": 202560,
+      "sample_rate": 16000
+    },
+    "fleurs/11631605127091048384.wav": {
+      "sha256": "4c5c51aa5f3cf2da4119325f74e1f5487722e67489cd124a578212e8d6d87d29",
+      "samples": 266880,
+      "sample_rate": 16000
+    },
+    "fleurs/11662569108912717852.wav": {
+      "sha256": "6851575da0b1ebfe9795e85f78ff9d386ffb31a8362bba12164f795195d5ca15",
+      "samples": 190080,
+      "sample_rate": 16000
+    },
+    "fleurs/11672619076350815814.wav": {
+      "sha256": "66ab6c6e38ef382bccf8f55aebc243aa0807fbe9ef5def94ec245670dbeb5aff",
+      "samples": 113280,
+      "sample_rate": 16000
+    },
+    "fleurs/1170717595990824282.wav": {
+      "sha256": "006b1b6dd795adb33f23aec2cba34a7590c46b80f99297841a2e15da71a8627c",
+      "samples": 120960,
+      "sample_rate": 16000
+    },
+    "fleurs/11713929120899460425.wav": {
+      "sha256": "7c8c06110832434577de62e2b36877f0277ef0454cb20ab347049e70ca323d2a",
+      "samples": 228480,
+      "sample_rate": 16000
+    },
+    "fleurs/11717700058313745639.wav": {
+      "sha256": "4db5ef48c08ccf038ef53e050aed49ed3aededa9f371c26aabf580f78cf38c19",
+      "samples": 266880,
+      "sample_rate": 16000
+    },
+    "fleurs/1173834242528950394.wav": {
+      "sha256": "230ec2f33ac0352d3750bdbec78719b5c1a2126bad7f1e6d653ea469174d0aba",
+      "samples": 261120,
+      "sample_rate": 16000
+    },
+    "fleurs/11761453195300776652.wav": {
+      "sha256": "2cb03f5d0695b0f326e101f08ee870737a648a7b440d98b5469d82d05f3999d2",
+      "samples": 205440,
+      "sample_rate": 16000
+    },
+    "fleurs/11765686285773461217.wav": {
+      "sha256": "cb0da51d7e73432df8d79a09bbb696c8779fb5a56f07da7e777329f769ccc4aa",
+      "samples": 246720,
+      "sample_rate": 16000
+    },
+    "fleurs/11806133943011932690.wav": {
+      "sha256": "76f2e3409174ce98f84da1877f47a7c03a86cb6486b92b260465ade2ee8f04a4",
+      "samples": 609600,
+      "sample_rate": 16000
+    },
+    "fleurs/11839499744584457445.wav": {
+      "sha256": "f2cf717f29abb50c785e0814bd873bd2aeadb36bfc004b80c6e869864886f223",
+      "samples": 143040,
+      "sample_rate": 16000
+    },
+    "fleurs/1184420591726507420.wav": {
+      "sha256": "32a6367476829eb6f9f6fee9f6b72fc5b181776122e2a389b8f8428fe244b6c9",
+      "samples": 123840,
+      "sample_rate": 16000
+    },
+    "fleurs/11865440625930247388.wav": {
+      "sha256": "f3ddc010e94c748d7c17fdc39a4a9468bfe87342d8635800794655b011c24e6e",
+      "samples": 276480,
+      "sample_rate": 16000
+    },
+    "fleurs/11884353831059896293.wav": {
+      "sha256": "85d46f6537188a66f70b9a4d9fb609c8dddea9f7a2eeb89472b0bdd1100866e3",
+      "samples": 243840,
+      "sample_rate": 16000
+    },
+    "fleurs/11967436547438172966.wav": {
+      "sha256": "74331f7ca993f0c174379aa544bbc7c9f0200cdc5a2a7e833d17e2b341a38dca",
+      "samples": 86400,
+      "sample_rate": 16000
+    },
+    "fleurs/11979962168673618430.wav": {
+      "sha256": "5a5766c4cfe5345486bdbb497303e62936c0bceb2148593cb1f13c6d2655f65f",
+      "samples": 173760,
+      "sample_rate": 16000
+    },
+    "fleurs/11991223819472939721.wav": {
+      "sha256": "b131660471577889d762a8a619378bde54494af238ad1e23f0e43d3841409016",
+      "samples": 232320,
+      "sample_rate": 16000
+    },
+    "fleurs/12013948925764266263.wav": {
+      "sha256": "5bbb259d4574772f5ef86be5ae670306e30e5662a81ee21ed342a992177148a8",
+      "samples": 295680,
+      "sample_rate": 16000
+    },
+    "fleurs/12028399150700370972.wav": {
+      "sha256": "b8d51e60505fd6ffe2361119a26b6b0939d925a791a64bd964213ab7d5e0d540",
+      "samples": 168960,
+      "sample_rate": 16000
+    },
+    "fleurs/12064850187674963207.wav": {
+      "sha256": "ef4f613688e26da117c0c7ab721f818f9da0faf7502497aee9d50db7844e7bca",
+      "samples": 208320,
+      "sample_rate": 16000
+    },
+    "fleurs/12080327202655068621.wav": {
+      "sha256": "45535269beb14437981fa34caa03fcb5a2ceca795f903625a51cb9ff002eadb6",
+      "samples": 248640,
+      "sample_rate": 16000
+    },
+    "fleurs/12082001259535908107.wav": {
+      "sha256": "8b71986545620ebea07375d73bb5298cb2a3ee95e7c6fcac312c2eca30be5a53",
+      "samples": 290880,
+      "sample_rate": 16000
+    },
+    "fleurs/12103061109919769542.wav": {
+      "sha256": "1f55647c3f690105bd348250e4d7bfd3c23d8c74c259737674af2bac0f926d5d",
+      "samples": 241920,
+      "sample_rate": 16000
+    },
+    "fleurs/12152622186191596467.wav": {
+      "sha256": "cda9255b27963a4f7f51c1db655ad12e185cbeeff69edec70c2e473d41dffae9",
+      "samples": 205440,
+      "sample_rate": 16000
+    },
+    "fleurs/12156684650493583216.wav": {
+      "sha256": "fc6984af2866c059f08f6fc49a28271b7bebd40d3c8bbf9e1b46f89b0659ac9b",
+      "samples": 109440,
+      "sample_rate": 16000
+    },
+    "fleurs/1216952660621922687.wav": {
+      "sha256": "4af8cd8a9cdd41418e7096afb2b917493b1a0b6b8feb6682cebba0f525afff64",
+      "samples": 123840,
+      "sample_rate": 16000
+    },
+    "fleurs/12173157523480581032.wav": {
+      "sha256": "317e6865fd1368f864d9ed7f1981e73d6ed63457216cd8b0dece75a9d5b53cf0",
+      "samples": 99840,
+      "sample_rate": 16000
+    },
+    "fleurs/12189153065260610544.wav": {
+      "sha256": "daf2529fe62229d6d9af820e398081debdbb134ed4cdf1af1fa97d293f030360",
+      "samples": 142080,
+      "sample_rate": 16000
+    },
+    "fleurs/12238542883771465392.wav": {
+      "sha256": "6c7dcfa9e16b4f0ed6e2f59e9876047cf26af88f04a2d821b887dbfdefb090c9",
+      "samples": 278400,
+      "sample_rate": 16000
+    },
+    "fleurs/12277091040477498402.wav": {
+      "sha256": "e4a229a3bd7a9d77ccb184b13f081bded1ad7e3df07f2cf22f6e226c7b29e029",
+      "samples": 125760,
+      "sample_rate": 16000
+    },
+    "fleurs/12294378439351664917.wav": {
+      "sha256": "0c895f931a2782930fc282aefcb19e787fbf3e0f72fe26877a96434cb5178a93",
+      "samples": 209280,
+      "sample_rate": 16000
+    },
+    "fleurs/12307827640123726254.wav": {
+      "sha256": "dd08f2511a3fde982099ba7d2dec2f57453b61fc4499f4393427624d18ef301b",
+      "samples": 377280,
+      "sample_rate": 16000
+    },
+    "fleurs/12310002883541084788.wav": {
+      "sha256": "2fc94edcee5b93b2b3bc35e788a87768ecb50c9ac56b800e44df375fb2de4296",
+      "samples": 152640,
+      "sample_rate": 16000
+    },
+    "fleurs/12362495735385342486.wav": {
+      "sha256": "180dba21f2956e08ddb8cc405b06fce4058f95368d60341912978d631097c887",
+      "samples": 156480,
+      "sample_rate": 16000
+    },
+    "fleurs/12364273712888484717.wav": {
+      "sha256": "d51532caa2dcca728bfb0fcc6acf9ee84a96829d996f2d5979cb4eae217358b8",
+      "samples": 176640,
+      "sample_rate": 16000
+    },
+    "fleurs/12395245262321340558.wav": {
+      "sha256": "9b4ac185ed297c06d6b734f2e1686b053540bd8561f5f8a81cc6d66612c3c204",
+      "samples": 334080,
+      "sample_rate": 16000
+    },
+    "fleurs/12404143284031174702.wav": {
+      "sha256": "00b4a5bf84b4ef216252d04f072a8639a9b4f11a0468500d080228bb0b77725c",
+      "samples": 240960,
+      "sample_rate": 16000
+    },
+    "fleurs/12426748956553466325.wav": {
+      "sha256": "f49391d8d85296ff8e2789d277127b87eb8f338f42d4d9531aed42c08767ed9b",
+      "samples": 228480,
+      "sample_rate": 16000
+    },
+    "fleurs/12458508812011896602.wav": {
+      "sha256": "6933ac855df6130393a27436bd53213e0938f61640638c34841409a836b42654",
+      "samples": 212160,
+      "sample_rate": 16000
+    },
+    "fleurs/12459093079418282603.wav": {
+      "sha256": "0064d767310c591a156b2c89f64f267f0b054b7c7822b7626d5d3dd452544573",
+      "samples": 332160,
+      "sample_rate": 16000
+    },
+    "fleurs/12468786784926900017.wav": {
+      "sha256": "04a16a22aae822c04b8d92e6d467d13da69e0616a52a7cbc539983ebb7ce7ab1",
+      "samples": 206400,
+      "sample_rate": 16000
+    },
+    "fleurs/12497308397150899051.wav": {
+      "sha256": "1dad641d91de0a6595b8b07ee27eda192608f94d81ea46f035eba374722475c6",
+      "samples": 184320,
+      "sample_rate": 16000
+    },
+    "fleurs/12509607716263541086.wav": {
+      "sha256": "39e51950bebb254c9d08bf48d2569d99b36dd4e364356124fe60fc4c459815e2",
+      "samples": 166080,
+      "sample_rate": 16000
+    },
+    "fleurs/12520614282124979948.wav": {
+      "sha256": "8c0fa457adbeccf1aff6a1c55c3e4a33393f17cfb44c31ec9744a929d79fbfae",
+      "samples": 147840,
+      "sample_rate": 16000
+    },
+    "fleurs/1253506738135262887.wav": {
+      "sha256": "abe78c35b69edeb2749caf764fbb810114ac9033302ca6a0aa9da864410f7e29",
+      "samples": 169920,
+      "sample_rate": 16000
+    },
+    "fleurs/12581820950549690545.wav": {
+      "sha256": "958ab5edfde7a6f36b7dd53c750e0c53165508ba4a955208a3a26580b38ebfc0",
+      "samples": 113280,
+      "sample_rate": 16000
+    },
+    "fleurs/12625545023967880866.wav": {
+      "sha256": "b68e1057b35762021b5db88fea81076adbc7f84d7e0a57ef0fe773d1dc8b60cf",
+      "samples": 165120,
+      "sample_rate": 16000
+    },
+    "fleurs/12670767106992780263.wav": {
+      "sha256": "7c27e588415d434382a4e3e0369df9859af72bfffe83024603fa8201a4ab4840",
+      "samples": 178560,
+      "sample_rate": 16000
+    },
+    "fleurs/12706544329768734968.wav": {
+      "sha256": "fbfb9176a80cd440dc823c0a5b2264f47d66a4d69363ef1f8dd069972efae2dd",
+      "samples": 152640,
+      "sample_rate": 16000
+    },
+    "fleurs/12740622559749389835.wav": {
+      "sha256": "dd6cc5df6cebc9e20dab413f240dfebe085fb8af52e85b99da9180689af42282",
+      "samples": 162240,
+      "sample_rate": 16000
+    },
+    "fleurs/12798502384788001776.wav": {
+      "sha256": "f9ee95a1b1b8c601a689df9752061fb197a175e63a12cc2cadc1ea7b867358ae",
+      "samples": 179520,
+      "sample_rate": 16000
+    },
+    "fleurs/12858037995647160612.wav": {
+      "sha256": "fd7e23f128adefe9c51fbfd159d5db5c5eb02d4050263be48e36871eccdf6dda",
+      "samples": 355200,
+      "sample_rate": 16000
+    },
+    "fleurs/12858254046189091722.wav": {
+      "sha256": "65a7e1950c7830bc04887381027646c0320233aac087e036df26dcf39e6309a3",
+      "samples": 132480,
+      "sample_rate": 16000
+    },
+    "fleurs/12868310947310595778.wav": {
+      "sha256": "9542615c00ba71f29d350ad21c19b949d36b9cdf894a09ff17942affb4edc282",
+      "samples": 203520,
+      "sample_rate": 16000
+    },
+    "fleurs/12870657653623570389.wav": {
+      "sha256": "764e46d012a41c6c7178a1c89950f3159832f115448623471f882fb863a588a7",
+      "samples": 145920,
+      "sample_rate": 16000
+    },
+    "fleurs/12891647545009319241.wav": {
+      "sha256": "2d4541bbe95fce6fc613e8c4b578a7070eb37829213165a1ec5b28045ebf8824",
+      "samples": 218880,
+      "sample_rate": 16000
+    },
+    "fleurs/12900897414071603774.wav": {
+      "sha256": "513fb5d39c750205f695d19a1f5c06a7040d4032b13a7b0c1a01818ac2674fd5",
+      "samples": 168000,
+      "sample_rate": 16000
+    },
+    "fleurs/12906191947942246334.wav": {
+      "sha256": "d736396ba38425c52f5dc8df4fbf319fd2e9a89cfef585258e2a6e99d76008db",
+      "samples": 171840,
+      "sample_rate": 16000
+    },
+    "fleurs/12938753757245337215.wav": {
+      "sha256": "f7951a01efe48ff0007db920dc7772263c748aa4536bdb21f76e979103625786",
+      "samples": 234240,
+      "sample_rate": 16000
+    },
+    "fleurs/12973626254752465669.wav": {
+      "sha256": "1df49968f0ded03edd7b9d0dc0a527a74fd7f95d718903428f96b113d94c368c",
+      "samples": 144960,
+      "sample_rate": 16000
+    },
+    "fleurs/13024359626818040993.wav": {
+      "sha256": "1d26b0938ede6ec2fea0e78e08fac2040663ad99c273754fc897c02f7a716527",
+      "samples": 142080,
+      "sample_rate": 16000
+    },
+    "fleurs/13030687246331668062.wav": {
+      "sha256": "9b463e570b5ce0cc36522b46c4c88177cd903da11d92ecdc2264002b2e7e91b1",
+      "samples": 314880,
+      "sample_rate": 16000
+    },
+    "fleurs/13096151604584801483.wav": {
+      "sha256": "e60c1bb0a3637fc79a603eae975667897e57a95d1d831206430b78fa32861d37",
+      "samples": 160320,
+      "sample_rate": 16000
+    },
+    "fleurs/13118766203564845783.wav": {
+      "sha256": "61d5af86e812849f141f2586e5145e052bf4a5260fb24c0af18274dcd5fdaab2",
+      "samples": 84480,
+      "sample_rate": 16000
+    },
+    "fleurs/13155135477116054788.wav": {
+      "sha256": "df8742086d5f58aa502cf5398c49c928023fdcc736191dc5640ae97f63ffdc37",
+      "samples": 264960,
+      "sample_rate": 16000
+    },
+    "fleurs/13255430539007159451.wav": {
+      "sha256": "cb42e97a00b0d214d33f36208e5821b73281c6936ab508a9a56bed4fe84fc346",
+      "samples": 321600,
+      "sample_rate": 16000
+    },
+    "fleurs/13320085084138270753.wav": {
+      "sha256": "f3780124fe28ed79be324ac67e6065849c9d97eb1fa18d9b1741ea73ac4f19a5",
+      "samples": 176640,
+      "sample_rate": 16000
+    },
+    "fleurs/13323825319963267354.wav": {
+      "sha256": "643928d66ac1824e8650e2da3d299df32d67ad7967e1fa1620c5494bcb970801",
+      "samples": 192000,
+      "sample_rate": 16000
+    },
+    "fleurs/13326904783375085481.wav": {
+      "sha256": "921a35c039109184cd13c1bf93e31fbde81e60f16324b7b2e3968ac6f049d286",
+      "samples": 207360,
+      "sample_rate": 16000
+    },
+    "fleurs/13341011197251957111.wav": {
+      "sha256": "b99629e2e7bc698581146e639838ce6b60884c5eaa0f57414f3577bfb3cfc781",
+      "samples": 212160,
+      "sample_rate": 16000
+    },
+    "fleurs/13373874712720017612.wav": {
+      "sha256": "5c7b00b36bbef8b35b84390156317edbba9c290063d16db61c1cbb84c4e91120",
+      "samples": 153600,
+      "sample_rate": 16000
+    },
+    "fleurs/13403078694091345315.wav": {
+      "sha256": "25a4a8858803a3451c21144b2a39ac5afe781213e44a4d9106f3ba411b8c6d35",
+      "samples": 328320,
+      "sample_rate": 16000
+    },
+    "fleurs/13424941252519646082.wav": {
+      "sha256": "59a1a491f2d1f02cdd3f420c9ec070dc5b63b6b9f094e74909220b62ff55cf32",
+      "samples": 247680,
+      "sample_rate": 16000
+    },
+    "fleurs/13497847970853394454.wav": {
+      "sha256": "1c06553619569c86a74566d65c93368f7009eacd5657ed2d0f2bd622b2a0bb1d",
+      "samples": 305280,
+      "sample_rate": 16000
+    },
+    "fleurs/13516757418346250394.wav": {
+      "sha256": "9ec66bff69726731aa8d668d2f8b60ab21e572a37ef0fa35bed859bdf6e0456c",
+      "samples": 149760,
+      "sample_rate": 16000
+    },
+    "fleurs/13518464900579241028.wav": {
+      "sha256": "d551332a74f8ad26127b2d1fa121da8e5d09022cb6816380201b30e3af06c32f",
+      "samples": 158400,
+      "sample_rate": 16000
+    },
+    "fleurs/13530171061020944210.wav": {
+      "sha256": "b771e4d1b2e005d19ce30fd70063ab2230df5353fd0a188e3e2aacf8692ccf1a",
+      "samples": 333120,
+      "sample_rate": 16000
+    },
+    "fleurs/13622611124808788600.wav": {
+      "sha256": "473bdd96e50da9cafc6d3e19e7cf244165409849b0df8b09a3cf6e8c5b66af38",
+      "samples": 211200,
+      "sample_rate": 16000
+    },
+    "fleurs/13645053621181699022.wav": {
+      "sha256": "4e5dd0550b1de4a5e21ce6d389685f936082bf6110a8b511ffd41a19dcefe7c1",
+      "samples": 159360,
+      "sample_rate": 16000
+    },
+    "fleurs/13673190477474533047.wav": {
+      "sha256": "abe5354f01ce263d9bcffd9bbac558ba62b831248a379fc95d9e16b9b5cb0e50",
+      "samples": 182400,
+      "sample_rate": 16000
+    },
+    "fleurs/13707616089147362697.wav": {
+      "sha256": "be3cd7fed1fc0aee2d23e30cc47bbb662fb919c8feecea5c7c0c9fba0116baf1",
+      "samples": 184320,
+      "sample_rate": 16000
+    },
+    "fleurs/1373727221235000306.wav": {
+      "sha256": "edf399df94152082ff04397355240238a96d2c7204488b7910b8ffc77be0d9fe",
+      "samples": 405120,
+      "sample_rate": 16000
+    },
+    "fleurs/13748819425763206032.wav": {
+      "sha256": "c22a6ce28a00c474e4439d228549885cd55d7df3cf46f6aa5314c4d14cdb3a45",
+      "samples": 232320,
+      "sample_rate": 16000
+    },
+    "fleurs/13881625725955983582.wav": {
+      "sha256": "213ada91fdf0abdc7a7b4eeede5b04f5b599b27765c4b88170ad6e0a19286ee1",
+      "samples": 258240,
+      "sample_rate": 16000
+    },
+    "fleurs/13882630326259838823.wav": {
+      "sha256": "9546d61d027dd1f09a09049cb18be76008d92f63c553a089b44d0f8243fc952d",
+      "samples": 209280,
+      "sample_rate": 16000
+    },
+    "fleurs/13884391343743752501.wav": {
+      "sha256": "1fa1f8781a7156475e5afa1000007a8464cebaf39eae5e4958976cad6f5cf571",
+      "samples": 163200,
+      "sample_rate": 16000
+    },
+    "fleurs/13901899891943408754.wav": {
+      "sha256": "d7aa6d89533871541a180f9c4458b2e75561f800a794761123daaa3ecc723d47",
+      "samples": 264960,
+      "sample_rate": 16000
+    },
+    "fleurs/13999967072975318917.wav": {
+      "sha256": "d6996bd00bff0608847e57bdba042d91dcfeba608009c761fdad3bade6b978f9",
+      "samples": 244800,
+      "sample_rate": 16000
+    },
+    "fleurs/14100483388036845996.wav": {
+      "sha256": "26f7e750a15122967bcb6647f8ae093a5ef4044575111504af10f3bb4574f87b",
+      "samples": 171840,
+      "sample_rate": 16000
+    },
+    "fleurs/14116357030870156037.wav": {
+      "sha256": "a8b990ded6dbc679f93c277bdc23ec979148c8d031054ce0152ee8cbd1a4207d",
+      "samples": 192960,
+      "sample_rate": 16000
+    },
+    "fleurs/14117020288073941718.wav": {
+      "sha256": "7abeab3f9ec92b0d16b65ec639c1403002f4ef00ec6cfb9435340d2d9d6b5f54",
+      "samples": 278400,
+      "sample_rate": 16000
+    },
+    "fleurs/14122232668905635400.wav": {
+      "sha256": "9bc75753b03797e89e0ed3107642475fd494aec1295702ad615d2a4eddbdd373",
+      "samples": 191040,
+      "sample_rate": 16000
+    },
+    "fleurs/1412261265106632938.wav": {
+      "sha256": "f0455f11d1792e14867cdeb6fc0a6c9db664abb5a102ce4f6531ebc624125262",
+      "samples": 272640,
+      "sample_rate": 16000
+    },
+    "fleurs/14174506080020378139.wav": {
+      "sha256": "f0e1a19f5a9bacebcbb4d8ef31a200651a1158d4e16481033e2d7db92ae24ba1",
+      "samples": 117120,
+      "sample_rate": 16000
+    },
+    "fleurs/14182230943273038313.wav": {
+      "sha256": "324ba9284a78d1bc12a951020654c51d18bdb292f85f8a5ec4cfb703910641c9",
+      "samples": 228480,
+      "sample_rate": 16000
+    },
+    "fleurs/14201088583659490941.wav": {
+      "sha256": "31da2407561c12024b0babc5d674e7c2339bfae1dc8c3a43a310b762dac4123a",
+      "samples": 191040,
+      "sample_rate": 16000
+    },
+    "fleurs/14299477144607833771.wav": {
+      "sha256": "a14e85ed9d8f2008c1f911fcea7335ecb42666400cbd995e912ec4cf6020da52",
+      "samples": 128640,
+      "sample_rate": 16000
+    },
+    "fleurs/14333125904443822322.wav": {
+      "sha256": "28b2105ae0c71b6f1b4e3dc3d4624397f32a845b9c75c47bbd2b8ba43064d0df",
+      "samples": 267840,
+      "sample_rate": 16000
+    },
+    "fleurs/14349832770836461517.wav": {
+      "sha256": "612bfd701cc5a33198ce5a8b77a15d2c328363971ba25a8a6f76383547d1616c",
+      "samples": 240960,
+      "sample_rate": 16000
+    },
+    "fleurs/14413014896850487502.wav": {
+      "sha256": "a3b139c05df286e382bd6a8944209bbe5fa2c5fc2734a4d0a0a6d91447fdd829",
+      "samples": 358080,
+      "sample_rate": 16000
+    },
+    "fleurs/14462714589663659786.wav": {
+      "sha256": "4fe7667cfd275e03f19d615a08b03f0e15dfe8e4ccf792e47632434d3512f4ad",
+      "samples": 192000,
+      "sample_rate": 16000
+    },
+    "fleurs/14490595949242088897.wav": {
+      "sha256": "0e4a2dbeb5a83ee14089f58a8d9674e611c3b9a144e2561caf2f4691691ebb2c",
+      "samples": 105600,
+      "sample_rate": 16000
+    },
+    "fleurs/14496671770495164342.wav": {
+      "sha256": "88facfee4cd35ad89eb72ad13d7ab525944fa919ff28902457750a2a8778ada3",
+      "samples": 111360,
+      "sample_rate": 16000
+    },
+    "fleurs/14510865305269872390.wav": {
+      "sha256": "9b2fc7b518fbe10947356be9e8e7b4d8a97bd686a7f8f53d4dd4b7eb6ebc8649",
+      "samples": 244800,
+      "sample_rate": 16000
+    },
+    "fleurs/14565968580185626500.wav": {
+      "sha256": "cbb7106c8cf7e1777b8f56da89cc287c34a97e0a61d3a0e755be6d9bd363fcc2",
+      "samples": 147840,
+      "sample_rate": 16000
+    },
+    "fleurs/14566257005506189223.wav": {
+      "sha256": "4b60d5a1835bc7e9684ce4adabf45ada455e2818d2e04354c65a8a9659320638",
+      "samples": 209280,
+      "sample_rate": 16000
+    },
+    "fleurs/14592059070390238955.wav": {
+      "sha256": "25953ec4fb98056eadc7b5f8e9dfead3589a2fc470e8d16bae96e5a5283848a4",
+      "samples": 155520,
+      "sample_rate": 16000
+    },
+    "fleurs/14613654960470655945.wav": {
+      "sha256": "01a65ff1f9adf3d45b02ec8b29bc2ddc69db088add453572f323dc3e5d991866",
+      "samples": 190080,
+      "sample_rate": 16000
+    },
+    "fleurs/14672569917796988429.wav": {
+      "sha256": "c9eedb4b118b5e7227fcd05c6ca6eff6c766968be11bec3aead0e99b54da7b2e",
+      "samples": 180480,
+      "sample_rate": 16000
+    },
+    "fleurs/14677071823455342761.wav": {
+      "sha256": "fd504acf3f49937fa5448ff9fff04300bff457e05dcb3746b14a496305b2f731",
+      "samples": 129600,
+      "sample_rate": 16000
+    },
+    "fleurs/14749734800013766761.wav": {
+      "sha256": "75e70a4105898be2d1b4884b89c8aabf7e537d94cfdb25add262e3f4146d6ad6",
+      "samples": 285120,
+      "sample_rate": 16000
+    },
+    "fleurs/14780176938069794837.wav": {
+      "sha256": "a43febbcd3feeb12b4cad057d3a7fa299be307ecbd83f4c05b212deba3d9adae",
+      "samples": 174720,
+      "sample_rate": 16000
+    },
+    "fleurs/14798044245039786985.wav": {
+      "sha256": "81453e6194b1e2b476e946dc400a273bd8b222c9de36c26bf741f30e34e267f5",
+      "samples": 122880,
+      "sample_rate": 16000
+    },
+    "fleurs/14805740756137284647.wav": {
+      "sha256": "6b968b7535b29b67896fddc255953b8759b563c1ae77c37b8f1fcb857dcf5941",
+      "samples": 208320,
+      "sample_rate": 16000
+    },
+    "fleurs/14861757820765191415.wav": {
+      "sha256": "11c883959319daa43812dbf89f134c5bf190dda8ffee2e58e26fc3ba229a40cf",
+      "samples": 136320,
+      "sample_rate": 16000
+    },
+    "fleurs/14996071226113050699.wav": {
+      "sha256": "95d3a15b75bcca244c5626e3ba7d31dca9587cc6199aee05e744adc9fa7a9ea4",
+      "samples": 229440,
+      "sample_rate": 16000
+    },
+    "fleurs/15048078677738670465.wav": {
+      "sha256": "81e7757f3c23bf315691e8f2c9bd0d1345257de481ad29af563aeeb49950b350",
+      "samples": 217920,
+      "sample_rate": 16000
+    },
+    "fleurs/15051285700679915567.wav": {
+      "sha256": "c40b1b8181eced0802ecfdfc4b70e59f9b3be78c94bf39fcafff138d389cdde7",
+      "samples": 98880,
+      "sample_rate": 16000
+    },
+    "fleurs/15056388805115058855.wav": {
+      "sha256": "1096775dc5a3b01a7a743a2127eecba176e0efdc4940f1de75bab18df00c8901",
+      "samples": 152640,
+      "sample_rate": 16000
+    },
+    "fleurs/15060749953671632932.wav": {
+      "sha256": "c0ba7f585bae0bf1ae330bac209a4a6173bf8b04cc50b9e4a81d0c895c90a36c",
+      "samples": 393600,
+      "sample_rate": 16000
+    },
+    "fleurs/15078039156111929832.wav": {
+      "sha256": "8e54223ec32295f4077c5a47df4dd9749b3e4ef9e225d92f26765f9d05da4e19",
+      "samples": 201600,
+      "sample_rate": 16000
+    },
+    "fleurs/15101581579134403534.wav": {
+      "sha256": "bb02bd53c79e1ad29ed92192143d5f4595d13133aa06921dbc727d0b21f70465",
+      "samples": 211200,
+      "sample_rate": 16000
+    },
+    "fleurs/15135508090217618875.wav": {
+      "sha256": "e5466eb25b00793e751c8b5443f1eaa04fe9a921fe77062eee4341ec1f1655c2",
+      "samples": 501120,
+      "sample_rate": 16000
+    },
+    "fleurs/15171765857742160663.wav": {
+      "sha256": "b4f9d757bfa63fe3473b65b1d445730e0731ea2c7a059e4687fd232463e83341",
+      "samples": 322560,
+      "sample_rate": 16000
+    },
+    "fleurs/15239878905975541602.wav": {
+      "sha256": "8e8478999f7a9eb43a7438ae8dfc280dc6e5938e504547cf51e2f93364ebfe47",
+      "samples": 166080,
+      "sample_rate": 16000
+    },
+    "fleurs/15241585788303470387.wav": {
+      "sha256": "d0e0a9ccdc890de97a85557e8e0f0b3734571fb568ad212f74985380b7a73511",
+      "samples": 161280,
+      "sample_rate": 16000
+    },
+    "fleurs/15264939732356739462.wav": {
+      "sha256": "22767061c83e94b068e05243bb750b33418ccda74a30409c63041ac15c047306",
+      "samples": 291840,
+      "sample_rate": 16000
+    },
+    "nonspeech/pink_-30dB_10s.wav": {
+      "sha256": "61a35e4113f2d98f9a8e7dd9e79e692f5cc76284efaacd17be317e38fd0fd3f4",
+      "samples": 160000,
+      "sample_rate": 16000
+    },
+    "nonspeech/pink_-30dB_2s.wav": {
+      "sha256": "e7e79b09fc4f01861c9c523903470f66573a1e8d344573817e4dec8e56ae3af8",
+      "samples": 32000,
+      "sample_rate": 16000
+    },
+    "nonspeech/pink_-30dB_5s.wav": {
+      "sha256": "1d3d1b146ee63e603dce70a0d8303983d497785cb854013f758c25901c860730",
+      "samples": 80000,
+      "sample_rate": 16000
+    },
+    "nonspeech/pink_-45dB_10s.wav": {
+      "sha256": "85e35cfb5398ad1f61f64a3f27dffc4644e2e70cf4de43f8285cddaef9855b1b",
+      "samples": 160000,
+      "sample_rate": 16000
+    },
+    "nonspeech/pink_-45dB_2s.wav": {
+      "sha256": "c9fe46f35c9de049adb777f3874e45bae31919c12f24172a0a4d0a7f24e59621",
+      "samples": 32000,
+      "sample_rate": 16000
+    },
+    "nonspeech/pink_-45dB_5s.wav": {
+      "sha256": "620f7cb6df3ee1af1f9dcacf5928e41db7bbb06f5f23c05597ae660a961e2a8b",
+      "samples": 80000,
+      "sample_rate": 16000
+    },
+    "nonspeech/pink_-60dB_10s.wav": {
+      "sha256": "c203821d501ecb41d5b96f4f83574b5f3819f8f2abb8853ee515701d9f0ce87c",
+      "samples": 160000,
+      "sample_rate": 16000
+    },
+    "nonspeech/pink_-60dB_2s.wav": {
+      "sha256": "b7c96d85e027a328cea76c0889b91f916d7c5f1fc74ef0c8fa79267a0c14a23e",
+      "samples": 32000,
+      "sample_rate": 16000
+    },
+    "nonspeech/pink_-60dB_5s.wav": {
+      "sha256": "4a8b332cb459cc36e9f65dcf029de50faa11820a626e8b83bdac7605ba6dd7d6",
+      "samples": 80000,
+      "sample_rate": 16000
+    },
+    "nonspeech/room_tone_10s.wav": {
+      "sha256": "b2f56a9f5f7197202d4ad6407512e39b76e24312bb519fa5f97e0b6074f462cc",
+      "samples": 160000,
+      "sample_rate": 16000
+    },
+    "nonspeech/room_tone_2s.wav": {
+      "sha256": "3b80bd20eb7f6fed3d72b7dbd10ded41456ab3800cbd78cace1b370e5066c792",
+      "samples": 32000,
+      "sample_rate": 16000
+    },
+    "nonspeech/room_tone_5s.wav": {
+      "sha256": "4dadd4b56f37a646bb3ebaacf60dd08530401f01cb20baea3b782d3ac1e8f4bf",
+      "samples": 80000,
+      "sample_rate": 16000
+    },
+    "nonspeech/white_-30dB_10s.wav": {
+      "sha256": "870737a51f57a52d22115b275f0f785289b8e49de0708d3831414b4b850b4a3c",
+      "samples": 160000,
+      "sample_rate": 16000
+    },
+    "nonspeech/white_-30dB_2s.wav": {
+      "sha256": "d3763ba429d56b71a8f80f2ae3bd7564e1f5bc492795575a48238af0c260a6a4",
+      "samples": 32000,
+      "sample_rate": 16000
+    },
+    "nonspeech/white_-30dB_5s.wav": {
+      "sha256": "3a1ac32e559c3bece09d1653d87799a8059e8cdf581d782f732c085d57e31a5c",
+      "samples": 80000,
+      "sample_rate": 16000
+    },
+    "nonspeech/white_-45dB_10s.wav": {
+      "sha256": "212c59728636f5911ff8f4aed77f3077e5382d7e0db3e92effdef6d414083da6",
+      "samples": 160000,
+      "sample_rate": 16000
+    },
+    "nonspeech/white_-45dB_2s.wav": {
+      "sha256": "3c1ad206dbe9520a3c43b98ca76f116bc933a5f278e79bb5f281bdb9b8fca9a4",
+      "samples": 32000,
+      "sample_rate": 16000
+    },
+    "nonspeech/white_-45dB_5s.wav": {
+      "sha256": "7bc44a42b4e8ffb728880ff7a85cd2da91fbba696b7fd8efb39f5d378b8d90cf",
+      "samples": 80000,
+      "sample_rate": 16000
+    },
+    "nonspeech/white_-60dB_10s.wav": {
+      "sha256": "1977c2e18d5e5651885957d31f01f6dd79fd1ee020cb3f7bbbe8a8c9c3e8e313",
+      "samples": 160000,
+      "sample_rate": 16000
+    },
+    "nonspeech/white_-60dB_2s.wav": {
+      "sha256": "35a5e5e0f938367cee22dd287140ec8f816f7801877347a54c1ab660887bf779",
+      "samples": 32000,
+      "sample_rate": 16000
+    },
+    "nonspeech/white_-60dB_5s.wav": {
+      "sha256": "ea78f249160d2bcf59af9a59a98396ceb0d7f08ea5d157c876006f6d69b5df41",
+      "samples": 80000,
+      "sample_rate": 16000
+    },
+    "nonspeech/zeros_10s.wav": {
+      "sha256": "ee7bea4232762775f8fce9b3e27e4d3948c8ac6a45a87ca769f703d6eed0b448",
+      "samples": 160000,
+      "sample_rate": 16000
+    },
+    "nonspeech/zeros_2s.wav": {
+      "sha256": "20eaebffe1816e0ffa6f7f854f5ef4ea80d5349faaf0ce1fec1b713e7fde58fa",
+      "samples": 32000,
+      "sample_rate": 16000
+    },
+    "nonspeech/zeros_5s.wav": {
+      "sha256": "262d1f34f300560a4c82ba8127ddea9e1d72946f187fdbd3e8f70ee096077aec",
+      "samples": 80000,
+      "sample_rate": 16000
+    }
+  }
+}

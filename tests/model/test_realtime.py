@@ -25,12 +25,11 @@ import soxr
 
 from app.chunking import MIN_AUDIO_SAMPLES, split
 from app.config import SAMPLE_RATE
-from app.engine import SherpaEngine
 from app.realtime import PCM_RATE, TurnBuffer
 from scripts.scoring import wer
 from tests.fake_engine import config
 from tests.live_server import serve, wav_file, WS
-from tests.model.conftest import FIXTURES, MODELS, ROOT
+from tests.model.conftest import default_engine, default_settings, FIXTURES, MODELS, ROOT
 
 MODEL = "viet-asr"
 PACKET = PCM_RATE // 50 * 2  # 20 ms of PCM16
@@ -43,8 +42,7 @@ DELTA = "conversation.item.input_audio_transcription.delta"
 
 @pytest.fixture(scope="module")
 def srv():
-    engine = SherpaEngine(MODELS, "modified_beam_search", 4, 4, warmup_seconds=config().max_chunk_seconds)
-    with serve(engine, ready_timeout=300, http_timeout=300, models_dir=MODELS) as s:
+    with serve(default_engine(), ready_timeout=300, http_timeout=300, models_dir=MODELS) as s:
         yield s
 
 
@@ -59,7 +57,7 @@ def gate():
         dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=ROOT,
                                capture_output=True, text=True).stdout.strip()
         report = {"commit": commit + ("-dirty" if dirty else ""), "sherpa_onnx": sherpa_onnx.__version__,
-                  "settings": "viet-asr int8, modified_beam_search, beam 4, 4 threads",
+                  "settings": default_settings(),
                   "max_chunk_seconds": config().max_chunk_seconds, "packet_ms": 20, **sections}
         REPORT.write_text(json.dumps(report, indent=2) + "\n")
 
@@ -201,7 +199,7 @@ def test_concurrent_sessions_do_not_mix(srv, gate):
 def test_long_turn_is_one_item_with_one_delta_per_chunk(srv, tmp_path, gate):
     a, b = load("vi_a.wav"), load("vi_b.wav")
     gap = np.zeros(SAMPLE_RATE, np.float32)
-    pcm = to_pcm24(np.concatenate([a, gap, b, gap, a, gap, b]))  # 37.7 s > GATEWAY_MAX_CHUNK_SECONDS (20)
+    pcm = to_pcm24(np.concatenate([a, gap, b, gap, a, gap, b]))  # 37.7 s > GATEWAY_MAX_CHUNK_SECONDS
     [(deltas, done)] = realtime(srv, [pcm])
     assert len(deltas) == chunks(pcm) >= 2 and all(deltas)  # (e)
     assert done["transcript"] == rest(srv, wav_file(tmp_path / "long.wav", committed(pcm)))
