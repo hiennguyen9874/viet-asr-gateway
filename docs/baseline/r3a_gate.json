@@ -1,8 +1,8 @@
 {
-  "commit": "a7adc1cf408fce2b988dcd9716644b88049b58b6-dirty",
+  "commit": "56051a719b9eaf4acbf2e6ae628587fe6d5cb173",
   "sherpa_onnx": "1.13.8",
-  "settings": "fp32, modified_beam_search, beam 4, 4 threads",
-  "max_chunk_seconds": 20.0,
+  "settings": "viet-asr int8, modified_beam_search, beam 4, 2 threads",
+  "max_chunk_seconds": 15.0,
   "packet_ms": 20,
   "turns": {
     "vi_a.wav": {
@@ -16,8 +16,8 @@
       "audio_s": 8.46,
       "chunks": 1,
       "empty": false,
-      "wer": 0.04,
-      "rest_wer": 0.04
+      "wer": 0.16,
+      "rest_wer": 0.16
     },
     "silence_2s.wav": {
       "audio_s": 2.0,
@@ -67,6 +67,6 @@
   },
   "long": {
     "audio_s": 37.68,
-    "chunks": 2
+    "chunks": 3
   }
 }
