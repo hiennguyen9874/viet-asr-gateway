@@ -85,16 +85,18 @@ Kết quả:
   cue → chỉ header. Cả hai SDK trả nguyên body (string). Ví dụ `examples/transcription.srt`, `examples/transcription.vtt`.
 - Timestamps (`srt`/`vtt`, sau này `words`): lấy từ thời điểm phát token (token emission time) của chính lần inference sinh ra text, cộng offset
   tuyệt đối của chunk; không chạy thêm inference. **Từ** = dãy ký tự không phải khoảng trắng của transcript (âm tiết tiếng
-  Việt, không phải từ ghép); start của từ = thời điểm phát token đầu tiên của nó; end = start của từ kế tiếp trong chunk,
-  hoặc với từ cuối chunk là độ dài giới hạn `LAST_WORD_SAMPLES` (0.28 s) và không quá cuối chunk. Không bù độ trễ
-  (`EMISSION_SHIFT = 0`). Thời điểm phát token theo bước 40 ms.
+  Việt, không phải từ ghép); start của từ = thời điểm phát token đầu tiên của nó cộng `EMISSION_SHIFT` (0.2 s: model
+  phát token sớm hơn lời nói); end = start của từ kế tiếp trong chunk, hoặc với từ cuối chunk là độ dài giới hạn
+  `LAST_WORD_SAMPLES` (0.12 s) và không quá cuối chunk. Gần cuối chunk, độ dịch giảm dần (tới 0) để từ cuối vẫn đủ
+  `LAST_WORD_SAMPLES` trong chunk. Thời điểm phát token theo bước 40 ms.
   Cue kết thúc ngay sau từ có text tận cùng bằng `.`, `?`, `!` hoặc `…` (cuối câu; một từ như "Dạ." có thể
   là cả cue); `,`, `;`, `:` không kết thúc cue. Ngoài ra cue mới khi khoảng cách giữa end của từ trước và start
-  của từ sau ≥ 0.52 s, hoặc khi thêm từ sẽ làm cue dài > 7 s hay > 80 ký tự (câu dài vẫn bị cắt theo độ dài trước
+  của từ sau ≥ 0.64 s, hoặc khi thêm từ sẽ làm cue dài > 7 s hay > 80 ký tự (câu dài vẫn bị cắt theo độ dài trước
   dấu chấm). Các hằng số này lấy từ probe `scripts/probe_alignment.py` (baseline §6). Khoảng cách này chỉ có thể xuất hiện giữa các chunk; trong cùng chunk, end của từ trước bằng start
   của từ sau. Khoảng cách lớn giữa các lần phát token không chứng minh có khoảng lặng, nên không tự tách cue.
-  Độ chính xác (đo ở baseline §6): từ đầu tiên sau một khoảng lặng thường được đóng dấu sớm, có khi tới ~1 s (nằm
-  trong khoảng lặng); token đầu tiên của chunk thường được đóng dấu ngay đầu chunk, kể cả khi chunk bắt đầu bằng im lặng. Vì vậy cue
+  Độ chính xác (đo ở baseline §6): kể cả sau khi dịch 0.2 s, từ đầu tiên sau một khoảng lặng có khi vẫn bắt đầu sớm
+  tới ~0.8 s (nằm trong khoảng lặng); token đầu tiên của chunk thường được đóng dấu ngay đầu chunk (từ đầu bắt đầu ở
+  0.2 s), kể cả khi chunk bắt đầu bằng im lặng. Vì vậy cue
   có thể bắt đầu trước lời nói và một cue có thể phủ qua khoảng lặng nằm trong cùng chunk. Cue không bao giờ phủ qua
   điểm cắt chunk.
   Ngoại lệ: một từ tự nó vượt giới hạn được giữ nguyên trong cue riêng, không cắt từ. Giờ SRT/VTT là
@@ -108,9 +110,10 @@ Kết quả:
   lý. Token byte fallback (`<0xNN>`) được engine ghép thành ký tự UTF-8 để token luôn ghép ra đúng text. Nhiều chunk nối bằng
   một dấu cách; chunk rỗng không sinh dấu cách.
 - Silence/clip ngắn (`app/chunking.py`): audio decode hợp lệ nhưng ≤ 1,600 mẫu ở 16 kHz (≤ 100 ms), kể
-  cả 0 mẫu → `text: ""` (`verbose_json` với `duration` thật, `srt` rỗng, `vtt` chỉ header), không gọi model (recognizer lỗi dưới 1,360 mẫu; xem baseline §5). Silence dài vẫn qua model
-  và cho `""` (đã đo), không dùng ngưỡng biên độ.
-- Chunking: audio dài hơn `GATEWAY_MAX_CHUNK_SECONDS` (mặc định 20 s, đo ở baseline §5) được cắt tại điểm yên lặng nhất trong 5 s cuối
+  cả 0 mẫu → `text: ""` (`verbose_json` với `duration` thật, `srt` rỗng, `vtt` chỉ header), không gọi model (recognizer lỗi dưới 1,360 mẫu; xem baseline §5). Silence dài vẫn qua model,
+  không dùng ngưỡng biên độ: với `modified_beam_search` (mặc định) model thường sinh vài chữ trên im lặng/nhiễu
+  (ví dụ "Không." trên 2 s số 0), `greedy_search` gần như luôn cho `""` (đo ở baseline §4).
+- Chunking: audio dài hơn `GATEWAY_MAX_CHUNK_SECONDS` (mặc định 15 s, đo ở baseline §5) được cắt tại điểm yên lặng nhất trong 5 s cuối
   trước giới hạn; các chunk phủ liền toàn bộ audio (không bỏ silence, không bỏ đuôi), mỗi chunk > 100 ms. Text có
   thể khác một lời gọi `transcribe()` của reference trên cùng file vì điểm cắt khác.
 - Giới hạn (cấu hình, xem `app/config.py`): toàn bộ body ≤ `GATEWAY_MAX_UPLOAD_BYTES` (25 MiB) → 413, kể cả upload

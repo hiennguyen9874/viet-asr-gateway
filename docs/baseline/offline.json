@@ -1,490 +1,470 @@
 {
-  "commit": "2b16f641695d4de0ccdfa5aeaf4b4bbd2dd890bd-dirty",
+  "commit": "d9149a788bc9bbc43ccfbcae22fd1e536a3eb738-dirty",
   "sherpa_onnx": "1.13.8",
   "python": "3.12.14",
-  "model_revision": "dd9227dcd8705c13f33bdbe59728d546ab94480f",
+  "model_revision": "46adacf22d379e3d6b860d5d08e9fb02cbc122ea",
   "cpu": {
     "count": 64,
     "model": "Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz"
   },
   "load_average_start": [
-    5.5,
-    7.4,
-    7.6
+    16.7,
+    20.1,
+    22.7
   ],
   "beam_size": 4,
-  "max_chunk_seconds": 20.0,
+  "max_chunk_seconds": 15.0,
   "repeats": {
     "fixtures": 5,
     "vi_long": 3
   },
-  "default": "fp32/modified_beam_search",
+  "default": "modified_beam_search",
   "a_settings": {
-    "threads": 4,
+    "threads": 2,
     "rows": {
-      "fp32/modified_beam_search": {
-        "load_s": 1.621,
-        "warmup_s": 0.848,
-        "peak_rss_load_mb": 386,
+      "modified_beam_search": {
+        "load_s": 2.135,
+        "warmup_s": 0.908,
+        "peak_rss_load_mb": 205,
         "max_chunk": {
-          "audio_s": 20.0,
-          "median_s": 0.8205,
-          "min_s": 0.7853,
-          "max_s": 0.8838,
-          "rtf": 0.041,
-          "rtf_max": 0.0442,
+          "audio_s": 15.0,
+          "median_s": 0.8656,
+          "min_s": 0.8488,
+          "max_s": 0.8877,
+          "rtf": 0.0577,
+          "rtf_max": 0.0592,
           "deterministic": true
         },
         "vi_long.wav": {
           "audio_s": 106.62,
-          "chunks": 7,
-          "median_s": 4.3024,
-          "min_s": 4.0436,
-          "max_s": 4.3945,
-          "rtf": 0.0404,
-          "rtf_max": 0.0412,
+          "chunks": 9,
+          "median_s": 6.2079,
+          "min_s": 6.0517,
+          "max_s": 6.3582,
+          "rtf": 0.0582,
+          "rtf_max": 0.0596,
           "deterministic": true,
-          "wer": 0.0404,
-          "text_sha256": "53a8843f170a8b6f64ee805bba05800f4c7922ec6660fd68dbf8f9482cce2b95"
+          "wer": 0.0809,
+          "text_sha256": "53315edda77d3f7647e8eae3fdf3ec91af31762fa853537ecb569e724912e02f"
+        },
+        "eval": {
+          "speech": {
+            "clips": 200,
+            "audio_s": 2597.1,
+            "words": 6116,
+            "wer": 0.1728,
+            "rtf": 0.0568
+          },
+          "nonspeech": {
+            "clips": 24,
+            "with_text": 24,
+            "text_rate": 1.0,
+            "kinds": {
+              "pink_-30dB": {
+                "clips": 3,
+                "with_text": 3,
+                "words": 4
+              },
+              "pink_-45dB": {
+                "clips": 3,
+                "with_text": 3,
+                "words": 3
+              },
+              "pink_-60dB": {
+                "clips": 3,
+                "with_text": 3,
+                "words": 4
+              },
+              "room_tone": {
+                "clips": 3,
+                "with_text": 3,
+                "words": 4
+              },
+              "white_-30dB": {
+                "clips": 3,
+                "with_text": 3,
+                "words": 4
+              },
+              "white_-45dB": {
+                "clips": 3,
+                "with_text": 3,
+                "words": 4
+              },
+              "white_-60dB": {
+                "clips": 3,
+                "with_text": 3,
+                "words": 4
+              },
+              "zeros": {
+                "clips": 3,
+                "with_text": 3,
+                "words": 4
+              }
+            }
+          },
+          "texts_sha256": "b4340ad397a98dec34eddf0ab0ea89d716027621179291dc6fe93d4661dd3b94"
         },
         "vi_a.wav": {
           "audio_s": 8.88,
-          "median_s": 0.3321,
-          "min_s": 0.3282,
-          "max_s": 0.3414,
-          "rtf": 0.0374,
-          "rtf_max": 0.0385,
+          "median_s": 0.4984,
+          "min_s": 0.4936,
+          "max_s": 0.5201,
+          "rtf": 0.0561,
+          "rtf_max": 0.0586,
           "deterministic": true,
           "empty": false,
-          "text_sha256": "b53eb4e4d1419cc2c16a62a9ce3cd5fedc6e3da3d36e4cdbc51bbdd7c6d11f43",
+          "text_sha256": "2a0a8badd85b9d7d7e4b966d7a074200f1ff0a7b41f1ab689890084886a97d13",
           "wer": 0.0
         },
         "vi_b.wav": {
           "audio_s": 8.46,
-          "median_s": 0.3131,
-          "min_s": 0.3116,
-          "max_s": 0.3206,
-          "rtf": 0.037,
-          "rtf_max": 0.0379,
+          "median_s": 0.4924,
+          "min_s": 0.4701,
+          "max_s": 0.5271,
+          "rtf": 0.0582,
+          "rtf_max": 0.0623,
           "deterministic": true,
           "empty": false,
-          "text_sha256": "8367c5073f4f862995cf4fd0e8e9515471ea94f2b5eae518797c74008a0ce6dd",
-          "wer": 0.04
+          "text_sha256": "5d0af46d7e7d0a5691a3257636d026d8fc0a832c7425c1c5d6c1100ff3b5b707",
+          "wer": 0.16
         },
         "silence_2s.wav": {
           "audio_s": 2.0,
-          "median_s": 0.0892,
-          "min_s": 0.0876,
-          "max_s": 0.1277,
-          "rtf": 0.0446,
-          "rtf_max": 0.0638,
+          "median_s": 0.1207,
+          "min_s": 0.1167,
+          "max_s": 0.1311,
+          "rtf": 0.0603,
+          "rtf_max": 0.0655,
           "deterministic": true,
           "empty": false,
-          "text_sha256": "5a4214ad727134ac0de7522ba24ad773db89baddbdaf9100536c90987da8d944"
+          "text_sha256": "0a3ae5dea293c887cd06dbe4262a28a49b6858e54df9a1ce5b93e82be809775c"
         },
         "short_200ms.wav": {
           "audio_s": 0.2,
-          "median_s": 0.0232,
-          "min_s": 0.0231,
-          "max_s": 0.0307,
-          "rtf": 0.1161,
-          "rtf_max": 0.1533,
+          "median_s": 0.0253,
+          "min_s": 0.0248,
+          "max_s": 0.0293,
+          "rtf": 0.1265,
+          "rtf_max": 0.1465,
           "deterministic": true,
           "empty": false,
-          "text_sha256": "a3dbc4b644a9a2c51e74509ded5c46ccf31d84c65ca417fe0126af1555c66ceb"
+          "text_sha256": "e25427d0c2bf3ab86e354412cad489e0a45a37b0aac0aa8fd48786e5210c5a56"
         },
-        "peak_rss_mb": 792
+        "peak_rss_mb": 454
       },
-      "fp32/greedy_search": {
-        "load_s": 1.626,
-        "warmup_s": 0.65,
-        "peak_rss_load_mb": 386,
+      "greedy_search": {
+        "load_s": 1.713,
+        "warmup_s": 0.625,
+        "peak_rss_load_mb": 204,
         "max_chunk": {
-          "audio_s": 20.0,
-          "median_s": 0.5966,
-          "min_s": 0.5935,
-          "max_s": 0.6341,
-          "rtf": 0.0298,
-          "rtf_max": 0.0317,
+          "audio_s": 15.0,
+          "median_s": 0.5818,
+          "min_s": 0.5736,
+          "max_s": 0.6195,
+          "rtf": 0.0388,
+          "rtf_max": 0.0413,
           "deterministic": true
         },
         "vi_long.wav": {
           "audio_s": 106.62,
-          "chunks": 7,
-          "median_s": 3.2944,
-          "min_s": 3.0592,
-          "max_s": 3.3996,
-          "rtf": 0.0309,
-          "rtf_max": 0.0319,
+          "chunks": 9,
+          "median_s": 4.2243,
+          "min_s": 4.1223,
+          "max_s": 4.2352,
+          "rtf": 0.0396,
+          "rtf_max": 0.0397,
           "deterministic": true,
-          "wer": 0.0441,
-          "text_sha256": "23b177122c2d6668ad251dbcd5565b4ed90e229b0d3c4706ed0988ec65e0343d"
+          "wer": 0.1029,
+          "text_sha256": "819e677e072664138b3d06de5589bfa4885814cad2987f105517167482884621"
+        },
+        "eval": {
+          "speech": {
+            "clips": 200,
+            "audio_s": 2597.1,
+            "words": 6116,
+            "wer": 0.1825,
+            "rtf": 0.0386
+          },
+          "nonspeech": {
+            "clips": 24,
+            "with_text": 1,
+            "text_rate": 0.0417,
+            "kinds": {
+              "pink_-30dB": {
+                "clips": 3,
+                "with_text": 0,
+                "words": 0
+              },
+              "pink_-45dB": {
+                "clips": 3,
+                "with_text": 0,
+                "words": 0
+              },
+              "pink_-60dB": {
+                "clips": 3,
+                "with_text": 0,
+                "words": 0
+              },
+              "room_tone": {
+                "clips": 3,
+                "with_text": 0,
+                "words": 0
+              },
+              "white_-30dB": {
+                "clips": 3,
+                "with_text": 0,
+                "words": 0
+              },
+              "white_-45dB": {
+                "clips": 3,
+                "with_text": 0,
+                "words": 0
+              },
+              "white_-60dB": {
+                "clips": 3,
+                "with_text": 0,
+                "words": 0
+              },
+              "zeros": {
+                "clips": 3,
+                "with_text": 1,
+                "words": 1
+              }
+            }
+          },
+          "texts_sha256": "15c0daf461cd6908e3df6d14a6aa533a411d6df139c3a81c1476f692f8b9a626"
         },
         "vi_a.wav": {
           "audio_s": 8.88,
-          "median_s": 0.2502,
-          "min_s": 0.2493,
-          "max_s": 0.2621,
-          "rtf": 0.0282,
-          "rtf_max": 0.0295,
+          "median_s": 0.3473,
+          "min_s": 0.3419,
+          "max_s": 0.3616,
+          "rtf": 0.0391,
+          "rtf_max": 0.0407,
           "deterministic": true,
           "empty": false,
-          "text_sha256": "b53eb4e4d1419cc2c16a62a9ce3cd5fedc6e3da3d36e4cdbc51bbdd7c6d11f43",
+          "text_sha256": "2a0a8badd85b9d7d7e4b966d7a074200f1ff0a7b41f1ab689890084886a97d13",
           "wer": 0.0
         },
         "vi_b.wav": {
           "audio_s": 8.46,
-          "median_s": 0.2411,
-          "min_s": 0.2394,
-          "max_s": 0.2436,
-          "rtf": 0.0285,
-          "rtf_max": 0.0288,
+          "median_s": 0.3372,
+          "min_s": 0.329,
+          "max_s": 0.3498,
+          "rtf": 0.0399,
+          "rtf_max": 0.0413,
           "deterministic": true,
           "empty": false,
-          "text_sha256": "8367c5073f4f862995cf4fd0e8e9515471ea94f2b5eae518797c74008a0ce6dd",
-          "wer": 0.04
+          "text_sha256": "5d0af46d7e7d0a5691a3257636d026d8fc0a832c7425c1c5d6c1100ff3b5b707",
+          "wer": 0.16
         },
         "silence_2s.wav": {
           "audio_s": 2.0,
-          "median_s": 0.0697,
-          "min_s": 0.0689,
-          "max_s": 0.1443,
-          "rtf": 0.0349,
-          "rtf_max": 0.0722,
+          "median_s": 0.0865,
+          "min_s": 0.0841,
+          "max_s": 0.0922,
+          "rtf": 0.0432,
+          "rtf_max": 0.0461,
           "deterministic": true,
-          "empty": false,
-          "text_sha256": "5a4214ad727134ac0de7522ba24ad773db89baddbdaf9100536c90987da8d944"
+          "empty": true,
+          "text_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "short_200ms.wav": {
           "audio_s": 0.2,
-          "median_s": 0.0235,
-          "min_s": 0.0227,
-          "max_s": 0.0278,
-          "rtf": 0.1176,
-          "rtf_max": 0.1392,
+          "median_s": 0.0227,
+          "min_s": 0.0221,
+          "max_s": 0.0274,
+          "rtf": 0.1136,
+          "rtf_max": 0.137,
           "deterministic": true,
           "empty": false,
-          "text_sha256": "a3dbc4b644a9a2c51e74509ded5c46ccf31d84c65ca417fe0126af1555c66ceb"
+          "text_sha256": "e25427d0c2bf3ab86e354412cad489e0a45a37b0aac0aa8fd48786e5210c5a56"
         },
-        "peak_rss_mb": 796
-      },
-      "int8/modified_beam_search": {
-        "load_s": 1.485,
-        "warmup_s": 0.666,
-        "peak_rss_load_mb": 196,
-        "max_chunk": {
-          "audio_s": 20.0,
-          "median_s": 0.6343,
-          "min_s": 0.6038,
-          "max_s": 0.6384,
-          "rtf": 0.0317,
-          "rtf_max": 0.0319,
-          "deterministic": true
-        },
-        "vi_long.wav": {
-          "audio_s": 106.62,
-          "chunks": 7,
-          "median_s": 3.2998,
-          "min_s": 3.2557,
-          "max_s": 3.3117,
-          "rtf": 0.0309,
-          "rtf_max": 0.0311,
-          "deterministic": true,
-          "wer": 0.0441,
-          "text_sha256": "5cb9af79b1331997804151aa0afb19dbadbe8c9333a65d721ecf63d3525acd66"
-        },
-        "vi_a.wav": {
-          "audio_s": 8.88,
-          "median_s": 0.2702,
-          "min_s": 0.2692,
-          "max_s": 0.2779,
-          "rtf": 0.0304,
-          "rtf_max": 0.0313,
-          "deterministic": true,
-          "empty": false,
-          "text_sha256": "b53eb4e4d1419cc2c16a62a9ce3cd5fedc6e3da3d36e4cdbc51bbdd7c6d11f43",
-          "wer": 0.0
-        },
-        "vi_b.wav": {
-          "audio_s": 8.46,
-          "median_s": 0.2598,
-          "min_s": 0.2584,
-          "max_s": 0.2886,
-          "rtf": 0.0307,
-          "rtf_max": 0.0341,
-          "deterministic": true,
-          "empty": false,
-          "text_sha256": "8367c5073f4f862995cf4fd0e8e9515471ea94f2b5eae518797c74008a0ce6dd",
-          "wer": 0.04
-        },
-        "silence_2s.wav": {
-          "audio_s": 2.0,
-          "median_s": 0.0756,
-          "min_s": 0.075,
-          "max_s": 0.0804,
-          "rtf": 0.0378,
-          "rtf_max": 0.0402,
-          "deterministic": true,
-          "empty": false,
-          "text_sha256": "5a4214ad727134ac0de7522ba24ad773db89baddbdaf9100536c90987da8d944"
-        },
-        "short_200ms.wav": {
-          "audio_s": 0.2,
-          "median_s": 0.0183,
-          "min_s": 0.018,
-          "max_s": 0.0227,
-          "rtf": 0.0914,
-          "rtf_max": 0.1137,
-          "deterministic": true,
-          "empty": false,
-          "text_sha256": "f29e8d3e7dd7dbfec259cff96e5bb7695b8770a7f16eb100ead31743e77c128f"
-        },
-        "peak_rss_mb": 462
-      },
-      "int8/greedy_search": {
-        "load_s": 1.45,
-        "warmup_s": 0.506,
-        "peak_rss_load_mb": 197,
-        "max_chunk": {
-          "audio_s": 20.0,
-          "median_s": 0.4341,
-          "min_s": 0.4302,
-          "max_s": 0.4643,
-          "rtf": 0.0217,
-          "rtf_max": 0.0232,
-          "deterministic": true
-        },
-        "vi_long.wav": {
-          "audio_s": 106.62,
-          "chunks": 7,
-          "median_s": 2.4518,
-          "min_s": 2.4013,
-          "max_s": 2.4534,
-          "rtf": 0.023,
-          "rtf_max": 0.023,
-          "deterministic": true,
-          "wer": 0.0441,
-          "text_sha256": "4d6cb00a22a7a04f127a1391c5d65904a15410c84cf2b9810d91549e486aad18"
-        },
-        "vi_a.wav": {
-          "audio_s": 8.88,
-          "median_s": 0.2104,
-          "min_s": 0.2034,
-          "max_s": 0.2156,
-          "rtf": 0.0237,
-          "rtf_max": 0.0243,
-          "deterministic": true,
-          "empty": false,
-          "text_sha256": "b53eb4e4d1419cc2c16a62a9ce3cd5fedc6e3da3d36e4cdbc51bbdd7c6d11f43",
-          "wer": 0.0
-        },
-        "vi_b.wav": {
-          "audio_s": 8.46,
-          "median_s": 0.1941,
-          "min_s": 0.1914,
-          "max_s": 0.2015,
-          "rtf": 0.0229,
-          "rtf_max": 0.0238,
-          "deterministic": true,
-          "empty": false,
-          "text_sha256": "8367c5073f4f862995cf4fd0e8e9515471ea94f2b5eae518797c74008a0ce6dd",
-          "wer": 0.04
-        },
-        "silence_2s.wav": {
-          "audio_s": 2.0,
-          "median_s": 0.0577,
-          "min_s": 0.0565,
-          "max_s": 0.0608,
-          "rtf": 0.0288,
-          "rtf_max": 0.0304,
-          "deterministic": true,
-          "empty": false,
-          "text_sha256": "5a4214ad727134ac0de7522ba24ad773db89baddbdaf9100536c90987da8d944"
-        },
-        "short_200ms.wav": {
-          "audio_s": 0.2,
-          "median_s": 0.0171,
-          "min_s": 0.017,
-          "max_s": 0.0229,
-          "rtf": 0.0856,
-          "rtf_max": 0.1147,
-          "deterministic": true,
-          "empty": false,
-          "text_sha256": "a3dbc4b644a9a2c51e74509ded5c46ccf31d84c65ca417fe0126af1555c66ceb"
-        },
-        "peak_rss_mb": 465
+        "peak_rss_mb": 456
       }
     }
   },
   "b_threads": {
-    "setting": "fp32/modified_beam_search",
+    "setting": "modified_beam_search",
     "rows": {
       "1": {
-        "load_s": 1.547,
-        "warmup_s": 1.834,
-        "peak_rss_load_mb": 387,
+        "load_s": 1.863,
+        "warmup_s": 1.268,
+        "peak_rss_load_mb": 204,
         "max_chunk": {
-          "audio_s": 20.0,
-          "median_s": 1.7154,
-          "min_s": 1.6886,
-          "max_s": 1.7882,
-          "rtf": 0.0858,
-          "rtf_max": 0.0894,
+          "audio_s": 15.0,
+          "median_s": 1.1845,
+          "min_s": 1.1597,
+          "max_s": 1.2716,
+          "rtf": 0.079,
+          "rtf_max": 0.0848,
           "deterministic": true
         },
         "vi_long.wav": {
           "audio_s": 106.62,
-          "chunks": 7,
-          "median_s": 9.1438,
-          "min_s": 8.9267,
-          "max_s": 9.2095,
-          "rtf": 0.0858,
-          "rtf_max": 0.0864,
+          "chunks": 9,
+          "median_s": 8.3774,
+          "min_s": 8.1496,
+          "max_s": 8.4205,
+          "rtf": 0.0786,
+          "rtf_max": 0.079,
           "deterministic": true,
-          "wer": 0.0404,
-          "text_sha256": "53a8843f170a8b6f64ee805bba05800f4c7922ec6660fd68dbf8f9482cce2b95"
+          "wer": 0.0809,
+          "text_sha256": "53315edda77d3f7647e8eae3fdf3ec91af31762fa853537ecb569e724912e02f"
         },
-        "peak_rss_mb": 793
+        "peak_rss_mb": 431
       },
       "2": {
-        "load_s": 1.699,
-        "warmup_s": 1.144,
-        "peak_rss_load_mb": 382,
+        "load_s": 1.728,
+        "warmup_s": 0.877,
+        "peak_rss_load_mb": 204,
         "max_chunk": {
-          "audio_s": 20.0,
-          "median_s": 1.0821,
-          "min_s": 1.0409,
-          "max_s": 1.1172,
-          "rtf": 0.0541,
-          "rtf_max": 0.0559,
+          "audio_s": 15.0,
+          "median_s": 0.8573,
+          "min_s": 0.8281,
+          "max_s": 0.8928,
+          "rtf": 0.0572,
+          "rtf_max": 0.0595,
           "deterministic": true
         },
         "vi_long.wav": {
           "audio_s": 106.62,
-          "chunks": 7,
-          "median_s": 5.6751,
-          "min_s": 5.6391,
-          "max_s": 5.7045,
-          "rtf": 0.0532,
-          "rtf_max": 0.0535,
+          "chunks": 9,
+          "median_s": 6.0105,
+          "min_s": 5.9894,
+          "max_s": 6.0369,
+          "rtf": 0.0564,
+          "rtf_max": 0.0566,
           "deterministic": true,
-          "wer": 0.0404,
-          "text_sha256": "53a8843f170a8b6f64ee805bba05800f4c7922ec6660fd68dbf8f9482cce2b95"
+          "wer": 0.0809,
+          "text_sha256": "53315edda77d3f7647e8eae3fdf3ec91af31762fa853537ecb569e724912e02f"
         },
-        "peak_rss_mb": 790
+        "peak_rss_mb": 432
       },
       "4": {
-        "load_s": 1.615,
-        "warmup_s": 0.962,
-        "peak_rss_load_mb": 386,
+        "load_s": 1.839,
+        "warmup_s": 0.733,
+        "peak_rss_load_mb": 205,
         "max_chunk": {
-          "audio_s": 20.0,
-          "median_s": 0.8096,
-          "min_s": 0.7854,
-          "max_s": 0.8976,
-          "rtf": 0.0405,
-          "rtf_max": 0.0449,
+          "audio_s": 15.0,
+          "median_s": 0.7454,
+          "min_s": 0.705,
+          "max_s": 0.7701,
+          "rtf": 0.0497,
+          "rtf_max": 0.0513,
           "deterministic": true
         },
         "vi_long.wav": {
           "audio_s": 106.62,
-          "chunks": 7,
-          "median_s": 4.3328,
-          "min_s": 4.1507,
-          "max_s": 4.4055,
-          "rtf": 0.0406,
-          "rtf_max": 0.0413,
+          "chunks": 9,
+          "median_s": 5.3101,
+          "min_s": 5.2607,
+          "max_s": 5.4666,
+          "rtf": 0.0498,
+          "rtf_max": 0.0513,
           "deterministic": true,
-          "wer": 0.0404,
-          "text_sha256": "53a8843f170a8b6f64ee805bba05800f4c7922ec6660fd68dbf8f9482cce2b95"
+          "wer": 0.0809,
+          "text_sha256": "056844b7e75965ec6c08aafaab449fb4a494d126d60bc52b60b8eff21b4ffd8b"
         },
-        "peak_rss_mb": 791
+        "peak_rss_mb": 431
       },
       "8": {
-        "load_s": 1.579,
-        "warmup_s": 0.714,
-        "peak_rss_load_mb": 385,
+        "load_s": 2.142,
+        "warmup_s": 0.671,
+        "peak_rss_load_mb": 204,
         "max_chunk": {
-          "audio_s": 20.0,
-          "median_s": 0.6311,
-          "min_s": 0.6218,
-          "max_s": 0.6584,
-          "rtf": 0.0316,
-          "rtf_max": 0.0329,
+          "audio_s": 15.0,
+          "median_s": 0.6915,
+          "min_s": 0.6599,
+          "max_s": 0.7277,
+          "rtf": 0.0461,
+          "rtf_max": 0.0485,
           "deterministic": true
         },
         "vi_long.wav": {
           "audio_s": 106.62,
-          "chunks": 7,
-          "median_s": 3.5461,
-          "min_s": 3.4698,
-          "max_s": 3.587,
-          "rtf": 0.0333,
-          "rtf_max": 0.0336,
+          "chunks": 9,
+          "median_s": 5.2209,
+          "min_s": 4.7926,
+          "max_s": 5.5175,
+          "rtf": 0.049,
+          "rtf_max": 0.0517,
           "deterministic": true,
-          "wer": 0.0404,
-          "text_sha256": "53a8843f170a8b6f64ee805bba05800f4c7922ec6660fd68dbf8f9482cce2b95"
+          "wer": 0.1029,
+          "text_sha256": "e4adc7555d2d9e9cae0f6a408344d3f99a776d9b56195d320a96cc6b2148e91d"
         },
-        "peak_rss_mb": 791
+        "peak_rss_mb": 430
       },
       "16": {
-        "load_s": 1.591,
-        "warmup_s": 0.723,
-        "peak_rss_load_mb": 387,
+        "load_s": 1.844,
+        "warmup_s": 0.682,
+        "peak_rss_load_mb": 207,
         "max_chunk": {
-          "audio_s": 20.0,
-          "median_s": 0.632,
-          "min_s": 0.6092,
-          "max_s": 0.7199,
-          "rtf": 0.0316,
-          "rtf_max": 0.036,
+          "audio_s": 15.0,
+          "median_s": 0.7869,
+          "min_s": 0.6949,
+          "max_s": 0.8035,
+          "rtf": 0.0525,
+          "rtf_max": 0.0536,
           "deterministic": true
         },
         "vi_long.wav": {
           "audio_s": 106.62,
-          "chunks": 7,
-          "median_s": 3.8737,
-          "min_s": 3.7637,
-          "max_s": 4.0205,
-          "rtf": 0.0363,
-          "rtf_max": 0.0377,
+          "chunks": 9,
+          "median_s": 5.8455,
+          "min_s": 5.8381,
+          "max_s": 5.87,
+          "rtf": 0.0548,
+          "rtf_max": 0.0551,
           "deterministic": true,
-          "wer": 0.0404,
-          "text_sha256": "53a8843f170a8b6f64ee805bba05800f4c7922ec6660fd68dbf8f9482cce2b95"
+          "wer": 0.1029,
+          "text_sha256": "e4adc7555d2d9e9cae0f6a408344d3f99a776d9b56195d320a96cc6b2148e91d"
         },
-        "peak_rss_mb": 794
+        "peak_rss_mb": 429
       }
     }
   },
   "c_derived": {
+    "decoding": {
+      "rule": {
+        "greedy_max_wer_loss": 0.005
+      },
+      "greedy_wer_loss": 0.0097,
+      "nonspeech_text_rate": {
+        "modified_beam_search": 1.0,
+        "greedy_search": 0.0417
+      },
+      "decoding_method": "modified_beam_search"
+    },
     "rules": {
       "min_thread_efficiency": 0.5,
       "hang_margin": 20
     },
     "thread_efficiency": {
       "1": 1.0,
-      "2": 0.793,
-      "4": 0.53,
-      "8": 0.34,
-      "16": 0.17
+      "2": 0.691,
+      "4": 0.397,
+      "8": 0.214,
+      "16": 0.094
     },
-    "num_threads": 4,
-    "rtf_worst_default": 0.0449,
-    "queue_max_buffered_seconds_max": 668,
-    "queue_wait_at_default_s": 26.9,
-    "live_wait_behind_file_chunk_s": 0.8976,
-    "worst_max_chunk_s": 1.7882,
-    "infer_hang_seconds_min": 36,
-    "max_audio_alone_s": 80.8,
-    "full_length_files_per_request_timeout": 7
+    "num_threads": 2,
+    "rtf_worst_default": 0.0595,
+    "queue_max_buffered_seconds_max": 504,
+    "queue_wait_at_default_s": 26.8,
+    "live_wait_behind_file_chunk_s": 0.8928,
+    "worst_max_chunk_s": 1.2716,
+    "infer_hang_seconds_min": 26,
+    "max_audio_alone_s": 107.1,
+    "full_length_files_per_request_timeout": 5
   },
   "load_average_end": [
-    16.0,
-    9.4,
-    8.2
+    29.0,
+    22.2,
+    23.0
   ],
   "checks": {
     "deterministic": true,
+    "decoding_method": true,
     "num_threads": true,
     "queue_max_buffered_seconds": true,
     "infer_hang_seconds": true

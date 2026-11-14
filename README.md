@@ -99,7 +99,7 @@ with open("audio.mp3", "rb") as f:
 ```
 
 Realtime (`openai[realtime]`): PCM16 little-endian mono 24 kHz, base64; nhiều commit trên một socket, mỗi commit là
-một item với các `delta` (một mỗi chunk ≤ 20 s) rồi `completed`.
+một item với các `delta` (một mỗi chunk ≤ 15 s) rồi `completed`.
 
 ```python
 import base64
@@ -116,7 +116,7 @@ with client.realtime.connect(model="viet-asr") as conn:
 ```
 
 Audio: WAV, FLAC, MP3, MP4/M4A (AAC/ALAC), OGG (Vorbis/Opus/FLAC), WEBM/Matroska, nhận diện theo nội dung. Audio dài
-được cắt thành chunk ≤ 20 s tại điểm yên lặng; SSE gửi một delta mỗi chunk. Audio ≤ 100 ms → `""` (không gọi model). `srt`/`vtt`/
+được cắt thành chunk ≤ 15 s tại điểm yên lặng; SSE gửi một delta mỗi chunk. Audio ≤ 100 ms → `""` (không gọi model). `srt`/`vtt`/
 `verbose_json` không stream (`stream=true` → 400). Lỗi dùng envelope OpenAI; danh sách mã lỗi: contract §7.
 
 ## 4. Cấu hình
