@@ -37,6 +37,8 @@ per-client rate limits belong to the operator's infrastructure in front of it.
 
 - references/gipformer (inference scripts, sherpa-onnx usage; `infer_onnx.py` is the parity reference)
 - references/gipformer1.5-68M-rnnt (config, tokens, model card; weights are Git LFS pointers, stage them instead)
+- references/viet-asr (upstream VietASR: C++ core, bindings, server, model card and benchmark; source for the
+  replacement model `dangvansam/viet-asr`, which the gateway runs with its own sherpa-onnx engine, not this library)
 
 ## Agent skills
 
