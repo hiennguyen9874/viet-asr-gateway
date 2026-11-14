@@ -1,46 +1,46 @@
 {
-  "commit": "dc065201ccdcb57cc80110fb0c02206b1b7b6ed2-dirty",
+  "commit": "6d2abeb700b5ee9da6774aa26d89db79fe1bbcc0",
   "sherpa_onnx": "1.13.8",
-  "settings": "fp32, modified_beam_search, beam 4, 4 threads",
-  "max_chunk_seconds": 20.0,
+  "settings": "viet-asr int8, modified_beam_search, beam 4, 2 threads",
+  "max_chunk_seconds": 15.0,
   "fixtures": {
     "vi_a.wav": {
       "audio_s": 8.88,
       "cues": 2,
-      "max_cue_s": 6.0,
-      "max_cue_chars": 80
+      "max_cue_s": 5.72,
+      "max_cue_chars": 77
     },
     "vi_b.wav": {
       "audio_s": 8.46,
       "cues": 2,
-      "max_cue_s": 6.12,
+      "max_cue_s": 6.64,
       "max_cue_chars": 80
     },
     "silence_2s.wav": {
       "audio_s": 2.0,
       "cues": 1,
-      "max_cue_s": 0.28,
-      "max_cue_chars": 1
+      "max_cue_s": 0.12,
+      "max_cue_chars": 6
     },
     "short_200ms.wav": {
       "audio_s": 0.2,
       "cues": 1,
       "max_cue_s": 0.12,
-      "max_cue_chars": 3
+      "max_cue_chars": 2
     }
   },
   "chunk_cut": {
-    "audio_s": 37.68,
+    "audio_s": 24.46,
     "chunks": 2,
     "silence_s": [
-      18.34,
-      19.34
+      8.88,
+      16.0
     ],
-    "last_cue_end_minus_silence_start_s": -0.66,
-    "first_cue_start_minus_silence_end_s": -0.019,
-    "cues": 8,
-    "max_cue_s": 6.04,
-    "max_cue_chars": 80
+    "last_cue_end_minus_silence_start_s": -0.32,
+    "first_cue_start_minus_silence_end_s": -0.825,
+    "cues": 4,
+    "max_cue_s": 6.64,
+    "max_cue_chars": 77
   },
   "shift": {
     "shifts_s": [
@@ -48,16 +48,16 @@
       0.5,
       0.75
     ],
-    "cues": 4,
-    "edges_compared": 21,
-    "max_edge_error_s": 0.02
+    "cues": 3,
+    "edges_compared": 14,
+    "max_edge_error_s": 0.03
   },
   "long": {
     "audio_s": 106.624,
-    "chunks": 7,
-    "wer": 0.0404,
-    "cues": 20,
-    "max_cue_s": 6.974,
+    "chunks": 9,
+    "wer": 0.0882,
+    "cues": 21,
+    "max_cue_s": 7.0,
     "max_cue_chars": 80
   }
 }
