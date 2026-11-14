@@ -17,7 +17,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 MANIFEST = ROOT / "assets" / "manifest.json"
-DEFAULT_DEST = Path(os.environ.get("GIPFORMER_MODELS_DIR", ROOT / "models"))
+DEFAULT_DEST = Path(os.environ.get("GATEWAY_MODELS_DIR", ROOT / "models"))
 
 
 def sha256(path: Path) -> str:
@@ -64,7 +64,7 @@ def main() -> int:
         "--dest",
         type=Path,
         default=DEFAULT_DEST,
-        help="staging root (default $GIPFORMER_MODELS_DIR or ./models)",
+        help="staging root (default $GATEWAY_MODELS_DIR or ./models)",
     )
     ap.add_argument(
         "--verify", action="store_true", help="do not download; only verify staged files"

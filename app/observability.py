@@ -15,7 +15,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 request_id: contextvars.ContextVar[str | None] = contextvars.ContextVar("request_id", default=None)
-logger = logging.getLogger("gipformer")
+logger = logging.getLogger("gateway")
 
 
 class JsonFormatter(logging.Formatter):
@@ -62,7 +62,7 @@ class HistogramState:
 class Metrics:
     """Thread-safe counters, gauges and histograms rendered in Prometheus text format (0.0.4)."""
 
-    def __init__(self, prefix: str = "gipformer_"):
+    def __init__(self, prefix: str = "gateway_"):
         self._prefix = prefix
         self._lock = threading.Lock()
         self._help: dict[str, tuple[str, str]] = {}  # name -> (type, help)

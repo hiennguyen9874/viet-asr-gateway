@@ -38,7 +38,7 @@ Không có endpoint nào trả `logprobs`, `avg_logprob`, `no_speech_prob`, conf
 
 ## 3. Models
 
-- Id: `gipformer1.5-68M-rnnt`. Alias `whisper-1` chỉ khi bật cấu hình (mặc định tắt); khi bật, `whisper-1` được chấp
+- Id: `viet-asr`. Alias `whisper-1` chỉ khi bật cấu hình (mặc định tắt); khi bật, `whisper-1` được chấp
   nhận ở mọi field `model` và được liệt kê trong `/v1/models` như một model riêng (cùng backend Gipformer, output khác
   Whisper; ghi rõ trong README). Mọi id khác: 404 `model_not_found`.
 - Object: `{"id", "object": "model", "created", "owned_by": "g-group-ai-lab"}`. `created` = commit time của revision
@@ -53,7 +53,7 @@ Auth: `Authorization: Bearer <key>`. Body `multipart/form-data`.
 | `file` | Bắt buộc, đúng một part. Tên file client bị bỏ qua (không dùng làm path, không log). Định dạng nhận diện theo nội dung, không theo đuôi: Container allowlist: WAV, FLAC, MP3/MPGA, MP4/M4A, OGG, WEBM/Matroska. Decoder allowlist: PCM (`s16le`, `s24le`, `s32le`, `u8`, `f32le`, `f64le`, A-law, µ-law), FLAC, ALAC, MP1/MP2/MP3, AAC, Vorbis, Opus. Chấp nhận mọi tổ hợp container/decoder trong hai allowlist mà FFmpeg đọc được (kể cả OGG/FLAC và Matroska/AAC); không giới hạn theo cặp. Container/codec ngoài allowlist (ADTS `.aac`, MPEG-PS, playlist, ADPCM, …) → 400 `invalid_audio`. Mọi sample rate/số kênh được đưa về mono 16 kHz (downmix của FFmpeg) |
 | `model` | Bắt buộc; thiếu → 400 `missing_required_parameter`; không phục vụ → 404 `model_not_found` (`param: "model"`) |
 | `language` | Không gửi hoặc `vi`; khác → 400 `unsupported_language`. Không gửi **không** có nghĩa là auto-detect |
-| `temperature` | Không gửi hoặc số bằng 0 (`0`, `0.0`, `-0`; decode tất định theo `GIPFORMER_DECODING_METHOD`). Không phải số hữu hạn (rỗng, `abc`, `nan`, `inf`) → 400 `invalid_value`; số khác 0 → 400 `unsupported_parameter` |
+| `temperature` | Không gửi hoặc số bằng 0 (`0`, `0.0`, `-0`; decode tất định theo `GATEWAY_DECODING_METHOD`). Không phải số hữu hạn (rỗng, `abc`, `nan`, `inf`) → 400 `invalid_value`; số khác 0 → 400 `unsupported_parameter` |
 | `prompt` | Không gửi hoặc rỗng; khác → 400 `unsupported_parameter` |
 | `response_format` | `json` (mặc định), `text`, `verbose_json`, `srt`, `vtt`; khác → 400 `unsupported_response_format` |
 | `stream` | Đúng chuỗi `true` hoặc `false` (cả hai SDK gửi như vậy); giá trị khác (`True`, `1`, rỗng) → 400 `invalid_value`. `true` với `response_format` không gửi, `json` hoặc `text` → SSE (§5); với `verbose_json`/`srt`/`vtt` → 400 `unsupported_parameter` (`param: "stream"`) |
@@ -108,16 +108,16 @@ Kết quả:
 - Silence/clip ngắn (`app/chunking.py`): audio decode hợp lệ nhưng ≤ 1,600 mẫu ở 16 kHz (≤ 100 ms), kể
   cả 0 mẫu → `text: ""` (`verbose_json` với `duration` thật, `srt` rỗng, `vtt` chỉ header), không gọi model (recognizer lỗi dưới 1,360 mẫu; xem baseline §5). Silence dài vẫn qua model
   và cho `""` (đã đo), không dùng ngưỡng biên độ.
-- Chunking: audio dài hơn `GIPFORMER_MAX_CHUNK_SECONDS` (mặc định 20 s, đo ở baseline §5) được cắt tại điểm yên lặng nhất trong 5 s cuối
+- Chunking: audio dài hơn `GATEWAY_MAX_CHUNK_SECONDS` (mặc định 20 s, đo ở baseline §5) được cắt tại điểm yên lặng nhất trong 5 s cuối
   trước giới hạn; các chunk phủ liền toàn bộ audio (không bỏ silence, không bỏ đuôi), mỗi chunk > 100 ms. Text có
   thể khác một lời gọi `transcribe()` của reference trên cùng file vì điểm cắt khác.
-- Giới hạn (cấu hình, xem `app/config.py`): toàn bộ body ≤ `GIPFORMER_MAX_UPLOAD_BYTES` (25 MiB) → 413, kể cả upload
+- Giới hạn (cấu hình, xem `app/config.py`): toàn bộ body ≤ `GATEWAY_MAX_UPLOAD_BYTES` (25 MiB) → 413, kể cả upload
   chunked; ≤ 32 part, mỗi field không phải file ≤ 8 KiB (→ 413), field phải là UTF-8; audio sau decode ≤
-  `GIPFORMER_MAX_AUDIO_SECONDS` (1800 s) → 400 `audio_too_long`; decode quá `GIPFORMER_DECODE_TIMEOUT_SECONDS` → 400
-  `invalid_audio`; tổng upload/decode/queue/infer/gửi response quá `GIPFORMER_REQUEST_TIMEOUT_SECONDS` → HTTP 503
+  `GATEWAY_MAX_AUDIO_SECONDS` (1800 s) → 400 `audio_too_long`; decode quá `GATEWAY_DECODE_TIMEOUT_SECONDS` → 400
+  `invalid_audio`; tổng upload/decode/queue/infer/gửi response quá `GATEWAY_REQUEST_TIMEOUT_SECONDS` → HTTP 503
   hoặc SSE error `request_timeout` (nếu headers đã gửi); hết
-  slot decode, spool disk, lane (`GIPFORMER_QUEUE_MAX_LANES`, kiểm tra trước khi decode) hoặc budget audio đã decode giữ
-  trong RAM (`GIPFORMER_MAX_DECODED_SECONDS`, mặc định 3600 s cho mọi request đang chạy) → 429 `server_busy`. Stream bị
+  slot decode, spool disk, lane (`GATEWAY_QUEUE_MAX_LANES`, kiểm tra trước khi decode) hoặc budget audio đã decode giữ
+  trong RAM (`GATEWAY_MAX_DECODED_SECONDS`, mặc định 3600 s cho mọi request đang chạy) → 429 `server_busy`. Stream bị
   cụt được decode phần đọc được nếu FFmpeg đọc được. Khi client ngắt hoặc request hết hạn, reservation của
   toàn bộ waveform được giữ tới khi mọi job của lane hoàn tất (slice đang infer vẫn giữ backing array).
 
@@ -127,7 +127,7 @@ Kết quả:
 - Headers: `200`, `Content-Type: text/event-stream; charset=utf-8`, `Cache-Control: no-cache`,
   `X-Accel-Buffering: no`, không có `Content-Length` (chunked). JSON trong event là compact UTF-8 (không escape
   `\uXXXX`). Không có heartbeat: reverse proxy phải tắt buffering và có read timeout ≥
-  `GIPFORMER_REQUEST_TIMEOUT_SECONDS` (README §2).
+  `GATEWAY_REQUEST_TIMEOUT_SECONDS` (README §2).
 - Mỗi event là một dòng `data: <json>` + dòng trống; **không** có trường `event:` và **không** gửi `[DONE]`
   (cả hai SDK coi `[DONE]` là tùy chọn; stream kết thúc bằng đóng kết nối sau `done`).
 - `{"type": "transcript.text.delta", "delta": "..."}`: một event cho mỗi chunk đã decode xong với text khác rỗng,
@@ -140,8 +140,8 @@ Kết quả:
   `examples/transcription_stream.sse`, `examples/transcription_stream_error.sse`.
 - Client ngắt kết nối: dừng enqueue chunk tiếp, hủy chunk đang chờ, bỏ kết quả chunk đang chạy; không phát gì
   thêm. Cũng áp dụng cho JSON/text và khi đang decode (FFmpeg bị kill). Client không đọc: một lần gửi event quá
-  `GIPFORMER_SEND_TIMEOUT_SECONDS` (10 s) được coi như ngắt kết nối (đóng kết nối, không gửi `error`).
-- Tối đa `GIPFORMER_QUEUE_MAX_JOBS_PER_LANE` (2) chunk của một request nằm trong queue/đang chạy cùng lúc: model chạy
+  `GATEWAY_SEND_TIMEOUT_SECONDS` (10 s) được coi như ngắt kết nối (đóng kết nối, không gửi `error`).
+- Tối đa `GATEWAY_QUEUE_MAX_JOBS_PER_LANE` (2) chunk của một request nằm trong queue/đang chạy cùng lúc: model chạy
   trước client tối đa một cửa sổ đó, server không buffer thêm event. Admission chunk tiếp theo bị block không
   chặn việc gửi delta của chunk đã hoàn tất; deadline cũng áp dụng cho gửi delta/done.
 
@@ -153,7 +153,7 @@ tham số tối đa một lần: `model` (Python SDK `client.realtime.connect(mo
 HTTP response **trước accept** (có `x-request-id`, envelope §7), theo thứ tự: auth sai → 401; tham số query khác (kể
 cả `call_id`) → 400 `unsupported_parameter`; tham số lặp → 400 `invalid_value`; `intent` khác → 400
 `invalid_value`; model không phục vụ → 404 `model_not_found`; đang drain → 503 `shutting_down`; chưa ready → 503
-`model_not_ready`; đủ `GIPFORMER_MAX_SESSIONS` session hoặc hết lane → 429 `server_busy` (`Retry-After: 1`). Cả hai SDK
+`model_not_ready`; đủ `GATEWAY_MAX_SESSIONS` session hoặc hết lane → 429 `server_busy` (`Retry-After: 1`). Cả hai SDK
 báo lỗi handshake (Python: `websockets.exceptions.InvalidStatus` với `response.status_code`; JS: event `error`
 "Unexpected server response: <status>"). Không hỗ trợ subprotocol `openai-insecure-api-key.*`.
 
@@ -165,7 +165,7 @@ Session sau khi accept (server gửi `session.created` ngay):
 
 ```json
 {"type": "transcription", "audio": {"input": {"format": {"type": "audio/pcm", "rate": 24000},
-  "transcription": {"model": "gipformer1.5-68M-rnnt", "language": "vi"}, "turn_detection": null}}}
+  "transcription": {"model": "viet-asr", "language": "vi"}, "turn_detection": null}}}
 ```
 
 Client events:
@@ -173,15 +173,15 @@ Client events:
 | Event | Quy tắc |
 |---|---|
 | `session.update` | Field vắng mặt hoặc `null` = giữ nguyên. Chấp nhận: `session.type` = `transcription` (bắt buộc); `format` = `{"type": "audio/pcm", "rate": 24000}` (cả hai field tùy chọn); `transcription.model` = model phục vụ; `transcription.language` = `vi`; `transcription.prompt` rỗng; `turn_detection`/`noise_reduction` = `null`. Từ chối (event `error`, session **không đổi gì**, kể cả khi phần khác hợp lệ), `param` = đường dẫn chấm (vd. `session.audio.input.turn_detection`): key lạ → `unknown_parameter`; sai kiểu JSON, `session.type` khác, format type/rate khác → `invalid_value`; `audio/pcmu`/`audio/pcma`, `noise_reduction`, `prompt` không rỗng, `keywords`, `languages`, `delay`, `include` → `unsupported_parameter`; `turn_detection` khác null → `unsupported_turn_detection`; language khác → `unsupported_language`; model không phục vụ → `model_not_found`. Chỉ có một format nên không có trường hợp "đổi format khi buffer còn audio". Thành công → `session.updated` với session đầy đủ |
-| `input_audio_buffer.append` | `audio` (bắt buộc, `missing_required_parameter`; không phải chuỗi → `invalid_value`) = base64 PCM16 little-endian mono 24 kHz. Base64 sai (ký tự lạ, padding sai) → `error` `invalid_audio` (`param: "audio"`). Byte lẻ giữ lại cho packet sau. Buffer vượt `GIPFORMER_MAX_TURN_SECONDS` (120 s) → `error` `input_audio_buffer_full`; hết budget RAM audio toàn server (`GIPFORMER_MAX_DECODED_SECONDS`) → `error` `server_busy` (`type: "rate_limit_error"`). Mọi lỗi: **toàn bộ** append bị bỏ, buffer không đổi. Thành công: không có event (như OpenAI) |
-| `input_audio_buffer.commit` | Buffer rỗng = 0 mẫu nguyên (một byte lẻ vẫn là rỗng) → `error` `input_audio_buffer_commit_empty`, không tạo item, buffer giữ nguyên. Đã có `GIPFORMER_MAX_PENDING_ITEMS` (4) item chưa có `completed`/`failed` → `error` `too_many_pending_items`, buffer **giữ nguyên** (commit lại sau). Ngược lại: byte lẻ cuối bị bỏ, tạo item mới, buffer mới rỗng ngay (turn kế tiếp nhận được trong lúc item trước đang infer). Turn ≤ 100 ms (≤ 2,400 mẫu 24 kHz) → item bình thường, `completed` với `transcript: ""` và usage thật, không gọi model (như REST §4) |
+| `input_audio_buffer.append` | `audio` (bắt buộc, `missing_required_parameter`; không phải chuỗi → `invalid_value`) = base64 PCM16 little-endian mono 24 kHz. Base64 sai (ký tự lạ, padding sai) → `error` `invalid_audio` (`param: "audio"`). Byte lẻ giữ lại cho packet sau. Buffer vượt `GATEWAY_MAX_TURN_SECONDS` (120 s) → `error` `input_audio_buffer_full`; hết budget RAM audio toàn server (`GATEWAY_MAX_DECODED_SECONDS`) → `error` `server_busy` (`type: "rate_limit_error"`). Mọi lỗi: **toàn bộ** append bị bỏ, buffer không đổi. Thành công: không có event (như OpenAI) |
+| `input_audio_buffer.commit` | Buffer rỗng = 0 mẫu nguyên (một byte lẻ vẫn là rỗng) → `error` `input_audio_buffer_commit_empty`, không tạo item, buffer giữ nguyên. Đã có `GATEWAY_MAX_PENDING_ITEMS` (4) item chưa có `completed`/`failed` → `error` `too_many_pending_items`, buffer **giữ nguyên** (commit lại sau). Ngược lại: byte lẻ cuối bị bỏ, tạo item mới, buffer mới rỗng ngay (turn kế tiếp nhận được trong lúc item trước đang infer). Turn ≤ 100 ms (≤ 2,400 mẫu 24 kHz) → item bình thường, `completed` với `transcript: ""` và usage thật, không gọi model (như REST §4) |
 | `input_audio_buffer.clear` | Xóa pending audio (kể cả byte lẻ), không ảnh hưởng item đã commit → `input_audio_buffer.cleared` |
 | Type khác trong union client GA (`response.create`, `conversation.item.create`, `output_audio_buffer.clear`, …) | `error` `unsupported_event` (`param: "type"`). JSON sai / không phải object → `invalid_event`; thiếu `type` hoặc type ngoài union GA (kể cả beta `transcription_session.update`) → `invalid_event` (`param: "type"`); field lạ trong event → `unknown_parameter`; `event_id` không phải chuỗi → `invalid_value`. Lỗi event không đóng socket |
 
 Audio: PCM16 / 32768 → float32, resample 24 → 16 kHz bằng soxr HQ dạng stream khi append; waveform commit **bằng
 tuyệt đối** soxr one-shot trên cả turn, độc lập cách chia packet. Text có thể
 khác REST trên cùng file (FFmpeg resampler, quantize PCM16, ranh giới turn do client chọn). Turn dài hơn
-`GIPFORMER_MAX_CHUNK_SECONDS` được chia chunk như REST (§4): nhiều delta, cùng một item.
+`GATEWAY_MAX_CHUNK_SECONDS` được chia chunk như REST (§4): nhiều delta, cùng một item.
 
 Server events cho mỗi commit, theo thứ tự trong cùng item:
 
@@ -203,12 +203,12 @@ Quy tắc chung:
 - Server này xử lý item theo thứ tự commit (FIFO, item sau bắt đầu khi item trước terminal), nên terminal event đi
   theo thứ tự commit; client vẫn nên ghép bằng `item_id` (OpenAI không đảm bảo thứ tự). Delta/terminal của item trước
   có thể xen giữa `committed`/`added` của item sau. `completed.transcript` là kết quả authoritative.
-- Deadline mỗi item = lúc commit + `GIPFORMER_REQUEST_TIMEOUT_SECONDS`. `failed.error.code`: `inference_failed`,
+- Deadline mỗi item = lúc commit + `GATEWAY_REQUEST_TIMEOUT_SECONDS`. `failed.error.code`: `inference_failed`,
   `request_timeout`, `server_busy` (queue đầy), `model_not_ready`, `shutting_down`, `internal_error`. Delta đã gửi
   không bị thu hồi; session tiếp tục sau `failed`.
-- Đóng session: không có event client và không có item đang chờ trong `GIPFORMER_SESSION_IDLE_TIMEOUT_SECONDS` →
-  `error` `idle_timeout` rồi close 1000; quá `GIPFORMER_MAX_SESSION_SECONDS` → `error` `session_expired` rồi close 1000
-  (item chưa xong và pending audio bị bỏ). Client không đọc (một lần gửi quá `GIPFORMER_SEND_TIMEOUT_SECONDS`) hoặc ngắt:
+- Đóng session: không có event client và không có item đang chờ trong `GATEWAY_SESSION_IDLE_TIMEOUT_SECONDS` →
+  `error` `idle_timeout` rồi close 1000; quá `GATEWAY_MAX_SESSION_SECONDS` → `error` `session_expired` rồi close 1000
+  (item chưa xong và pending audio bị bỏ). Client không đọc (một lần gửi quá `GATEWAY_SEND_TIMEOUT_SECONDS`) hoặc ngắt:
   session kết thúc không gửi gì thêm, chunk đang chờ bị hủy, kết quả chunk đang chạy bị bỏ. Server restart/shutdown:
   Uvicorn đóng mọi socket với 1012 ngay, item chưa `completed` bị mất — client phải kết nối lại và gửi lại audio.
 - Không phát `conversation.item.done`, `input_audio_buffer.speech_started/stopped` (R3b), `response.*`,
@@ -268,8 +268,8 @@ uv run pytest tests/contract tests/unit
 
 `tests/contract/test_server_sdk.py` chạy gateway thật (Uvicorn + FFmpeg, fake engine): payload có cùng key/type với
 `examples/`, Python SDK parse được (Realtime: `client.realtime.connect`, mọi server event validate bằng union
-pydantic), và chạy `js/server.test.ts` (JS SDK) với `GIPFORMER_TEST_BASE_URL`, `GIPFORMER_TEST_API_KEY`, `GIPFORMER_TEST_AUDIO_DIR`,
-cùng `GIPFORMER_TEST_WSS_BASE_URL` + `GIPFORMER_TEST_CA` (gateway TLS cert tự ký cho `OpenAIRealtimeWS`); `npm test` đơn lẻ bỏ
+pydantic), và chạy `js/server.test.ts` (JS SDK) với `GATEWAY_TEST_BASE_URL`, `GATEWAY_TEST_API_KEY`, `GATEWAY_TEST_AUDIO_DIR`,
+cùng `GATEWAY_TEST_WSS_BASE_URL` + `GATEWAY_TEST_CA` (gateway TLS cert tự ký cho `OpenAIRealtimeWS`); `npm test` đơn lẻ bỏ
 qua các test đó.
 
 Khi đổi version SDK: cập nhật pin trong `pyproject.toml`/`tests/contract/js/package.json`, chạy lại cả hai, ghi lại

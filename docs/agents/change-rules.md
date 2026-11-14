@@ -4,14 +4,14 @@ Read the section for each area you touch before editing it. File roles: [code-ma
 
 ## Inference path (`engine.py`, `scheduler.py`)
 
-- `GipformerEngine` is the only code that touches sherpa-onnx: one `OfflineRecognizer`, files from the staged
-  local directory only (never the Hub), one chunk per call. Settings: `GIPFORMER_PRECISION`,
-  `GIPFORMER_DECODING_METHOD`, `GIPFORMER_BEAM_SIZE` (-> `max_active_paths`), `GIPFORMER_NUM_THREADS`.
+- `SherpaEngine` is the only code that touches sherpa-onnx: one `OfflineRecognizer`, files from the staged
+  local directory only (never the Hub), one chunk per call. Settings: `GATEWAY_PRECISION`,
+  `GATEWAY_DECODING_METHOD`, `GATEWAY_BEAM_SIZE` (-> `max_active_paths`), `GATEWAY_NUM_THREADS`.
 - `EngineWorker` is the single thread that calls the recognizer. Work reaches it as jobs (one per chunk) on
   `Scheduler` lanes (one per request or realtime session).
 - Engine text must equal `references/gipformer/infer_onnx.py` for the same audio, precision and decoding
   (`tests/model/test_engine.py`). Do not post-process the text.
-- A lane holds at most `GIPFORMER_QUEUE_MAX_JOBS_PER_LANE` (2) queued chunks; long files are fed incrementally. LIVE
+- A lane holds at most `GATEWAY_QUEUE_MAX_JOBS_PER_LANE` (2) queued chunks; long files are fed incrementally. LIVE
   lanes get bounded priority (`live_priority_ratio`).
 - Cancel drops queued chunks and discards the running chunk's result. A running decode finishes; the worker and
   budgets are released only when the real call returns.
@@ -22,7 +22,7 @@ Read the section for each area you touch before editing it. File roles: [code-ma
 - FFmpeg gets fixed argv, the `file` protocol and the demuxer/decoder allowlists; client filenames, paths and URLs
   stay out of its arguments, out of disk paths and out of logs.
 - The engine refuses fewer than 1,360 samples (`MIN_FORWARD_SAMPLES`, the recognizer's measured floor). Audio <= 100 ms
-  (1,600 samples) yields `""` without a model call; `GIPFORMER_MAX_CHUNK_SECONDS` defaults to 20 s. Both come from
+  (1,600 samples) yields `""` without a model call; `GATEWAY_MAX_CHUNK_SECONDS` defaults to 20 s. Both come from
   `scripts/probe_limits.py` (docs/baseline.vi.md §5); change them only with a new report.
 - Every resource is budgeted: body limit before the multipart parser, spool bytes, decoded audio in RAM (`hold`,
   realtime pending audio via `reserve`). Exceeding one returns 413/429/503 in the OpenAI envelope.
@@ -58,8 +58,8 @@ Read the section for each area you touch before editing it. File roles: [code-ma
 
 ## Config (`config.py`)
 
-- Every `GIPFORMER_*` variable is a server setting, and unknown ones abort startup. Leftover `QUAN_*` variables abort
-  too. `GIPFORMER_TEST_*` (JS server test) is therefore kept out of the server's environment.
+- Every `GATEWAY_*` variable is a server setting, and unknown ones abort startup. Leftover `GIPFORMER_*` or `QUAN_*`
+  variables (old prefixes) abort too, naming the variable. `GATEWAY_TEST_*` (JS server test) is therefore kept out of the server's environment.
 - Each limit is finite and validated at startup. A new setting also gets a row in the README config table.
 - `num_threads` and `queue_max_buffered_seconds` defaults come from `scripts/baseline_offline.py` (docs/baseline.vi.md
   §4), which exits 1 if they drift; change them only with a new `docs/baseline/offline.json`.

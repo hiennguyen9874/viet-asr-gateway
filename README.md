@@ -15,7 +15,7 @@ Giới hạn cần biết:
 - `srt`/`vtt` có thời gian từ thời điểm model phát từng token (bước 40 ms; cue có thể bắt đầu sớm tới ~1 s sau khoảng
   lặng, xem [baseline §6](docs/baseline.vi.md)). `verbose_json` không có `segments`; word timestamps chưa bật.
 - Realtime: transcript chỉ có sau `input_audio_buffer.commit`; không có partial, không có VAD.
-- Alias `whisper-1` (tắt mặc định, `GIPFORMER_WHISPER_ALIAS=true`) chỉ để client cũ chạy được: vẫn là model Gipformer. Mọi model id khác trả 404 `model_not_found`.
+- Alias `whisper-1` (tắt mặc định, `GATEWAY_WHISPER_ALIAS=true`) chỉ để client cũ chạy được: vẫn là model Gipformer. Mọi model id khác trả 404 `model_not_found`.
 
 Tài liệu: [kiến trúc](docs/deployment-design.vi.md) · [API contract](docs/api-contract.vi.md) ·
 [baseline và pins](docs/baseline.vi.md) · [kiểm định image](docs/container-gate.vi.md) ·
@@ -36,8 +36,8 @@ uv run scripts/stage_models.py --verify # kiểm tra lại, không cần mạng
 
 # 2. API key: một key mỗi dòng, ≥ 16 ký tự, đọc được bởi UID 10001 trong container
 mkdir -p secrets
-python3 -c "import secrets; print(secrets.token_urlsafe(32))" > secrets/gipformer_api_keys
-sudo chown 10001 secrets/gipformer_api_keys && sudo chmod 0400 secrets/gipformer_api_keys
+python3 -c "import secrets; print(secrets.token_urlsafe(32))" > secrets/gateway_api_keys
+sudo chown 10001 secrets/gateway_api_keys && sudo chmod 0400 secrets/gateway_api_keys
 
 # 3. Build + chạy (CPU)
 docker compose up -d --build
@@ -47,20 +47,20 @@ curl -s 127.0.0.1:18001/ready                                   # {"status":"rea
 
 # 5. Thử nhanh với file mẫu có sẵn trong repo (tests/fixtures/vi_a.wav, 8.9 s, FLEURS, CC BY 4.0)
 curl -s 127.0.0.1:18001/v1/audio/transcriptions \
-    -H "Authorization: Bearer $(sudo head -1 secrets/gipformer_api_keys)" \
-    -F model=gipformer1.5-68M-rnnt -F file=@tests/fixtures/vi_a.wav
+    -H "Authorization: Bearer $(sudo head -1 secrets/gateway_api_keys)" \
+    -F model=viet-asr -F file=@tests/fixtures/vi_a.wav
 # {"text":"CÁC SẢN PHẨM THỦ CÔNG CÓ THỂ ĐƯỢC COI LÀ ĐỒ CỔ ..."}
 
 # 6. Smoke test (tùy chọn): mọi format + Realtime, so với baseline
-OPENAI_API_KEY=$(sudo cat secrets/gipformer_api_keys | head -1) \
+OPENAI_API_KEY=$(sudo cat secrets/gateway_api_keys | head -1) \
     uv run scripts/smoke_server.py --base-url http://127.0.0.1:18001
 ```
 
-Image (`gipformer-gateway:r1`): Ubuntu 24.04 (pin digest), Python 3.12.14, FFmpeg 6.1.1, user `10001`, chỉ
+Image (`viet-asr-gateway:r1`): Ubuntu 24.04 (pin digest), Python 3.12.14, FFmpeg 6.1.1, user `10001`, chỉ
 chứa `app/` và venv. Không có model, `HF_TOKEN` hay API key trong image; server không truy cập Hub.
 `compose.yaml` chạy:
 
-- model mount `./models:/models:ro`, key qua Docker secret `/run/secrets/gipformer_api_keys`;
+- model mount `./models:/models:ro`, key qua Docker secret `/run/secrets/gateway_api_keys`;
 - rootfs read-only, tmpfs `/tmp` 512 MiB (spool upload), `HF_HUB_OFFLINE=1`;
 - port chỉ bind `127.0.0.1:18001`; `restart: unless-stopped`; `stop_grace_period: 70s`.
 
@@ -68,20 +68,20 @@ chứa `app/` và venv. Không có model, `HF_TOKEN` hay API key trong image; se
 (mỗi container một port host) sau load balancer; WebSocket cần sticky routing.
 
 **TLS:** gateway không làm TLS, rate limit theo client hay CORS. Khi expose ra ngoài localhost, đặt sau hạ tầng
-HTTPS của bạn với: SSE không buffer, hỗ trợ WebSocket upgrade, read timeout ≥ `GIPFORMER_REQUEST_TIMEOUT_SECONDS`
-(600 s), body ≥ `GIPFORMER_MAX_UPLOAD_BYTES`. JS SDK Realtime chỉ kết nối `wss:`.
+HTTPS của bạn với: SSE không buffer, hỗ trợ WebSocket upgrade, read timeout ≥ `GATEWAY_REQUEST_TIMEOUT_SECONDS`
+(600 s), body ≥ `GATEWAY_MAX_UPLOAD_BYTES`. JS SDK Realtime chỉ kết nối `wss:`.
 
 ## 3. Gọi API
 
 ```bash
-KEY=$(sudo cat secrets/gipformer_api_keys | head -1)
+KEY=$(sudo cat secrets/gateway_api_keys | head -1)
 curl -s 127.0.0.1:18001/v1/models -H "Authorization: Bearer $KEY"
 curl -s 127.0.0.1:18001/v1/audio/transcriptions -H "Authorization: Bearer $KEY" \
-    -F model=gipformer1.5-68M-rnnt -F file=@tests/fixtures/vi_a.wav
+    -F model=viet-asr -F file=@tests/fixtures/vi_a.wav
 curl -sN 127.0.0.1:18001/v1/audio/transcriptions -H "Authorization: Bearer $KEY" \
-    -F model=gipformer1.5-68M-rnnt -F stream=true -F file=@tests/fixtures/vi_a.wav
+    -F model=viet-asr -F stream=true -F file=@tests/fixtures/vi_a.wav
 curl -s 127.0.0.1:18001/v1/audio/transcriptions -H "Authorization: Bearer $KEY" \
-    -F model=gipformer1.5-68M-rnnt -F response_format=srt -F file=@tests/fixtures/vi_a.wav   # text, vtt, verbose_json
+    -F model=viet-asr -F response_format=srt -F file=@tests/fixtures/vi_a.wav   # text, vtt, verbose_json
 ```
 
 OpenAI Python SDK (đã kiểm thử `openai==3.31.0`; JS `openai@7.33.0`):
@@ -91,9 +91,9 @@ from openai import OpenAI
 
 client = OpenAI(base_url="http://127.0.0.1:18001/v1", api_key="<API key>")
 with open("audio.mp3", "rb") as f:
-    print(client.audio.transcriptions.create(file=f, model="gipformer1.5-68M-rnnt").text)
+    print(client.audio.transcriptions.create(file=f, model="viet-asr").text)
 with open("audio.mp3", "rb") as f:
-    for event in client.audio.transcriptions.create(file=f, model="gipformer1.5-68M-rnnt", stream=True):
+    for event in client.audio.transcriptions.create(file=f, model="viet-asr", stream=True):
         print(event.type, getattr(event, "delta", None) or getattr(event, "text", ""))
 ```
 
@@ -103,7 +103,7 @@ một item với các `delta` (một mỗi chunk ≤ 20 s) rồi `completed`.
 ```python
 import base64
 
-with client.realtime.connect(model="gipformer1.5-68M-rnnt") as conn:
+with client.realtime.connect(model="viet-asr") as conn:
     conn.recv()                                            # session.created
     for packet in pcm16_24k_packets:                       # bytes, ví dụ 20–200 ms mỗi packet
         conn.input_audio_buffer.append(audio=base64.b64encode(packet).decode())
@@ -120,35 +120,35 @@ Audio: WAV, FLAC, MP3, MP4/M4A (AAC/ALAC), OGG (Vorbis/Opus/FLAC), WEBM/Matroska
 
 ## 4. Cấu hình
 
-Thêm biến `GIPFORMER_*` vào `environment:` của service (ví dụ trong `compose.override.yaml`). Biến lạ, giá trị ≤ 0 hoặc
-không nhất quán → container không start. Đầy đủ: `app/config.py`.
+Thêm biến `GATEWAY_*` vào `environment:` của service (ví dụ trong `compose.override.yaml`). Biến lạ, biến còn sót prefix cũ
+`GIPFORMER_*`/`QUAN_*`, giá trị ≤ 0 hoặc không nhất quán → container không start. Đầy đủ: `app/config.py`.
 
 | Biến | Mặc định | Ý nghĩa |
 |---|---|---|
-| `GIPFORMER_API_KEYS_FILE` / `GIPFORMER_API_KEYS` | (bắt buộc) | Key Bearer (compose dùng file secret) |
-| `GIPFORMER_WHISPER_ALIAS` | `false` | Chấp nhận model id `whisper-1` |
-| `GIPFORMER_LOG_LEVEL` | `INFO` | Mức log |
-| `GIPFORMER_PRECISION` | `fp32` | Trọng số `fp32` hoặc `int8` (nhanh hơn, kém chính xác hơn); giá trị khác → không start |
-| `GIPFORMER_DECODING_METHOD` | `modified_beam_search` | Hoặc `greedy_search` (nhanh hơn, mặc định của reference là beam search) |
-| `GIPFORMER_BEAM_SIZE` | 4 | Số path của `modified_beam_search` (số nguyên > 0; bỏ qua khi greedy) |
-| `GIPFORMER_NUM_THREADS` | 4 | Số intra-op thread của recognizer duy nhất (số nguyên > 0). Đo: chunk 20 s mất 1.7 / 0.81 / 0.63 s ở 1 / 4 / 8 thread; trên 4 thread hiệu suất < 50%: [baseline §4](docs/baseline.vi.md) |
-| `GIPFORMER_MAX_UPLOAD_BYTES` | 25 MiB | Cả body multipart → 413 |
-| `GIPFORMER_MAX_AUDIO_SECONDS` | 1800 | Thời lượng sau decode → 400 `audio_too_long` |
-| `GIPFORMER_MAX_DECODED_SECONDS` | 3600 | Audio đã decode giữ trong RAM của mọi request (≈ 64 KB/s) → 429 |
-| `GIPFORMER_MAX_SPOOL_BYTES` | 200 MiB | File tạm của upload đang nhận (nằm trong tmpfs 512 MiB) → 429 |
-| `GIPFORMER_MAX_CHUNK_SECONDS` | 20 | Độ dài chunk tối đa (cũng là độ dài warm-up). Trên 30 s RAM peak tăng nhanh (60 s ≈ 2 GB, 120 s ≈ 8 GB): [baseline §5](docs/baseline.vi.md) |
-| `GIPFORMER_QUEUE_MAX_LANES` | 32 | Request/session đồng thời → 429 |
-| `GIPFORMER_QUEUE_TIMEOUT_SECONDS` | 30 | Chờ chỗ trong queue tối đa → 429 |
-| `GIPFORMER_QUEUE_MAX_BUFFERED_SECONDS` | 600 | Audio trong queue + đang chạy → chờ chỗ (rồi 429). Chọn để queue đầy chạy hết trong ≤ 30 s ở RTF đo được (beam 4, 4 thread): [baseline §4](docs/baseline.vi.md). Giảm nếu CPU chậm hơn hoặc tăng `GIPFORMER_BEAM_SIZE` |
-| `GIPFORMER_REQUEST_TIMEOUT_SECONDS` | 600 | Tổng upload + decode + queue + infer + gửi → 503 `request_timeout` |
-| `GIPFORMER_SEND_TIMEOUT_SECONDS` | 10 | Một lần gửi SSE/WebSocket; client không đọc → ngắt |
-| `GIPFORMER_MAX_SESSIONS` | 16 | Realtime session đồng thời (≤ lanes) → handshake 429 |
-| `GIPFORMER_MAX_SESSION_SECONDS` | 3600 | Tuổi tối đa một session → `session_expired` |
-| `GIPFORMER_SESSION_IDLE_TIMEOUT_SECONDS` | 120 | Session không hoạt động → `idle_timeout` |
-| `GIPFORMER_MAX_TURN_SECONDS` | 120 | Audio chưa commit của một session → `input_audio_buffer_full` |
-| `GIPFORMER_MAX_PENDING_ITEMS` | 4 | Item đã commit chưa xong → `too_many_pending_items` |
-| `GIPFORMER_INFER_HANG_SECONDS` | 120 | Một call inference lâu hơn → worker "hung", `/health` 503 (call dài nhất đo được: 1.8 s) |
-| `GIPFORMER_SHUTDOWN_DRAIN_SECONDS` | 30 | Chờ job đang chạy khi tắt |
+| `GATEWAY_API_KEYS_FILE` / `GATEWAY_API_KEYS` | (bắt buộc) | Key Bearer (compose dùng file secret) |
+| `GATEWAY_WHISPER_ALIAS` | `false` | Chấp nhận model id `whisper-1` |
+| `GATEWAY_LOG_LEVEL` | `INFO` | Mức log |
+| `GATEWAY_PRECISION` | `fp32` | Trọng số `fp32` hoặc `int8` (nhanh hơn, kém chính xác hơn); giá trị khác → không start |
+| `GATEWAY_DECODING_METHOD` | `modified_beam_search` | Hoặc `greedy_search` (nhanh hơn, mặc định của reference là beam search) |
+| `GATEWAY_BEAM_SIZE` | 4 | Số path của `modified_beam_search` (số nguyên > 0; bỏ qua khi greedy) |
+| `GATEWAY_NUM_THREADS` | 4 | Số intra-op thread của recognizer duy nhất (số nguyên > 0). Đo: chunk 20 s mất 1.7 / 0.81 / 0.63 s ở 1 / 4 / 8 thread; trên 4 thread hiệu suất < 50%: [baseline §4](docs/baseline.vi.md) |
+| `GATEWAY_MAX_UPLOAD_BYTES` | 25 MiB | Cả body multipart → 413 |
+| `GATEWAY_MAX_AUDIO_SECONDS` | 1800 | Thời lượng sau decode → 400 `audio_too_long` |
+| `GATEWAY_MAX_DECODED_SECONDS` | 3600 | Audio đã decode giữ trong RAM của mọi request (≈ 64 KB/s) → 429 |
+| `GATEWAY_MAX_SPOOL_BYTES` | 200 MiB | File tạm của upload đang nhận (nằm trong tmpfs 512 MiB) → 429 |
+| `GATEWAY_MAX_CHUNK_SECONDS` | 20 | Độ dài chunk tối đa (cũng là độ dài warm-up). Trên 30 s RAM peak tăng nhanh (60 s ≈ 2 GB, 120 s ≈ 8 GB): [baseline §5](docs/baseline.vi.md) |
+| `GATEWAY_QUEUE_MAX_LANES` | 32 | Request/session đồng thời → 429 |
+| `GATEWAY_QUEUE_TIMEOUT_SECONDS` | 30 | Chờ chỗ trong queue tối đa → 429 |
+| `GATEWAY_QUEUE_MAX_BUFFERED_SECONDS` | 600 | Audio trong queue + đang chạy → chờ chỗ (rồi 429). Chọn để queue đầy chạy hết trong ≤ 30 s ở RTF đo được (beam 4, 4 thread): [baseline §4](docs/baseline.vi.md). Giảm nếu CPU chậm hơn hoặc tăng `GATEWAY_BEAM_SIZE` |
+| `GATEWAY_REQUEST_TIMEOUT_SECONDS` | 600 | Tổng upload + decode + queue + infer + gửi → 503 `request_timeout` |
+| `GATEWAY_SEND_TIMEOUT_SECONDS` | 10 | Một lần gửi SSE/WebSocket; client không đọc → ngắt |
+| `GATEWAY_MAX_SESSIONS` | 16 | Realtime session đồng thời (≤ lanes) → handshake 429 |
+| `GATEWAY_MAX_SESSION_SECONDS` | 3600 | Tuổi tối đa một session → `session_expired` |
+| `GATEWAY_SESSION_IDLE_TIMEOUT_SECONDS` | 120 | Session không hoạt động → `idle_timeout` |
+| `GATEWAY_MAX_TURN_SECONDS` | 120 | Audio chưa commit của một session → `input_audio_buffer_full` |
+| `GATEWAY_MAX_PENDING_ITEMS` | 4 | Item đã commit chưa xong → `too_many_pending_items` |
+| `GATEWAY_INFER_HANG_SECONDS` | 120 | Một call inference lâu hơn → worker "hung", `/health` 503 (call dài nhất đo được: 1.8 s) |
+| `GATEWAY_SHUTDOWN_DRAIN_SECONDS` | 30 | Chờ job đang chạy khi tắt |
 
 Các mặc định là giới hạn an toàn hữu hạn, **chưa phải capacity đã đo** (xem [roadmap](docs/roadmap.md) R4). Đo
 trên phần cứng của bạn trước khi tăng.
@@ -156,7 +156,7 @@ trên phần cứng của bạn trước khi tăng.
 ## 5. Vận hành
 
 - **Readiness/liveness:** `/ready` 200 khi model đã load + warm-up và không đang drain/recover (dùng cho load
-  balancer). `/health` 503 khi load/recovery lỗi hoặc một call inference treo quá `GIPFORMER_INFER_HANG_SECONDS`.
+  balancer). `/health` 503 khi load/recovery lỗi hoặc một call inference treo quá `GATEWAY_INFER_HANG_SECONDS`.
   Docker không tự restart container chỉ vì `unhealthy`: dùng watchdog/orchestrator (autoheal, systemd, Kubernetes
   `livenessProbe`). Lỗi inference đơn lẻ trả 500 `inference_failed`, worker tự warm-up lại.
 - **Dừng/cập nhật:** `docker compose stop` (SIGTERM) ngừng nhận kết nối mới, request đang chạy được làm xong (≤ 30 s),
@@ -167,8 +167,8 @@ trên phần cứng của bạn trước khi tăng.
 - **Xoay vòng key** (key chỉ đọc lúc khởi động): thêm key mới vào file, restart, chuyển client, bỏ key cũ, restart.
 - **Log/metrics:** log JSON ra stderr (`docker compose logs`), chỉ metadata (`request_id`, thời lượng, outcome);
   không ghi audio, transcript, key, tên file. `/metrics` (Prometheus, cần API key; không expose public):
-  `gipformer_transcriptions_total`, `gipformer_queue_wait_seconds`, `gipformer_infer_seconds`, `gipformer_ready`, `gipformer_worker_hung`,
-  `gipformer_realtime_sessions`, `gipformer_realtime_commit_to_completed_seconds`, …
+  `gateway_transcriptions_total`, `gateway_queue_wait_seconds`, `gateway_infer_seconds`, `gateway_ready`, `gateway_worker_hung`,
+  `gateway_realtime_sessions`, `gateway_realtime_commit_to_completed_seconds`, …
 - `HF_TOKEN` chỉ dùng lúc staging, không đưa vào container.
 
 ## 6. Kiểm thử

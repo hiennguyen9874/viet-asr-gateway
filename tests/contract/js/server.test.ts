@@ -1,6 +1,6 @@
 // The pinned JS SDK against a real gateway (fake engine). Started by tests/contract/test_server_sdk.py, which sets
-// GIPFORMER_TEST_BASE_URL, GIPFORMER_TEST_API_KEY and GIPFORMER_TEST_AUDIO_DIR (speech.wav, fail.wav, turn*.pcm, expected.json),
-// plus GIPFORMER_TEST_WSS_BASE_URL and GIPFORMER_TEST_CA (a TLS gateway: OpenAIRealtimeWS always connects with wss:);
+// GATEWAY_TEST_BASE_URL, GATEWAY_TEST_API_KEY and GATEWAY_TEST_AUDIO_DIR (speech.wav, fail.wav, turn*.pcm, expected.json),
+// plus GATEWAY_TEST_WSS_BASE_URL and GATEWAY_TEST_CA (a TLS gateway: OpenAIRealtimeWS always connects with wss:);
 // without them (plain `npm test`) every test here is skipped.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -12,11 +12,11 @@ import type { OpenAIRealtimeError } from 'openai/realtime/internal-base';
 import type { TranscriptionStreamEvent } from 'openai/resources/audio/transcriptions';
 import type { RealtimeServerEvent } from 'openai/resources/realtime/realtime';
 
-const baseURL = process.env.GIPFORMER_TEST_BASE_URL;
-const apiKey = process.env.GIPFORMER_TEST_API_KEY;
-const audioDir = process.env.GIPFORMER_TEST_AUDIO_DIR ?? '';
+const baseURL = process.env.GATEWAY_TEST_BASE_URL;
+const apiKey = process.env.GATEWAY_TEST_API_KEY;
+const audioDir = process.env.GATEWAY_TEST_AUDIO_DIR ?? '';
 const skip = baseURL && apiKey && audioDir ? false : 'no gateway: run tests/contract/test_server_sdk.py';
-const MODEL = 'gipformer1.5-68M-rnnt';
+const MODEL = 'viet-asr';
 
 const examples = new URL('../examples/', import.meta.url);
 const example = (name: string) => JSON.parse(readFileSync(new URL(name, examples)).toString());
@@ -127,8 +127,8 @@ test('HTTP error envelope and request id', { skip }, async () => {
   );
 });
 
-const wssBaseURL = process.env.GIPFORMER_TEST_WSS_BASE_URL;
-const ca = process.env.GIPFORMER_TEST_CA;
+const wssBaseURL = process.env.GATEWAY_TEST_WSS_BASE_URL;
+const ca = process.env.GATEWAY_TEST_CA;
 const rtSkip = wssBaseURL && ca && !skip ? false : 'no TLS gateway: run tests/contract/test_server_sdk.py';
 const rtClient = (key = apiKey) => new OpenAI({ apiKey: key, baseURL: wssBaseURL, maxRetries: 0 });
 const tls = () => ({ ca: readFileSync(ca!) });

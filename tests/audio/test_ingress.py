@@ -104,9 +104,9 @@ def test_disk_exhaustion_returns_busy_and_cleans_up(monkeypatch, target, error_n
 def test_upload_fields_and_decode():
     with serve() as (client, app, _):
         r = client.post("/v1/_ingest", files={"file": ("../../etc/passwd", WAV, "audio/wav")},
-                        data={"model": "gipformer1.5-68M-rnnt", "include[]": ["a", "b"]})
+                        data={"model": "viet-asr", "include[]": ["a", "b"]})
         assert r.status_code == 200, r.text
-        assert r.json() == {"fields": [["model", "gipformer1.5-68M-rnnt"], ["include[]", "a"], ["include[]", "b"]],
+        assert r.json() == {"fields": [["model", "viet-asr"], ["include[]", "a"], ["include[]", "b"]],
                             "size": len(WAV), "samples": 142080}
         assert spool_empty(app)
         assert app.state.metrics.value("uploads_total", outcome="ok") == 1

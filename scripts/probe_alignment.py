@@ -73,10 +73,10 @@ def stats(values) -> dict:
 
 
 def engine(precision="fp32", decoding="modified_beam_search", warmup_seconds=1.0):
-    from app.engine import GipformerEngine
+    from app.engine import SherpaEngine
 
-    models = Path(os.environ.get("GIPFORMER_MODELS_DIR", ROOT / "models"))
-    e = GipformerEngine(models, precision, decoding, 4, 4, warmup_seconds)
+    models = Path(os.environ.get("GATEWAY_MODELS_DIR", ROOT / "models"))
+    e = SherpaEngine(models, precision, decoding, 4, 4, warmup_seconds)
     e.load()
     return e
 

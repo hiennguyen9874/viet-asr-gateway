@@ -139,7 +139,7 @@ class Scheduler:
 
     def start(self) -> None:
         self._task = asyncio.get_running_loop().create_task(
-            self._dispatch(), name="gipformer-dispatcher"
+            self._dispatch(), name="gateway-dispatcher"
         )
 
     def open_lane(self, kind: JobKind) -> Lane:

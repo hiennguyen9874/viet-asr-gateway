@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
-# Image of the gipformer1.5-68M-rnnt gateway: one Uvicorn worker = one recognizer = CPU only (sherpa-onnx).
+# Image of the viet-asr gateway: one Uvicorn worker = one recognizer = CPU only (sherpa-onnx).
 # Models are staged on the host (scripts/stage_models.py) and mounted read-only at /models at runtime; no model,
-# HF token or API key is ever part of the image. Build: docker build -t gipformer-gateway:r1 .
+# HF token or API key is ever part of the image. Build: docker build -t viet-asr-gateway:r1 .
 #
 # Base: Ubuntu 24.04 for FFmpeg 6.1.1 (the version the M2 decoder allowlist was tested with) and a uv-managed
 # CPython 3.12.14 (the baseline's). The sherpa-onnx wheels bring their own onnxruntime; no GPU runtime is needed.
@@ -25,13 +25,13 @@ FROM ${BASE}
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ffmpeg=7:6.1.1-3ubuntu5 \
     && rm -rf /var/lib/apt/lists/* \
-    && groupadd --gid 10001 gipformer \
-    && useradd --uid 10001 --gid 10001 --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin gipformer
+    && groupadd --gid 10001 gateway \
+    && useradd --uid 10001 --gid 10001 --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin gateway
 COPY --from=builder /opt/python /opt/python
 COPY --from=builder /srv/.venv /srv/.venv
 COPY app/ /srv/app/
 ENV PATH=/srv/.venv/bin:$PATH PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
-    GIPFORMER_MODELS_DIR=/models HF_HUB_OFFLINE=1 HOME=/tmp
+    GATEWAY_MODELS_DIR=/models HF_HUB_OFFLINE=1 HOME=/tmp
 USER 10001:10001
 WORKDIR /srv
 EXPOSE 18001

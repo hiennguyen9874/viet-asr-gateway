@@ -21,8 +21,8 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-MODELS = Path(os.environ.get("GIPFORMER_MODELS_DIR", ROOT / "models")).resolve()
-IMAGE = "gipformer-gateway:test"
+MODELS = Path(os.environ.get("GATEWAY_MODELS_DIR", ROOT / "models")).resolve()
+IMAGE = "viet-asr-gateway:test"
 KEY = "ctr-" + secrets.token_hex(16)
 pytestmark = [pytest.mark.container,
               pytest.mark.skipif(shutil.which("docker") is None, reason="needs docker")]
@@ -61,8 +61,8 @@ def test_image_contains_only_the_app(image):
 def test_no_secrets_in_image_metadata(image):
     meta = docker("inspect", image).stdout + docker("history", "--no-trunc", image).stdout
     config_env = json.loads(docker("inspect", image).stdout)[0]["Config"]["Env"]
-    assert not any(e.startswith(("HF_TOKEN=", "GIPFORMER_API_KEYS=", "GIPFORMER_API_KEYS_FILE=")) for e in config_env)
-    assert "HF_TOKEN" not in meta and "GIPFORMER_API_KEYS" not in meta
+    assert not any(e.startswith(("HF_TOKEN=", "GATEWAY_API_KEYS=", "GATEWAY_API_KEYS_FILE=")) for e in config_env)
+    assert "HF_TOKEN" not in meta and "GATEWAY_API_KEYS" not in meta
     hf_token = os.environ.get("HF_TOKEN")
     assert not hf_token or hf_token not in meta
 
@@ -97,7 +97,7 @@ import io, json, os, urllib.request, uuid, wave
 src = wave.open('/w/fixtures-large/vi_long.wav'); frames = src.readframes(src.getnframes())
 buf = io.BytesIO(); out = wave.open(buf, 'wb'); out.setparams(src.getparams()); out.writeframes(frames * 6); out.close()
 b = uuid.uuid4().hex
-body = (f'--{b}\\r\\nContent-Disposition: form-data; name="model"\\r\\n\\r\\ngipformer1.5-68M-rnnt\\r\\n'
+body = (f'--{b}\\r\\nContent-Disposition: form-data; name="model"\\r\\n\\r\\nviet-asr\\r\\n'
         f'--{b}\\r\\nContent-Disposition: form-data; name="stream"\\r\\n\\r\\ntrue\\r\\n'
         f'--{b}\\r\\nContent-Disposition: form-data; name="file"; filename="a.wav"\\r\\n\\r\\n').encode()
 body += buf.getvalue() + f'\\r\\n--{b}--\\r\\n'.encode()
@@ -115,14 +115,14 @@ with urllib.request.urlopen(req, timeout=600) as r:
 def running_container(image, *env):
     models_staged()
     # Exercise the same file-secret path as compose, without putting the key in container metadata.
-    with tempfile.TemporaryDirectory(prefix="gipformer-gate-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="gateway-gate-") as tmp:
         key_file = Path(tmp) / "api_keys"
         key_file.write_text(KEY + "\n")
         key_file.chmod(0o444)  # bind mount must be readable by uid 10001
         args = ["run", "-d", "--network", "none", "--read-only",
                 "--tmpfs", "/tmp:size=512m,mode=1777", "--mount", f"type=bind,src={MODELS},dst=/models,readonly",
-                "--mount", f"type=bind,src={key_file},dst=/run/secrets/gipformer_api_keys,readonly",
-                "-e", "GIPFORMER_API_KEYS_FILE=/run/secrets/gipformer_api_keys"]
+                "--mount", f"type=bind,src={key_file},dst=/run/secrets/gateway_api_keys,readonly",
+                "-e", "GATEWAY_API_KEYS_FILE=/run/secrets/gateway_api_keys"]
         for value in env:
             args += ["-e", value]
         cid = docker(*args, image).stdout.strip()
@@ -169,7 +169,7 @@ audio = open('/w/tests/fixtures/vi_a.wav', 'rb').read()
 error(lambda: gw.transcribe(audio, model='not-a-model'), 404, 'model_not_found')
 error(lambda: gw.transcribe(b'not audio'), 400, 'invalid_audio')
 headers = {'Authorization': 'Bearer ' + gw.key}
-url = 'ws://127.0.0.1:18001/v1/realtime?model=gipformer1.5-68M-rnnt'
+url = 'ws://127.0.0.1:18001/v1/realtime?model=viet-asr'
 with connect(url, additional_headers=headers) as a, connect(url, additional_headers=headers) as b:
     assert json.loads(a.recv(30))['type'] == 'session.created'
     assert json.loads(b.recv(30))['type'] == 'session.created'
@@ -178,7 +178,7 @@ with connect(url, additional_headers=headers) as a, connect(url, additional_head
 import time
 for _ in range(100):
     metrics = gw.request('GET', '/metrics').read().decode()
-    if 'gipformer_open_lanes 0' in metrics:
+    if 'gateway_open_lanes 0' in metrics:
         break
     time.sleep(.1)
 else:
@@ -196,7 +196,7 @@ print('auth/errors/overload/isolation passed')
 
 
 def test_errors_overload_and_isolation(image):
-    with running_container(image, "GIPFORMER_QUEUE_MAX_LANES=2", "GIPFORMER_MAX_SESSIONS=2") as cid:
+    with running_container(image, "GATEWAY_QUEUE_MAX_LANES=2", "GATEWAY_MAX_SESSIONS=2") as cid:
         r = sidecar(cid, image, "-c", ERRORS_AND_ISOLATION)
         assert r.returncode == 0, r.stdout[-4000:] + r.stderr[-4000:]
         assert KEY not in docker("logs", cid).stderr

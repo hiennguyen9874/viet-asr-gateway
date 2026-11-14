@@ -27,7 +27,7 @@ The CPU tiers need `ffmpeg` on PATH. Image gate details: docs/container-gate.vi.
 ## Local server and smoke
 
 ```bash
-GIPFORMER_API_KEYS=<key of >=16 chars> uv run \
+GATEWAY_API_KEYS=<key of >=16 chars> uv run \
     uvicorn --factory app.main:create_app --port <port> --workers 1 --no-access-log \
     --timeout-graceful-shutdown 30 --ws websockets-sansio --ws-max-size 2097152    # /ready after warm-up
 OPENAI_API_KEY=<key> uv run scripts/smoke_server.py \
@@ -44,8 +44,8 @@ OPENAI_API_KEY=<key> uv run scripts/demo_page.py --base-url http://127.0.0.1:<po
 If `uv run ... uvicorn` fails with `Failed to spawn`, the venv was created under another path (stale shebangs):
 use `uv run python -m uvicorn ...` or recreate `.venv`.
 
-One recognizer per process, always one worker. Start the server from a shell with no `GIPFORMER_TEST_*` exported:
-unknown `GIPFORMER_*` variables abort startup, as do leftover `QUAN_*` ones.
+One recognizer per process, always one worker. Start the server from a shell with no `GATEWAY_TEST_*` exported:
+unknown `GATEWAY_*` variables abort startup, as do leftover `GIPFORMER_*` / `QUAN_*` ones.
 
 ## Baselines and probes
 

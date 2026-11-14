@@ -1,5 +1,5 @@
-{"type": "session.created", "event_id": "event_0001", "session": {"type": "transcription", "audio": {"input": {"format": {"type": "audio/pcm", "rate": 24000}, "transcription": {"model": "gipformer1.5-68M-rnnt", "language": "vi"}, "turn_detection": null}}}}
-{"type": "session.updated", "event_id": "event_0002", "session": {"type": "transcription", "audio": {"input": {"format": {"type": "audio/pcm", "rate": 24000}, "transcription": {"model": "gipformer1.5-68M-rnnt", "language": "vi"}, "turn_detection": null}}}}
+{"type": "session.created", "event_id": "event_0001", "session": {"type": "transcription", "audio": {"input": {"format": {"type": "audio/pcm", "rate": 24000}, "transcription": {"model": "viet-asr", "language": "vi"}, "turn_detection": null}}}}
+{"type": "session.updated", "event_id": "event_0002", "session": {"type": "transcription", "audio": {"input": {"format": {"type": "audio/pcm", "rate": 24000}, "transcription": {"model": "viet-asr", "language": "vi"}, "turn_detection": null}}}}
 {"type": "input_audio_buffer.committed", "event_id": "event_0003", "item_id": "item_0001", "previous_item_id": null}
 {"type": "conversation.item.added", "event_id": "event_0004", "previous_item_id": null, "item": {"id": "item_0001", "object": "realtime.item", "type": "message", "role": "user", "status": "completed", "content": [{"type": "input_audio"}]}}
 {"type": "conversation.item.input_audio_transcription.delta", "event_id": "event_0005", "item_id": "item_0001", "content_index": 0, "delta": "một số loài động vật như voi"}

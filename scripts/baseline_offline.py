@@ -5,7 +5,7 @@ decoding method, a thread sweep for the default settings, and the capacity defau
 
 CPU only; needs the staged model (scripts/stage_models.py) and fixtures-large/vi_long.wav (scripts/fetch_fixtures.py).
 Every measurement runs in a fresh process, so load time and peak RSS belong to that setting only. The engine is
-used exactly as the gateway uses it: warm-up on GIPFORMER_MAX_CHUNK_SECONDS of zeros, fixtures as one chunk each,
+used exactly as the gateway uses it: warm-up on GATEWAY_MAX_CHUNK_SECONDS of zeros, fixtures as one chunk each,
 vi_long.wav split by `app.chunking.split` and joined by `app.transcription.Joiner`. The report holds numbers, counts
 and SHA256 of transcripts only (no audio, no text); scripts/smoke_server.py compares the gateway's transcripts with
 the hashes of the default setting.
@@ -58,7 +58,7 @@ HANG_MARGIN = 20
 
 
 def models_dir() -> Path:
-    return Path(os.environ.get("GIPFORMER_MODELS_DIR", ROOT / "models"))
+    return Path(os.environ.get("GATEWAY_MODELS_DIR", ROOT / "models"))
 
 
 def sha256(text: str) -> str:
@@ -92,14 +92,14 @@ def latency(times: list[float], audio_s: float) -> dict:
 def child(precision: str, decoding: str, threads: int, part: str) -> dict:
     """One setting in this (fresh) process."""
     from app.chunking import split
-    from app.engine import GipformerEngine
+    from app.engine import SherpaEngine
     from app.transcription import Joiner
     from scripts.scoring import wer
 
     cfg = Config(api_keys=("x" * 16,))
     refs = json.loads((FIXTURES / "manifest.json").read_text())["files"]
     t0 = time.monotonic()
-    e = GipformerEngine(
+    e = SherpaEngine(
         models_dir(), precision, decoding, cfg.beam_size, threads, cfg.max_chunk_seconds
     )
     e.load()
@@ -175,7 +175,7 @@ def derive(threads: dict, worst_max_chunk_s: float) -> dict:
     rtf = max(chosen["max_chunk"]["rtf_max"], chosen["vi_long.wav"]["rtf_max"])
     cfg = Config(api_keys=("x" * 16,))
     # An admitted chunk may wait for everything buffered ahead of it (queued + running audio). That wait must not
-    # exceed the time a client is made to wait for admission (GIPFORMER_QUEUE_TIMEOUT_SECONDS).
+    # exceed the time a client is made to wait for admission (GATEWAY_QUEUE_TIMEOUT_SECONDS).
     return {
         "rules": {"min_thread_efficiency": MIN_THREAD_EFFICIENCY, "hang_margin": HANG_MARGIN},
         "thread_efficiency": efficiency,

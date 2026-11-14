@@ -80,7 +80,7 @@ def expected_turn(pcm: bytes, max_chunk_seconds: float) -> list[str]:
 class WS:
     """Raw realtime client (`websockets`): sends what the SDKs never do and checks per-item event order."""
 
-    def __init__(self, srv, query: str = "?model=gipformer1.5-68M-rnnt", headers=AUTH, timeout: float = 5, **kwargs):
+    def __init__(self, srv, query: str = "?model=viet-asr", headers=AUTH, timeout: float = 5, **kwargs):
         self.conn = connect(srv.ws_url + "/v1/realtime" + query, additional_headers=headers, max_size=None,
                             open_timeout=5, **kwargs)
         self.timeout = timeout  # default for recv/until

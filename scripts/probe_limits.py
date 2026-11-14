@@ -10,7 +10,7 @@ CPU only; needs the staged model (scripts/stage_models.py) and, for part (c), fi
     and on a grid up to 3 s above it (a length below it must fail, every length checked above it must succeed).
 (b) Short speech: cuts of the speech fixtures at several lengths and offsets -> how many cuts yield any text.
 (c) Chunk length: for each length, a fresh process loads the default engine (fp32, modified_beam_search, beam 4,
-    `--threads`), warms up on that length (as the gateway does with GIPFORMER_MAX_CHUNK_SECONDS) and decodes speech
+    `--threads`), warms up on that length (as the gateway does with GATEWAY_MAX_CHUNK_SECONDS) and decodes speech
     of that length (vi_long.wav, tiled when shorter): latency, real-time factor, RSS after load and peak RSS.
 (d) Accuracy against chunk length: vi_long.wav split by app.chunking.split at each length -> WER.
 
@@ -49,13 +49,13 @@ REPEATS = 3
 
 
 def models_dir() -> Path:
-    return Path(os.environ.get("GIPFORMER_MODELS_DIR", ROOT / "models"))
+    return Path(os.environ.get("GATEWAY_MODELS_DIR", ROOT / "models"))
 
 
 def engine(precision="fp32", decoding="modified_beam_search", threads=4, warmup_seconds=1.0):
-    from app.engine import GipformerEngine
+    from app.engine import SherpaEngine
 
-    e = GipformerEngine(models_dir(), precision, decoding, 4, threads, warmup_seconds)
+    e = SherpaEngine(models_dir(), precision, decoding, 4, threads, warmup_seconds)
     e.load()
     return e
 
@@ -185,7 +185,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    ap.add_argument("--threads", type=int, default=4, help="GIPFORMER_NUM_THREADS for part (c)")
+    ap.add_argument("--threads", type=int, default=4, help="GATEWAY_NUM_THREADS for part (c)")
     ap.add_argument("--out", type=Path)
     ap.add_argument("--child", type=float, help=argparse.SUPPRESS)
     args = ap.parse_args()

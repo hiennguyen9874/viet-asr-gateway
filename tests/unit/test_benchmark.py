@@ -34,7 +34,7 @@ def test_statistics_and_histogram_interval_not_lifetime():
     before = parse_metrics(m.render())
     for value in (.01, .03):
         m.observe("queue_wait_seconds", "Wait.", value)
-    result = histogram(before, parse_metrics(m.render()), "gipformer_queue_wait_seconds")
+    result = histogram(before, parse_metrics(m.render()), "gateway_queue_wait_seconds")
     assert result["count"] == 2
     assert result["sum_s"] == pytest.approx(.04)
     assert result["p50_upper_s"] == .01 and result["p95_upper_s"] == .05
@@ -47,7 +47,7 @@ def test_empty_and_overflow_histograms():
     assert histogram({}, {}, "missing")["p95_upper_s"] is None
     m = Metrics()
     m.observe("latency", "Latency.", 200)
-    result = histogram({}, parse_metrics(m.render()), "gipformer_latency")
+    result = histogram({}, parse_metrics(m.render()), "gateway_latency")
     assert result["count"] == 1 and result["p95_upper_s"] is None
 
 
@@ -55,9 +55,9 @@ def test_process_resource_metrics():
     m = Metrics()
     m.process_resources()
     values = parse_metrics(m.render())
-    assert values["gipformer_process_max_rss_bytes"] > 0
-    assert values["gipformer_process_cpu_seconds_total"] > 0
-    assert values["gipformer_children_cpu_seconds_total"] >= 0
+    assert values["gateway_process_max_rss_bytes"] > 0
+    assert values["gateway_process_cpu_seconds_total"] > 0
+    assert values["gateway_children_cpu_seconds_total"] >= 0
 
 
 @pytest.mark.parametrize("tls", [False, True])

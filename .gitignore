@@ -226,7 +226,7 @@ __marimo__/
 /fixtures-large/
 node_modules/
 
-# Gateway API keys for compose.yaml (secrets/gipformer_api_keys)
+# Gateway API keys for compose.yaml (secrets/gateway_api_keys)
 /secrets/
 
 # Local editor settings

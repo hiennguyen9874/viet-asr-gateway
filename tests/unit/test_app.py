@@ -136,7 +136,7 @@ def test_metrics_and_logs_carry_no_secrets(capfd):
     with serve(FakeEngine()) as (client, _):
         client.get("/metrics", headers={"Authorization": "Bearer wrong-key-0123456789"})
         text = client.get("/metrics", headers=AUTH).text
-    assert "gipformer_ready 1.0" in text and 'gipformer_http_requests_total{status="401"}' in text
+    assert "gateway_ready 1.0" in text and 'gateway_http_requests_total{status="401"}' in text
     logs = capfd.readouterr().err
     entries = [json.loads(line) for line in logs.splitlines() if line.startswith("{")]
     requests = [e for e in entries if e["event"] == "http.request"]
@@ -182,7 +182,7 @@ def test_real_engine_requires_staged_models_dir(tmp_path: Path):
 
 
 def test_startup_requires_spool_dir_and_ffmpeg(tmp_path: Path, monkeypatch):
-    with pytest.raises(ConfigError, match="GIPFORMER_SPOOL_DIR"):
+    with pytest.raises(ConfigError, match="GATEWAY_SPOOL_DIR"):
         create_app(config(spool_dir=tmp_path / "missing"), FakeEngine())
     monkeypatch.setenv("PATH", str(tmp_path))
     with pytest.raises(ConfigError, match="ffmpeg"):

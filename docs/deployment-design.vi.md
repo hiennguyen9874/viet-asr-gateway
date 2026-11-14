@@ -29,14 +29,14 @@ OpenAI SDK / curl / WebSocket client
    ├─ scheduler: queue có giới hạn, công bằng giữa lane         app/scheduler.py
    └─ EngineWorker: thread duy nhất gọi model                   app/engine.py
                  |
-   GipformerEngine: sherpa-onnx OfflineRecognizer (transducer)  app/engine.py
+   SherpaEngine: sherpa-onnx OfflineRecognizer (transducer)  app/engine.py
    load từ /models (read-only, đã pin + SHA256), không truy cập Hub
 ```
 
 ### Quy tắc cốt lõi
 
 - **Mọi inference được serialize.** Một `OfflineRecognizer` duy nhất, chỉ `EngineWorker` (một thread) gọi nó, mỗi lần
-  một chunk; song song nằm trong onnxruntime (`GIPFORMER_NUM_THREADS` intra-op thread), nên CPU và RAM có giới hạn. Endpoint không gọi model hay worker trực tiếp; mỗi request/session là một *lane* trong
+  một chunk; song song nằm trong onnxruntime (`GATEWAY_NUM_THREADS` intra-op thread), nên CPU và RAM có giới hạn. Endpoint không gọi model hay worker trực tiếp; mỗi request/session là một *lane* trong
   scheduler, mỗi chunk là một *job*.
 - **Event loop chỉ làm I/O.** FFmpeg chạy subprocess, inference chạy trên worker thread.
 - **Fairness:** round-robin giữa lane; lane live (Realtime) được ưu tiên có hạn mức để file dài không chiếm worker.
@@ -45,7 +45,7 @@ OpenAI SDK / curl / WebSocket client
   lượng, deadline tổng mỗi request. Vượt → 413/429/503 với envelope OpenAI.
 - **Hủy:** client ngắt → hủy chunk đang chờ, bỏ kết quả chunk đang chạy. Kernel đang chạy không bị ngắt; worker và
   budget chỉ được giải phóng khi call thật kết thúc.
-- **Treo/lỗi:** call inference lâu hơn `GIPFORMER_INFER_HANG_SECONDS` → `/health` 503 (supervisor restart). Lỗi đơn lẻ →
+- **Treo/lỗi:** call inference lâu hơn `GATEWAY_INFER_HANG_SECONDS` → `/health` 503 (supervisor restart). Lỗi đơn lẻ →
   500 và worker tự warm-up lại.
 
 ## 3. Luồng xử lý
@@ -55,7 +55,7 @@ OpenAI SDK / curl / WebSocket client
 1. Kiểm tra auth, giới hạn body (trước khi parse multipart), validate tham số theo thứ tự cố định.
 2. Spool upload vào thư mục tạm riêng; FFmpeg (argv cố định, chỉ protocol `file`, allowlist demuxer/decoder, env
    tối thiểu) decode về mono 16 kHz float32, dừng ngay khi vượt thời lượng cho phép.
-3. `chunking.split`: chunk ≤ `GIPFORMER_MAX_CHUNK_SECONDS`, cắt tại cửa sổ 50 ms yên lặng nhất trong 5 s cuối; các chunk
+3. `chunking.split`: chunk ≤ `GATEWAY_MAX_CHUNK_SECONDS`, cắt tại cửa sổ 50 ms yên lặng nhất trong 5 s cuối; các chunk
    phủ liền audio. Audio ≤ 100 ms → `""`, không gọi model (recognizer lỗi dưới 1,360 mẫu; baseline §5).
 4. `run_chunks` đưa từng chunk qua lane; `Joiner` nối text bằng một dấu cách (chunk rỗng không sinh dấu cách).
 5. SSE: headers chỉ gửi sau khi decode xong; một `delta` mỗi chunk, một `done` ở cuối; lỗi sau headers → event
@@ -76,7 +76,7 @@ xử lý FIFO qua cùng `split`/`run_chunks`/`Joiner` như REST. Gửi có giớ
 
 ## 4. Model và dữ liệu
 
-- `GipformerEngine.load` nạp encoder/decoder/joiner (`fp32` hoặc `.int8`, `GIPFORMER_PRECISION`) và `tokens.txt` từ
+- `SherpaEngine.load` nạp encoder/decoder/joiner (`fp32` hoặc `.int8`, `GATEWAY_PRECISION`) và `tokens.txt` từ
   thư mục đã stage, chỉ đường dẫn local, không truy cập Hub. Text giống hệt `references/gipformer/infer_onnx.py` trên
   cùng audio và setting (`tests/model/test_engine.py`, fp32/int8 × beam/greedy). Kết quả mỗi chunk: text + token +
   thời điểm phát token (mẫu, tính từ đầu chunk).

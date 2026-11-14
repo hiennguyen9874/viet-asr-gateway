@@ -9,9 +9,9 @@ Runs with `uv run` from the host against a container port as well (or with the i
 fails):
 - every fixture: json text == text body == "".join(SSE deltas) == SSE done text == verbose_json text == SRT/VTT cue
   texts joined by spaces; usage.seconds == verbose_json duration == samples / 16 kHz; cues ordered, inside the audio;
-- fixtures of one chunk (<= GIPFORMER_MAX_CHUNK_SECONDS, 16 kHz WAV decodes bit-exactly): SHA256 of the text == the
+- fixtures of one chunk (<= GATEWAY_MAX_CHUNK_SECONDS, 16 kHz WAV decodes bit-exactly): SHA256 of the text == the
   default setting of docs/baseline/offline.json (scripts/baseline_offline.py), so the server must run the default
-  GIPFORMER_PRECISION and GIPFORMER_DECODING_METHOD;
+  GATEWAY_PRECISION and GATEWAY_DECODING_METHOD;
 - fixtures-large/vi_long.wav, if present: WER against the FLEURS reference <= 0.10;
 - Realtime (`/v1/realtime`, one socket, one commit per fixture, 24 kHz PCM16 in 20 ms packets): events in order,
   transcript == joined deltas, usage == committed seconds, WER <= REST WER + 0.02 (soxr + PCM16 vs no resampling),
@@ -40,7 +40,7 @@ from scripts.subtitles import parse_cues  # noqa: E402
 
 FIXTURES = ROOT / "tests/fixtures"
 LONG = ROOT / "fixtures-large/vi_long.wav"
-MODEL = "gipformer1.5-68M-rnnt"
+MODEL = "viet-asr"
 LONG_MAX_WER = 0.10
 SMALL = ("vi_a.wav", "vi_b.wav", "silence_2s.wav", "short_200ms.wav")
 TEXT_FIELDS = (
@@ -285,7 +285,7 @@ def main() -> int:
         "--max-chunk-seconds",
         type=float,
         default=20.0,
-        help="the server's GIPFORMER_MAX_CHUNK_SECONDS",
+        help="the server's GATEWAY_MAX_CHUNK_SECONDS",
     )
     ap.add_argument("--out", type=Path)
     args = ap.parse_args()
@@ -378,10 +378,10 @@ def main() -> int:
         for line in gw.request("GET", "/metrics").read().decode().splitlines()
         if line.startswith(
             (
-                "gipformer_transcriptions_total",
-                "gipformer_jobs_total",
-                "gipformer_decodes_total",
-                "gipformer_realtime_",
+                "gateway_transcriptions_total",
+                "gateway_jobs_total",
+                "gateway_decodes_total",
+                "gateway_realtime_",
             )
         )
     ]

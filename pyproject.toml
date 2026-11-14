@@ -1,7 +1,7 @@
 [project]
-name = "gipformer-gateway"
-version = "0.0.0"
-description = "OpenAI-compatible (scoped) serving for gipformer1.5-68M-rnnt (CPU, sherpa-onnx)"
+name = "viet-asr-gateway"
+version = "0.2.0rc1"
+description = "OpenAI-compatible (scoped) serving for viet-asr (CPU, sherpa-onnx)"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     # Pinned together with the model in assets/manifest.json (tests/unit/test_manifests.py).

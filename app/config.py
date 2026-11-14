@@ -1,4 +1,4 @@
-"""Typed gateway configuration, read once from `GIPFORMER_*` environment variables.
+"""Typed gateway configuration, read once from `GATEWAY_*` environment variables.
 
 Every limit is finite and validated at startup; an invalid or unknown variable aborts startup (`ConfigError`).
 There is no default API key. Gateway API keys are separate from `HF_TOKEN` (staging secret), and a key equal to
@@ -14,8 +14,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 SAMPLE_RATE = 16000  # model input rate; queue budgets are counted in 16 kHz samples
-PREFIX = "GIPFORMER_"
-OLD_PREFIX = "QUAN_"  # pre-rename settings: a leftover one means a half-migrated deployment
+PREFIX = "GATEWAY_"
+# Pre-rename settings (Gipformer era, then the CTC era): a leftover one means a half-migrated deployment.
+OLD_PREFIXES = ("GIPFORMER_", "QUAN_")
 PRECISIONS = ("fp32", "int8")
 DECODING_METHODS = ("modified_beam_search", "greedy_search")
 MIN_API_KEY_LENGTH = 16
@@ -90,7 +91,7 @@ class Config:
     def __post_init__(self) -> None:
         if not self.api_keys:
             raise ConfigError(
-                "GIPFORMER_API_KEYS (or GIPFORMER_API_KEYS_FILE) must define at least one key"
+                "GATEWAY_API_KEYS (or GATEWAY_API_KEYS_FILE) must define at least one key"
             )
         for key in self.api_keys:
             if len(key) < MIN_API_KEY_LENGTH or not all("!" <= c <= "~" for c in key):
@@ -101,15 +102,15 @@ class Config:
             raise ConfigError("duplicate API key")
         if self.log_level not in ("DEBUG", "INFO", "WARNING", "ERROR"):
             raise ConfigError(
-                f"GIPFORMER_LOG_LEVEL must be DEBUG, INFO, WARNING or ERROR, got {self.log_level!r}"
+                f"GATEWAY_LOG_LEVEL must be DEBUG, INFO, WARNING or ERROR, got {self.log_level!r}"
             )
         if self.precision not in PRECISIONS:
             raise ConfigError(
-                f"GIPFORMER_PRECISION must be one of {', '.join(PRECISIONS)}, got {self.precision!r}"
+                f"GATEWAY_PRECISION must be one of {', '.join(PRECISIONS)}, got {self.precision!r}"
             )
         if self.decoding_method not in DECODING_METHODS:
             raise ConfigError(
-                f"GIPFORMER_DECODING_METHOD must be one of {', '.join(DECODING_METHODS)}, got {self.decoding_method!r}"
+                f"GATEWAY_DECODING_METHOD must be one of {', '.join(DECODING_METHODS)}, got {self.decoding_method!r}"
             )
         for f in dataclasses.fields(self):
             value = getattr(self, f.name)
@@ -118,28 +119,24 @@ class Config:
                     f"{PREFIX}{f.name.upper()} must be a finite number > 0, got {value!r}"
                 )
         if self.max_chunk_seconds > self.max_audio_seconds:
-            raise ConfigError("GIPFORMER_MAX_CHUNK_SECONDS must be <= GIPFORMER_MAX_AUDIO_SECONDS")
+            raise ConfigError("GATEWAY_MAX_CHUNK_SECONDS must be <= GATEWAY_MAX_AUDIO_SECONDS")
         if self.max_chunk_seconds < MIN_CHUNK_SECONDS:
             # The splitter needs room to cut at a quiet point and keep every chunk above the short-clip floor.
-            raise ConfigError(f"GIPFORMER_MAX_CHUNK_SECONDS must be >= {MIN_CHUNK_SECONDS}")
+            raise ConfigError(f"GATEWAY_MAX_CHUNK_SECONDS must be >= {MIN_CHUNK_SECONDS}")
         if self.max_decoded_seconds < self.max_audio_seconds:
-            raise ConfigError(
-                "GIPFORMER_MAX_DECODED_SECONDS must be >= GIPFORMER_MAX_AUDIO_SECONDS"
-            )
+            raise ConfigError("GATEWAY_MAX_DECODED_SECONDS must be >= GATEWAY_MAX_AUDIO_SECONDS")
         if self.max_spool_bytes < self.max_upload_bytes:
-            raise ConfigError("GIPFORMER_MAX_SPOOL_BYTES must be >= GIPFORMER_MAX_UPLOAD_BYTES")
+            raise ConfigError("GATEWAY_MAX_SPOOL_BYTES must be >= GATEWAY_MAX_UPLOAD_BYTES")
         # A single job must fit the queue budget, otherwise it could never be admitted.
         for name in ("max_chunk_seconds", "max_turn_seconds"):
             if getattr(self, name) > self.queue_max_buffered_seconds:
                 raise ConfigError(
-                    f"{PREFIX}{name.upper()} must be <= GIPFORMER_QUEUE_MAX_BUFFERED_SECONDS"
+                    f"{PREFIX}{name.upper()} must be <= GATEWAY_QUEUE_MAX_BUFFERED_SECONDS"
                 )
         if self.queue_max_jobs_per_lane > self.queue_max_jobs:
-            raise ConfigError(
-                "GIPFORMER_QUEUE_MAX_JOBS_PER_LANE must be <= GIPFORMER_QUEUE_MAX_JOBS"
-            )
+            raise ConfigError("GATEWAY_QUEUE_MAX_JOBS_PER_LANE must be <= GATEWAY_QUEUE_MAX_JOBS")
         if self.max_sessions > self.queue_max_lanes:
-            raise ConfigError("GIPFORMER_MAX_SESSIONS must be <= GIPFORMER_QUEUE_MAX_LANES")
+            raise ConfigError("GATEWAY_MAX_SESSIONS must be <= GATEWAY_QUEUE_MAX_LANES")
 
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None) -> "Config":
@@ -149,7 +146,12 @@ class Config:
             PREFIX + "API_KEYS",
             PREFIX + "API_KEYS_FILE",
         }
-        unknown = sorted(k for k in env if k.startswith((PREFIX, OLD_PREFIX)) and k not in known)
+        obsolete = sorted(k for k in env if k.startswith(OLD_PREFIXES))
+        if obsolete:
+            raise ConfigError(
+                f"obsolete configuration variables (renamed to {PREFIX}*): {', '.join(obsolete)}"
+            )
+        unknown = sorted(k for k in env if k.startswith(PREFIX) and k not in known)
         if unknown:
             raise ConfigError(f"unknown configuration variables: {', '.join(unknown)}")
 
@@ -164,12 +166,12 @@ class Config:
 def _read_api_keys(env: Mapping[str, str]) -> tuple[str, ...]:
     inline, path = env.get(PREFIX + "API_KEYS"), env.get(PREFIX + "API_KEYS_FILE")
     if inline is not None and path is not None:
-        raise ConfigError("set only one of GIPFORMER_API_KEYS and GIPFORMER_API_KEYS_FILE")
+        raise ConfigError("set only one of GATEWAY_API_KEYS and GATEWAY_API_KEYS_FILE")
     if path is not None:
         try:
             text = Path(path).read_text()
         except OSError as e:
-            raise ConfigError(f"cannot read GIPFORMER_API_KEYS_FILE: {e.strerror}") from None
+            raise ConfigError(f"cannot read GATEWAY_API_KEYS_FILE: {e.strerror}") from None
         keys = tuple(
             line.strip() for line in text.splitlines() if line.strip() and not line.startswith("#")
         )

@@ -16,12 +16,12 @@ Ordered by priority. A feature is enabled only after its gate passes with record
 
 ### 1. Production capacity and limits (R4)
 
-Current defaults (`GIPFORMER_QUEUE_MAX_LANES=32`, `GIPFORMER_MAX_SESSIONS=16`, …) are finite safety budgets, **not measured
-capacity**. `GIPFORMER_NUM_THREADS=4` and `GIPFORMER_QUEUE_MAX_BUFFERED_SECONDS=600` come from the single-stream CPU
+Current defaults (`GATEWAY_QUEUE_MAX_LANES=32`, `GATEWAY_MAX_SESSIONS=16`, …) are finite safety budgets, **not measured
+capacity**. `GATEWAY_NUM_THREADS=4` and `GATEWAY_QUEUE_MAX_BUFFERED_SECONDS=600` come from the single-stream CPU
 baseline (docs/baseline.vi.md §4: RTF 0.04 at fp32, beam 4, 4 threads), not from load. Tooling exists
 (`scripts/benchmark.py`); the load measurement does not.
 
-- [ ] Benchmark on an **exclusive** CPU host (record CPU model, core count, `GIPFORMER_NUM_THREADS`, precision and
+- [ ] Benchmark on an **exclusive** CPU host (record CPU model, core count, `GATEWAY_NUM_THREADS`, precision and
   decoding method): REST short/long, SSE, WebSocket commits and mixed, ramping clients; ≥ 3 runs per level, ≥ 100
   successes per group for p95. Fix workload, p95 SLO and error budget before measuring.
 - [ ] Soak ≥ 1 h at the chosen level behind real TLS; RSS headroom, no occupancy growth.
@@ -68,7 +68,7 @@ identical text vs `docs/baseline/offline.json`, per-request deadlines and cancel
 - [ ] Batching (R4): decode chunks from different lanes in one `decode_streams` call; measure throughput and
   latency against single-chunk calls at the same thread count before enabling.
 - [ ] Multiple recognizer instances (R4): several recognizers on separate worker threads in one container, sharing
-  the core budget with `GIPFORMER_NUM_THREADS`; needs a RAM budget per instance (~0.8 GB fp32, ~0.46 GB int8).
+  the core budget with `GATEWAY_NUM_THREADS`; needs a RAM budget per instance (~0.8 GB fp32, ~0.46 GB int8).
 - [ ] Horizontal scale: several containers behind a load balancer with sticky WebSocket routing (works today; needs
   the §1 measurement to size).
 - [ ] Optional GPU runtime: sherpa-onnx with the onnxruntime CUDA provider, only if CPU measurements fall short of the

@@ -240,7 +240,7 @@ def test_non_finite_samples_are_rejected(tmp_path):
 
 def test_decoder_gets_no_secrets(tmp_path, monkeypatch):
     monkeypatch.setenv("HF_TOKEN", "hf_secret_value")
-    monkeypatch.setenv("GIPFORMER_API_KEYS", "gateway-secret-0123456789")
+    monkeypatch.setenv("GATEWAY_API_KEYS", "gateway-secret-0123456789")
     dump = tmp_path / "env.txt"
     decode(tmp_path, fake_ffmpeg(tmp_path, f"env > {dump}"))
     env = dump.read_text()

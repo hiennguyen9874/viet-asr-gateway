@@ -400,9 +400,9 @@ class Session:
             await self._send({"type": "websocket.accept"})
             await self.send_event("session.created", session=self._session)
             tasks = [
-                asyncio.create_task(self._receive_loop(), name="gipformer-rt-receive"),
-                asyncio.create_task(self._process_loop(), name="gipformer-rt-process"),
-                asyncio.create_task(self._watch_idle(), name="gipformer-rt-idle"),
+                asyncio.create_task(self._receive_loop(), name="gateway-rt-receive"),
+                asyncio.create_task(self._process_loop(), name="gateway-rt-process"),
+                asyncio.create_task(self._watch_idle(), name="gateway-rt-idle"),
             ]
             remaining = self._started + self._config.max_session_seconds - time.monotonic()
             done, _ = await asyncio.wait(

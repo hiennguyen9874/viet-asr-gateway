@@ -8,7 +8,7 @@ another aligner:
     {"audio": "<path relative to the repo>", "sha256": "<of the audio file>", "split": "dev" | "test",
      "speaker": "<optional, e.g. female/male>", "words": [{"word": "các", "start": 0.95, "end": 1.21}, ...]}
 
-Words are whitespace units of the transcript (A3). Hypothesis words (real GipformerEngine, server chunking, app.alignment)
+Words are whitespace units of the transcript (A3). Hypothesis words (real SherpaEngine, server chunking, app.alignment)
 are matched to reference words by an edit alignment of the word strings; unmatched words are ASR errors, reported
 apart and not counted in the timing error. The thresholds below were fixed before measuring; do not tune them.
 The gate is computed on the `test` split only (`dev` is for choosing at most one end-extension rule). Exit 1 if
@@ -118,7 +118,7 @@ def main() -> int:
     ap.add_argument(
         "--models-dir",
         type=Path,
-        default=Path(os.environ.get("GIPFORMER_MODELS_DIR", ROOT / "models")),
+        default=Path(os.environ.get("GATEWAY_MODELS_DIR", ROOT / "models")),
     )
     ap.add_argument("--annotations", type=Path, default=ANNOTATIONS)
     ap.add_argument("--max-chunk-seconds", type=float, default=20.0)
@@ -134,10 +134,10 @@ def main() -> int:
 
     from app.alignment import align
     from app.chunking import split
-    from app.engine import GipformerEngine
+    from app.engine import SherpaEngine
     from app.formats import seconds
 
-    engine = GipformerEngine(
+    engine = SherpaEngine(
         args.models_dir, "fp32", "modified_beam_search", 4, 4, warmup_seconds=args.max_chunk_seconds
     )
     engine.load()

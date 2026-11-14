@@ -48,10 +48,8 @@ from app.errors import (
 from app.observability import log, Metrics
 from app.scheduler import JobKind, Lane, Scheduler
 
-MODEL_ID = "gipformer1.5-68M-rnnt"
-WHISPER_ALIAS = (
-    "whisper-1"  # opt-in (GIPFORMER_WHISPER_ALIAS); same Gipformer backend, not Whisper output
-)
+MODEL_ID = "viet-asr"
+WHISPER_ALIAS = "whisper-1"  # opt-in (GATEWAY_WHISPER_ALIAS); same served model, not Whisper output
 MODEL_CREATED = (
     1789615207  # commit time of the pinned weights revision (docs/api-contract.vi.md §3)
 )
@@ -288,7 +286,7 @@ class DisconnectWatch:
     `receive()` can only return `http.disconnect`."""
 
     def __init__(self, receive: Receive):
-        self._task = asyncio.create_task(self._wait(receive), name="gipformer-disconnect-watch")
+        self._task = asyncio.create_task(self._wait(receive), name="gateway-disconnect-watch")
 
     @staticmethod
     async def _wait(receive: Receive) -> None:

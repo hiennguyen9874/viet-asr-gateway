@@ -22,7 +22,7 @@ from openai.types.realtime import (
 
 EXAMPLES = Path(__file__).parent / "examples"
 FIXTURE = Path(__file__).parents[1] / "fixtures" / "vi_a.wav"
-MODEL = "gipformer1.5-68M-rnnt"
+MODEL = "viet-asr"
 
 
 def test_sdk_version_is_pinned():

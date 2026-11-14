@@ -1,34 +1,34 @@
 # One CPU gateway process (README "Docker").
 #   uv run scripts/stage_models.py                       # on the host, once: ./models
-#   install -m 0400 -o 10001 /dev/stdin secrets/gipformer_api_keys <<< "<key>"   # one key per line
+#   install -m 0400 -o 10001 /dev/stdin secrets/gateway_api_keys <<< "<key>"   # one key per line
 #   docker compose up -d --build
 # The port is bound to localhost only; terminate TLS and expose it through a reverse proxy.
 services:
-  gipformer-gateway:
+  viet-asr-gateway:
     build:
       context: .
-    image: gipformer-gateway:r1
+    image: viet-asr-gateway:r1
     init: true
     environment:
-      GIPFORMER_MODELS_DIR: /models
-      GIPFORMER_API_KEYS_FILE: /run/secrets/gipformer_api_keys
+      GATEWAY_MODELS_DIR: /models
+      GATEWAY_API_KEYS_FILE: /run/secrets/gateway_api_keys
       HF_HUB_OFFLINE: "1"
       HOME: /tmp
     secrets:
-      - gipformer_api_keys
+      - gateway_api_keys
     volumes:
       - ./models:/models:ro
     read_only: true
     tmpfs:
-      # Upload spool (GIPFORMER_MAX_SPOOL_BYTES, 200 MiB by default) + small caches.
+      # Upload spool (GATEWAY_MAX_SPOOL_BYTES, 200 MiB by default) + small caches.
       - /tmp:size=512m,mode=1777
     # SIGTERM: Uvicorn waits up to 30 s for open requests, then the lifespan drains the scheduler
-    # (GIPFORMER_SHUTDOWN_DRAIN_SECONDS, 30 s) and stops the worker (5 s): worst case ~65 s before SIGKILL is needed.
+    # (GATEWAY_SHUTDOWN_DRAIN_SECONDS, 30 s) and stops the worker (5 s): worst case ~65 s before SIGKILL is needed.
     stop_grace_period: 70s
     restart: unless-stopped
     ports:
       - "127.0.0.1:18001:18001"
 
 secrets:
-  gipformer_api_keys:
-    file: ./secrets/gipformer_api_keys
+  gateway_api_keys:
+    file: ./secrets/gateway_api_keys

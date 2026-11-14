@@ -151,7 +151,7 @@ def main() -> int:
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     ap.add_argument(
-        "--cache", type=Path, default=Path.home() / ".cache" / "gipformer-gateway-fixtures"
+        "--cache", type=Path, default=Path.home() / ".cache" / "viet-asr-gateway-fixtures"
     )
     ap.add_argument(
         "--verify", action="store_true", help="only verify existing files (no download)"

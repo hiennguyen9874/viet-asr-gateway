@@ -1,4 +1,4 @@
-"""Seam 3: the real GipformerEngine against the reference inference script, and behind the worker and scheduler.
+"""Seam 3: the real SherpaEngine against the reference inference script, and behind the worker and scheduler.
 
 CPU only; needs the staged model (scripts/stage_models.py).
 """
@@ -13,7 +13,7 @@ import soundfile as sf
 from app.alignment import words
 from app.chunking import Span
 from app.config import SAMPLE_RATE
-from app.engine import EngineState, EngineWorker, GipformerEngine, MIN_FORWARD_SAMPLES
+from app.engine import EngineState, EngineWorker, MIN_FORWARD_SAMPLES, SherpaEngine
 from app.observability import Metrics
 from app.scheduler import JobKind, Scheduler
 from tests.fake_engine import config
@@ -22,8 +22,8 @@ from tests.model.conftest import FIXTURES, MODELS, reference_text
 CLIPS = ("vi_a.wav", "vi_b.wav")
 
 
-def loaded(precision="fp32", decoding="modified_beam_search", beam=4) -> GipformerEngine:
-    engine = GipformerEngine(MODELS, precision, decoding, beam, 4, warmup_seconds=1.0)
+def loaded(precision="fp32", decoding="modified_beam_search", beam=4) -> SherpaEngine:
+    engine = SherpaEngine(MODELS, precision, decoding, beam, 4, warmup_seconds=1.0)
     engine.load()
     return engine
 
@@ -69,7 +69,7 @@ def test_hard_floor_is_the_shortest_input_the_recognizer_accepts(precision, deco
 
 def test_missing_model_files_fail_load(tmp_path):
     with pytest.raises(FileNotFoundError):
-        GipformerEngine(tmp_path, "fp32", "greedy_search", 4, 4, 1.0).load()
+        SherpaEngine(tmp_path, "fp32", "greedy_search", 4, 4, 1.0).load()
 
 
 def test_worker_serves_concurrent_lanes_and_is_ready_only_after_warmup():
@@ -79,7 +79,7 @@ def test_worker_serves_concurrent_lanes_and_is_ready_only_after_warmup():
     async def main():
         cfg = config(models_dir=MODELS, max_chunk_seconds=10.0)
         worker = EngineWorker(
-            GipformerEngine(MODELS, "fp32", "modified_beam_search", 4, 4, cfg.max_chunk_seconds),
+            SherpaEngine(MODELS, "fp32", "modified_beam_search", 4, 4, cfg.max_chunk_seconds),
             cfg.infer_hang_seconds,
             Metrics(),
         )

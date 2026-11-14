@@ -1,4 +1,4 @@
-{"type": "session.update", "event_id": "client_evt_1", "session": {"type": "transcription", "audio": {"input": {"format": {"type": "audio/pcm", "rate": 24000}, "transcription": {"model": "gipformer1.5-68M-rnnt", "language": "vi"}, "turn_detection": null}}}}
+{"type": "session.update", "event_id": "client_evt_1", "session": {"type": "transcription", "audio": {"input": {"format": {"type": "audio/pcm", "rate": 24000}, "transcription": {"model": "viet-asr", "language": "vi"}, "turn_detection": null}}}}
 {"type": "input_audio_buffer.append", "event_id": "client_evt_2", "audio": "AAABAP//AAA="}
 {"type": "input_audio_buffer.commit", "event_id": "client_evt_3"}
 {"type": "input_audio_buffer.clear", "event_id": "client_evt_4"}

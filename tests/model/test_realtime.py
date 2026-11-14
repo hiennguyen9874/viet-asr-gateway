@@ -6,7 +6,7 @@ client would. (a) Each transcript equals REST on the exact committed 16 kHz wave
 original); (c) items committed back to back, short turns included, complete in commit order with the same text as
 alone; turns at or below the 100 ms floor complete with "" without a model call, turns just above it call the
 model once; (d) concurrent sessions with different audio do not mix; (e) a turn longer than
-GIPFORMER_MAX_CHUNK_SECONDS yields one delta per chunk in one item. When every gate test passes, its metadata-only
+GATEWAY_MAX_CHUNK_SECONDS yields one delta per chunk in one item. When every gate test passes, its metadata-only
 report (no audio, no transcripts) is written to docs/baseline/r3a_gate.json.
 
 Needs the staged model and ffmpeg: uv run pytest tests/model/test_realtime.py
@@ -25,14 +25,14 @@ import soxr
 
 from app.chunking import MIN_AUDIO_SAMPLES, split
 from app.config import SAMPLE_RATE
-from app.engine import GipformerEngine
+from app.engine import SherpaEngine
 from app.realtime import PCM_RATE, TurnBuffer
 from scripts.scoring import wer
 from tests.fake_engine import config
 from tests.live_server import serve, wav_file, WS
 from tests.model.conftest import FIXTURES, MODELS, ROOT
 
-MODEL = "gipformer1.5-68M-rnnt"
+MODEL = "viet-asr"
 PACKET = PCM_RATE // 50 * 2  # 20 ms of PCM16
 REPORT = ROOT / "docs/baseline/r3a_gate.json"
 GATE_SECTIONS = {"turns", "fifo", "concurrent", "long"}
@@ -43,7 +43,7 @@ DELTA = "conversation.item.input_audio_transcription.delta"
 
 @pytest.fixture(scope="module")
 def srv():
-    engine = GipformerEngine(MODELS, "fp32", "modified_beam_search", 4, 4, warmup_seconds=config().max_chunk_seconds)
+    engine = SherpaEngine(MODELS, "fp32", "modified_beam_search", 4, 4, warmup_seconds=config().max_chunk_seconds)
     with serve(engine, ready_timeout=300, http_timeout=300, models_dir=MODELS) as s:
         yield s
 
@@ -98,7 +98,7 @@ def rest(srv, path: Path) -> str:
 
 def infer_calls(srv) -> int:
     """Model calls so far (warm-up excluded)."""
-    m = re.search(r"^gipformer_infer_seconds_count (\d+)$", srv.client.get("/metrics").text, re.M)
+    m = re.search(r"^gateway_infer_seconds_count (\d+)$", srv.client.get("/metrics").text, re.M)
     return int(m.group(1)) if m else 0
 
 
@@ -140,7 +140,7 @@ def test_turns_match_rest_on_the_committed_waveform_and_wer(srv, tmp_path, gate)
 
 
 def test_items_complete_in_commit_order_and_short_turns_follow_the_floor(srv, tmp_path, gate):
-    # Four items (GIPFORMER_MAX_PENDING_ITEMS) committed without waiting: speech, a turn at the floor, speech, a
+    # Four items (GATEWAY_MAX_PENDING_ITEMS) committed without waiting: speech, a turn at the floor, speech, a
     # turn just above it. The floor turn must not reach the model; every other chunk is one model call.
     cases = [("vi_a", to_pcm24(load("vi_a.wav"))), ("at_floor", speech_cut(FLOOR_PCM)),
              ("vi_b", to_pcm24(load("vi_b.wav"))), ("above_floor", speech_cut(FLOOR_PCM + 120))]
@@ -201,7 +201,7 @@ def test_concurrent_sessions_do_not_mix(srv, gate):
 def test_long_turn_is_one_item_with_one_delta_per_chunk(srv, tmp_path, gate):
     a, b = load("vi_a.wav"), load("vi_b.wav")
     gap = np.zeros(SAMPLE_RATE, np.float32)
-    pcm = to_pcm24(np.concatenate([a, gap, b, gap, a, gap, b]))  # 37.7 s > GIPFORMER_MAX_CHUNK_SECONDS (20)
+    pcm = to_pcm24(np.concatenate([a, gap, b, gap, a, gap, b]))  # 37.7 s > GATEWAY_MAX_CHUNK_SECONDS (20)
     [(deltas, done)] = realtime(srv, [pcm])
     assert len(deltas) == chunks(pcm) >= 2 and all(deltas)  # (e)
     assert done["transcript"] == rest(srv, wav_file(tmp_path / "long.wav", committed(pcm)))

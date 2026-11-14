@@ -30,7 +30,7 @@ def pcm16(n: int, seed: int) -> bytes:
 
 
 def reference(pcm: bytes) -> np.ndarray:
-    """What gipformer_transcribe.audio.to_16k_mono does to the same samples (one-shot soxr HQ)."""
+    """A one-shot soxr HQ resample of the same samples."""
     x = np.frombuffer(pcm, "<i2").astype(np.float32) / 32768
     return soxr.resample(x, PCM_RATE, 16000).astype(np.float32)
 
@@ -217,6 +217,7 @@ P = "session.audio.input"
     (update(transcription={"language": 1}), ("invalid_value", f"{P}.transcription.language")),
     (update(transcription={"model": "gpt-4o-transcribe"}), ("model_not_found", f"{P}.transcription.model")),
     (update(transcription={"model": WHISPER_ALIAS}), ("model_not_found", f"{P}.transcription.model")),
+    (update(transcription={"model": "gipformer1.5-68M-rnnt"}), ("model_not_found", f"{P}.transcription.model")),
     (update(transcription={"model": 3}), ("invalid_value", f"{P}.transcription.model")),
     (update(transcription={"x" * 100: 1}), ("unknown_parameter", f"{P}.transcription." + "x" * 100)),
 ])

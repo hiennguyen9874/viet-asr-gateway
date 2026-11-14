@@ -353,7 +353,7 @@ async def test_hung_call_marks_worker_unready_and_unhealthy():
         await call_started(engine)
         await asyncio.sleep(0.15)
         assert worker.hung and not worker.ready and not worker.healthy
-        assert "gipformer_worker_hung 1.0" in metrics.render()
+        assert "gateway_worker_hung 1.0" in metrics.render()
         engine.gate.set()
         await wait_until(lambda: worker.ready)
 
@@ -448,7 +448,7 @@ async def test_blocked_warmup_marks_worker_unhealthy(recovery):
         await wait_until(lambda: worker.hung)
         assert worker.state == (EngineState.RECOVERING if recovery else EngineState.LOADING)
         assert not worker.healthy and not worker.ready
-        assert "gipformer_worker_hung 1.0" in metrics.render()
+        assert "gateway_worker_hung 1.0" in metrics.render()
         engine.warmup_gate.set()
         await wait_until(lambda: worker.ready)
         assert worker.healthy

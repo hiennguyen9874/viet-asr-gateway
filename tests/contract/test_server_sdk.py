@@ -233,9 +233,9 @@ def test_js_sdk(srv, srv_tls, audio):
     node = shutil.which("node")
     if node is None or not (JS / "node_modules").is_dir():
         pytest.skip("needs node and `npm ci` in tests/contract/js")
-    env = {**os.environ, "GIPFORMER_TEST_BASE_URL": srv.base_url + "/v1", "GIPFORMER_TEST_API_KEY": KEY,
-           "GIPFORMER_TEST_AUDIO_DIR": str(audio), "GIPFORMER_TEST_WSS_BASE_URL": srv_tls.base_url + "/v1",
-           "GIPFORMER_TEST_CA": str(srv_tls.ca)}
+    env = {**os.environ, "GATEWAY_TEST_BASE_URL": srv.base_url + "/v1", "GATEWAY_TEST_API_KEY": KEY,
+           "GATEWAY_TEST_AUDIO_DIR": str(audio), "GATEWAY_TEST_WSS_BASE_URL": srv_tls.base_url + "/v1",
+           "GATEWAY_TEST_CA": str(srv_tls.ca)}
     r = subprocess.run([node, "--test", "--test-reporter=tap", "server.test.ts"], cwd=JS, env=env, capture_output=True, text=True,
                        timeout=120)
     assert r.returncode == 0, r.stdout + r.stderr

@@ -5,8 +5,8 @@ Each file's job, and the tests that cover it. Area rules live in [change-rules.m
 ## app/ (the only code shipped in the image)
 
 ```text
-config.py         typed GIPFORMER_* env config, validated at startup; no default API key
-engine.py         GipformerEngine (sherpa-onnx offline transducer, CPU, local files only) + EngineWorker, the single
+config.py         typed GATEWAY_* env config, validated at startup; no default API key
+engine.py         SherpaEngine (sherpa-onnx offline transducer, CPU, local files only) + EngineWorker, the single
                     thread that runs the model;
                     ChunkResult = text + tokens + token emission times (samples, relative to the chunk)
 scheduler.py      bounded fair queue (lanes = requests/sessions, jobs = chunks) feeding the worker
@@ -30,7 +30,7 @@ observability.py  JSON logs + Prometheus-style metrics (metadata only)
 ## scripts/ (host tooling, never in the image)
 
 ```text
-stage_models.py     download pinned assets (assets/manifest.json) into ./models or $GIPFORMER_MODELS_DIR, verify SHA256
+stage_models.py     download pinned assets (assets/manifest.json) into ./models or $GATEWAY_MODELS_DIR, verify SHA256
 fetch_fixtures.py   build fixtures from FLEURS vi_vn (CC BY 4.0) at a pinned revision, verify SHA256
 baseline_offline.py RTF/WER per precision x decoding, thread sweep -> default threads and queue bounds; metadata-only
                       JSON with transcript SHA256; checks the app/config.py defaults

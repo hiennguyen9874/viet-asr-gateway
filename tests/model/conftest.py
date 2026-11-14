@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-MODELS = Path(os.environ.get("GIPFORMER_MODELS_DIR", ROOT / "models"))
+MODELS = Path(os.environ.get("GATEWAY_MODELS_DIR", ROOT / "models"))
 MODEL_DIR = MODELS / "gipformer1.5-68M-rnnt"
 FIXTURES = ROOT / "tests/fixtures"
 

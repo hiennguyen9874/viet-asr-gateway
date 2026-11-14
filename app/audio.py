@@ -125,7 +125,7 @@ class AudioIngress:
 
     def start(self) -> None:
         """Create a private spool directory (0700) for this process."""
-        self._spool_dir = Path(tempfile.mkdtemp(prefix="gipformer-spool-", dir=self._spool_parent))
+        self._spool_dir = Path(tempfile.mkdtemp(prefix="gateway-spool-", dir=self._spool_parent))
 
     def stop(self) -> None:
         """Remove the spool directory and anything left in it."""

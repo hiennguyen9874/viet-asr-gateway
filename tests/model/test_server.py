@@ -24,14 +24,14 @@ import soundfile as sf
 from app.alignment import MAX_CUE_CHARS, MAX_CUE_SAMPLES
 from app.chunking import MIN_AUDIO_SAMPLES
 from app.config import SAMPLE_RATE
-from app.engine import GipformerEngine, MIN_FORWARD_SAMPLES
+from app.engine import MIN_FORWARD_SAMPLES, SherpaEngine
 from scripts.scoring import wer
 from tests.fake_engine import config
 from tests.live_server import parse_cues, serve, wav_file
 from tests.model.conftest import FIXTURES, MODELS, reference_text, ROOT
 
 URL = "/v1/audio/transcriptions"
-MODEL = "gipformer1.5-68M-rnnt"
+MODEL = "viet-asr"
 LONG = ROOT / "fixtures-large/vi_long.wav"
 REPORT = ROOT / "docs/baseline/r2a_gate.json"
 GATE_SECTIONS = {"fixtures", "chunk_cut", "shift", "long"}
@@ -44,7 +44,7 @@ SHIFTS_S = (0.25, 0.5, 0.75)  # small enough that the first cue stays under the 
 
 @pytest.fixture(scope="module")
 def srv():
-    engine = GipformerEngine(MODELS, "fp32", "modified_beam_search", 4, 4, warmup_seconds=config().max_chunk_seconds)
+    engine = SherpaEngine(MODELS, "fp32", "modified_beam_search", 4, 4, warmup_seconds=config().max_chunk_seconds)
     with serve(engine, ready_timeout=300, http_timeout=300, models_dir=MODELS) as s:
         yield s
 

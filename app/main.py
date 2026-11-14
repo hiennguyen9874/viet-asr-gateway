@@ -19,7 +19,7 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from app.audio import AudioIngress
 from app.config import Config, ConfigError
-from app.engine import Engine, EngineWorker, GipformerEngine
+from app.engine import Engine, EngineWorker, SherpaEngine
 from app.errors import (
     APIError,
     install_handlers,
@@ -55,9 +55,9 @@ def create_app(config: Config | None = None, engine: Engine | None = None) -> Fa
     if engine is None:
         if not config.models_dir.is_dir():
             raise ConfigError(
-                f"GIPFORMER_MODELS_DIR is not a directory (run scripts/stage_models.py): {config.models_dir}"
+                f"GATEWAY_MODELS_DIR is not a directory (run scripts/stage_models.py): {config.models_dir}"
             )
-        engine = GipformerEngine(
+        engine = SherpaEngine(
             config.models_dir,
             config.precision,
             config.decoding_method,
@@ -67,7 +67,7 @@ def create_app(config: Config | None = None, engine: Engine | None = None) -> Fa
         )
 
     if not config.spool_dir.is_dir():
-        raise ConfigError(f"GIPFORMER_SPOOL_DIR is not a directory: {config.spool_dir}")
+        raise ConfigError(f"GATEWAY_SPOOL_DIR is not a directory: {config.spool_dir}")
     metrics = Metrics()
     metrics.process_resources()
     try:

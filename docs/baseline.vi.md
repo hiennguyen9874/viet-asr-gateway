@@ -23,8 +23,8 @@ chạy `scripts/stage_models.py --update-manifest`.
 
 ## 2. Engine offline
 
-`app/engine.GipformerEngine` tạo một `sherpa_onnx.OfflineRecognizer.from_transducer` từ file local đã stage (không
-truy cập Hub), 16 kHz, 80 fbank, `GIPFORMER_DECODING_METHOD`/`GIPFORMER_BEAM_SIZE` như reference. Parity
+`app/engine.SherpaEngine` tạo một `sherpa_onnx.OfflineRecognizer.from_transducer` từ file local đã stage (không
+truy cập Hub), 16 kHz, 80 fbank, `GATEWAY_DECODING_METHOD`/`GATEWAY_BEAM_SIZE` như reference. Parity
 (`tests/model/test_engine.py`, CPU, cần model đã stage): text giống hệt `references/gipformer/infer_onnx.py` cho
 fp32/int8 × `modified_beam_search`/`greedy_search`; thời điểm phát token tăng dần, nằm trong chunk và khớp text.
 
@@ -77,15 +77,15 @@ và fp32 hơn int8 đúng một từ của `vi_long`; int8 giảm RAM ~40%, gree
 
 **(c) Mặc định suy ra** (script exit 1 nếu `app/config.py` lệch):
 
-- `GIPFORMER_NUM_THREADS = 4`: số thread lớn nhất còn hiệu suất ≥ 0.5. Từ 8 thread trở lên mỗi core thêm chỉ nhanh
+- `GATEWAY_NUM_THREADS = 4`: số thread lớn nhất còn hiệu suất ≥ 0.5. Từ 8 thread trở lên mỗi core thêm chỉ nhanh
   thêm vài phần trăm cho một stream, và lấy core của FFmpeg decode và event loop. Lần đo trước trong cùng ngày cho
   0.55 / 0.35 ở 4 / 8 thread; trên host khác nên đo lại.
-- `GIPFORMER_QUEUE_MAX_BUFFERED_SECONDS` 900 → **600**: một chunk đã vào queue có thể phải chờ toàn bộ audio đã buffer
-  trước nó; thời gian đó phải ≤ `GIPFORMER_QUEUE_TIMEOUT_SECONDS` (30 s). Với RTF xấu nhất của mặc định (0.045, max
+- `GATEWAY_QUEUE_MAX_BUFFERED_SECONDS` 900 → **600**: một chunk đã vào queue có thể phải chờ toàn bộ audio đã buffer
+  trước nó; thời gian đó phải ≤ `GATEWAY_QUEUE_TIMEOUT_SECONDS` (30 s). Với RTF xấu nhất của mặc định (0.045, max
   qua các lần lặp) giới hạn là 668 s (lần đo trước: 721 s); 600 s chờ tối đa ~27 s. 900 s cũ (mặc định trước khi đo) sẽ là ~40 s.
-- `GIPFORMER_INFER_HANG_SECONDS = 120` giữ nguyên: ≥ 20 × lời gọi chậm nhất đo được (1.8 s, chunk 20 s ở 1 thread).
+- `GATEWAY_INFER_HANG_SECONDS = 120` giữ nguyên: ≥ 20 × lời gọi chậm nhất đo được (1.8 s, chunk 20 s ở 1 thread).
 - Giữ nguyên, kiểm tra với số đo: một job LIVE chờ tối đa một chunk FILE đang chạy (≤ 0.9 s); file dài nhất (1,800 s)
-  chạy một mình mất ~81 s, nên `GIPFORMER_REQUEST_TIMEOUT_SECONDS` 600 s đủ cho ~7 file dài tối đa cùng chia worker.
+  chạy một mình mất ~81 s, nên `GATEWAY_REQUEST_TIMEOUT_SECONDS` 600 s đủ cho ~7 file dài tối đa cùng chia worker.
   Lanes (32), sessions (16), jobs (64, 2 mỗi lane) là giới hạn an toàn khi rảnh; queue buffer ở trên là giới hạn chặn.
 
 Đây là số đo một stream offline trên host dùng chung, **không phải năng lực phục vụ** (R4, [roadmap.md](roadmap.md) §1).
@@ -138,7 +138,7 @@ speech `vi_long.wav` cắt/lặp tới độ dài đó, median 3 lần). WER: `v
 RSS sau load ≈ 387 MB; peak lúc load (759 MB) là peak của cả process tới 20 s. Trên 30 s, RAM tăng siêu tuyến tính
 (attention theo độ dài) và RTF tăng; dưới 10 s, WER tăng do cắt giữa câu nhiều hơn.
 
-**Mặc định `GIPFORMER_MAX_CHUNK_SECONDS = 20`**: chunk dài nhất mà peak RSS vẫn bằng peak lúc load, latency mỗi
+**Mặc định `GATEWAY_MAX_CHUNK_SECONDS = 20`**: chunk dài nhất mà peak RSS vẫn bằng peak lúc load, latency mỗi
 chunk < 1 s (cũng là thời gian tối đa một job LIVE phải chờ một chunk FILE đang chạy), WER thấp nhất trong bảng. WER
 trên một file 272 từ chỉ để loại các giá trị tệ, không phân biệt được 10–30 s.
 
@@ -191,7 +191,7 @@ từng packet 20 ms như client live:
   `previous_item_id` đúng, delta/`completed` theo thứ tự commit, text bằng REST; turn 100 ms (1,600 mẫu 16 kHz) →
   `""` không gọi model, turn 105 ms → đúng một lời gọi model (tổng 3 lời gọi cho 4 item).
 - Bốn session đồng thời, mỗi session hai item (`vi_a`/`vi_b`): không lẫn kết quả.
-- Turn 37.7 s (> `GIPFORMER_MAX_CHUNK_SECONDS` 20 s): một item, 2 delta, bằng REST.
+- Turn 37.7 s (> `GATEWAY_MAX_CHUNK_SECONDS` 20 s): một item, 2 delta, bằng REST.
 
 ## 8. Tái tạo
 

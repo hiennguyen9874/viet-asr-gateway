@@ -52,7 +52,7 @@ class Engine(Protocol):
     def transcribe(self, wav: np.ndarray) -> ChunkResult: ...
 
 
-class GipformerEngine:
+class SherpaEngine:
     """One sherpa-onnx offline transducer recognizer on CPU; one 16 kHz mono chunk per call (the reference's settings)."""
 
     def __init__(
@@ -135,7 +135,7 @@ class EngineWorker:
     def __init__(self, engine: Engine, hang_seconds: float, metrics: Metrics):
         self._engine, self._hang_seconds, self._metrics = engine, hang_seconds, metrics
         self._queue: queue.SimpleQueue = queue.SimpleQueue()
-        self._thread = threading.Thread(target=self._main, name="gipformer-inference", daemon=True)
+        self._thread = threading.Thread(target=self._main, name="gateway-inference", daemon=True)
         self._state = EngineState.LOADING
         self._call_started: float | None = None
         metrics.gauge_fn(
@@ -150,7 +150,7 @@ class EngineWorker:
         )
         metrics.gauge_fn(
             "worker_hung",
-            "1 when the running call exceeded GIPFORMER_INFER_HANG_SECONDS.",
+            "1 when the running call exceeded GATEWAY_INFER_HANG_SECONDS.",
             lambda: float(self.hung),
         )
 
