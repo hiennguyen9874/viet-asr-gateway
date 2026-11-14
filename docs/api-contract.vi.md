@@ -102,8 +102,8 @@ Kết quả:
   một dấu cách. Token chỉ được chứa `▁` ở đầu và không chứa ký tự khoảng trắng; `▁` đứng riêng vẫn đặt start của từ.
   Nếu token sai cấu trúc hoặc không khớp transcript, `srt`/`vtt` trả 500 `alignment_failed` (không bao giờ chia đều
   thời gian); `json`/`text`/`verbose_json`/SSE không chạy alignment nên không bị ảnh hưởng.
-- Text: chữ IN HOA tiếng Việt (vocabulary của model chỉ có chữ hoa), không dấu câu, số viết bằng chữ (output nguyên bản
-  của model, không hậu xử lý). Nhiều chunk nối bằng
+- Text: dạng viết tiếng Việt (chữ hoa/thường, dấu câu, số bằng chữ số), nguyên văn như model sinh ra, không hậu xử
+  lý. Token byte fallback (`<0xNN>`) được engine ghép thành ký tự UTF-8 để token luôn ghép ra đúng text. Nhiều chunk nối bằng
   một dấu cách; chunk rỗng không sinh dấu cách.
 - Silence/clip ngắn (`app/chunking.py`): audio decode hợp lệ nhưng ≤ 1,600 mẫu ở 16 kHz (≤ 100 ms), kể
   cả 0 mẫu → `text: ""` (`verbose_json` với `duration` thật, `srt` rỗng, `vtt` chỉ header), không gọi model (recognizer lỗi dưới 1,360 mẫu; xem baseline §5). Silence dài vẫn qua model

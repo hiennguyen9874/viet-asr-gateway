@@ -5,12 +5,14 @@ Read the section for each area you touch before editing it. File roles: [code-ma
 ## Inference path (`engine.py`, `scheduler.py`)
 
 - `SherpaEngine` is the only code that touches sherpa-onnx: one `OfflineRecognizer`, files from the staged
-  local directory only (never the Hub), one chunk per call. Settings: `GATEWAY_PRECISION`,
+  local directory only (never the Hub), one chunk per call, always the int8 weights of `viet-asr`. Settings:
   `GATEWAY_DECODING_METHOD`, `GATEWAY_BEAM_SIZE` (-> `max_active_paths`), `GATEWAY_NUM_THREADS`.
 - `EngineWorker` is the single thread that calls the recognizer. Work reaches it as jobs (one per chunk) on
   `Scheduler` lanes (one per request or realtime session).
-- Engine text must equal `references/gipformer/infer_onnx.py` for the same audio, precision and decoding
-  (`tests/model/test_engine.py`). Do not post-process the text.
+- Engine text, tokens and times must equal the minimal sherpa-onnx reference `tests/model/reference.py` for the same
+  audio and decoding (`tests/model/test_engine.py`). Do not post-process the text. The only token decoding is
+  `merge_byte_tokens`: runs of byte-fallback tokens (`<0xNN>`) become the UTF-8 characters sherpa-onnx already put in
+  the text, keeping the first byte's time (`tests/fixtures/vi_bytes.wav`).
 - A lane holds at most `GATEWAY_QUEUE_MAX_JOBS_PER_LANE` (2) queued chunks; long files are fed incrementally. LIVE
   lanes get bounded priority (`live_priority_ratio`).
 - Cancel drops queued chunks and discards the running chunk's result. A running decode finishes; the worker and

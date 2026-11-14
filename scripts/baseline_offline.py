@@ -1,4 +1,4 @@
-"""Offline CPU baseline of the real recognizer (docs/baseline/offline.json): speed and accuracy for every precision x
+"""Offline CPU baseline of the real recognizer (docs/baseline/offline.json): speed and accuracy for every
 decoding method, a thread sweep for the default settings, and the capacity defaults derived from them.
 
     uv run scripts/baseline_offline.py --out docs/baseline/offline.json
@@ -10,7 +10,7 @@ vi_long.wav split by `app.chunking.split` and joined by `app.transcription.Joine
 and SHA256 of transcripts only (no audio, no text); scripts/smoke_server.py compares the gateway's transcripts with
 the hashes of the default setting.
 
-(a) Settings: fp32/int8 x modified_beam_search/greedy_search at `--threads`: load, warm-up, per fixture median latency
+(a) Settings: modified_beam_search/greedy_search (int8 weights) at `--threads`: load, warm-up, per fixture median latency
     over the repeats, real-time factor (RTF = latency / audio seconds), determinism, WER against FLEURS.
 (b) Threads: the default setting at 1, 2, 4, 8, 16 threads: latency of one max-length chunk (the worst single call:
     the longest a realtime job waits behind a running file chunk) and RTF of vi_long.wav.
@@ -45,7 +45,6 @@ from app.config import SAMPLE_RATE as SR  # noqa: E402
 FIXTURES = ROOT / "tests/fixtures"
 LONG = ROOT / "fixtures-large/vi_long.wav"
 SMALL = ("vi_a.wav", "vi_b.wav", "silence_2s.wav", "short_200ms.wav")
-PRECISIONS = ("fp32", "int8")
 DECODINGS = ("modified_beam_search", "greedy_search")
 THREADS = (1, 2, 4, 8, 16)
 REPEATS = 5
@@ -89,7 +88,7 @@ def latency(times: list[float], audio_s: float) -> dict:
     }
 
 
-def child(precision: str, decoding: str, threads: int, part: str) -> dict:
+def child(decoding: str, threads: int, part: str) -> dict:
     """One setting in this (fresh) process."""
     from app.chunking import split
     from app.engine import SherpaEngine
@@ -99,9 +98,7 @@ def child(precision: str, decoding: str, threads: int, part: str) -> dict:
     cfg = Config(api_keys=("x" * 16,))
     refs = json.loads((FIXTURES / "manifest.json").read_text())["files"]
     t0 = time.monotonic()
-    e = SherpaEngine(
-        models_dir(), precision, decoding, cfg.beam_size, threads, cfg.max_chunk_seconds
-    )
+    e = SherpaEngine(models_dir(), decoding, cfg.beam_size, threads, cfg.max_chunk_seconds)
     e.load()
     load_s, load_peak = time.monotonic() - t0, peak_rss_mb()
     t0 = time.monotonic()
@@ -135,7 +132,7 @@ def child(precision: str, decoding: str, threads: int, part: str) -> dict:
         "chunks": chunks,
         **latency(times, len(x) / SR),
         "deterministic": len(set(outs)) == 1,
-        "wer": round(wer(refs["vi_long.wav"]["reference"], text.lower()), 4),
+        "wer": round(wer(refs["vi_long.wav"]["reference"], text), 4),
         "text_sha256": sha256(text),
     }
     if part == "settings":
@@ -150,17 +147,16 @@ def child(precision: str, decoding: str, threads: int, part: str) -> dict:
                 "text_sha256": sha256(outs[0]),
             }
             if refs[name].get("reference"):
-                # The model's vocabulary is upper case; FLEURS references are lower case.
-                row["wer"] = round(wer(refs[name]["reference"], outs[0].lower()), 4)
+                row["wer"] = round(wer(refs[name]["reference"], outs[0]), 4)
             out[name] = row
     out["peak_rss_mb"] = peak_rss_mb()
     return out
 
 
-def run_child(precision: str, decoding: str, threads: int, part: str) -> dict:
-    cmd = [sys.executable, __file__, "--child", precision, decoding, str(threads), part]
+def run_child(decoding: str, threads: int, part: str) -> dict:
+    cmd = [sys.executable, __file__, "--child", decoding, str(threads), part]
     row = json.loads(subprocess.run(cmd, check=True, capture_output=True, text=True).stdout)
-    print(f"{part} {precision}/{decoding} x{threads}: {row['max_chunk']}", file=sys.stderr)
+    print(f"{part} {decoding} x{threads}: {row['max_chunk']}", file=sys.stderr)
     return row
 
 
@@ -227,11 +223,11 @@ def main() -> int:
     )
     ap.add_argument("--threads", type=int, default=Config.num_threads, help="threads for part (a)")
     ap.add_argument("--out", type=Path)
-    ap.add_argument("--child", nargs=4, help=argparse.SUPPRESS)
+    ap.add_argument("--child", nargs=3, help=argparse.SUPPRESS)
     args = ap.parse_args()
     if args.child:
-        precision, decoding, threads, part = args.child
-        print(json.dumps(child(precision, decoding, int(threads), part)))
+        decoding, threads, part = args.child
+        print(json.dumps(child(decoding, int(threads), part)))
         return 0
     if not LONG.is_file():
         sys.exit(f"{LONG} missing: run scripts/fetch_fixtures.py")
@@ -239,13 +235,13 @@ def main() -> int:
     import sherpa_onnx
 
     cfg = Config(api_keys=("x" * 16,))
-    default = f"{cfg.precision}/{cfg.decoding_method}"
+    default = cfg.decoding_method
     manifest = json.loads((ROOT / "assets/manifest.json").read_text())
     report = {
         "commit": git_commit(),
         "sherpa_onnx": sherpa_onnx.__version__,
         "python": platform.python_version(),
-        "model_revision": manifest["models"]["gipformer1.5-68M-rnnt"]["revision"],
+        "model_revision": manifest["models"]["viet-asr"]["revision"],
         "cpu": {"count": os.cpu_count(), "model": cpu_model()},
         "load_average_start": [round(v, 1) for v in os.getloadavg()],
         "beam_size": cfg.beam_size,
@@ -254,17 +250,11 @@ def main() -> int:
         "default": default,
         "a_settings": {
             "threads": args.threads,
-            "rows": {
-                f"{p}/{d}": run_child(p, d, args.threads, "settings")
-                for p in PRECISIONS
-                for d in DECODINGS
-            },
+            "rows": {d: run_child(d, args.threads, "settings") for d in DECODINGS},
         },
         "b_threads": {
             "setting": default,
-            "rows": {
-                str(t): run_child(cfg.precision, cfg.decoding_method, t, "threads") for t in THREADS
-            },
+            "rows": {str(t): run_child(cfg.decoding_method, t, "threads") for t in THREADS},
         },
     }
     worst = max(

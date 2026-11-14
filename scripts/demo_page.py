@@ -39,6 +39,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from scripts.fetch_fixtures import fetch, REVISION, SR  # noqa: E402
+from scripts.scoring import normalize  # noqa: E402
 from scripts.smoke_server import Gateway, wait_ready  # noqa: E402
 from scripts.subtitles import parse_cues  # noqa: E402
 
@@ -523,9 +524,11 @@ def transcribe(gw: Gateway, case: dict, audio_dir: Path) -> None:
     elif ref == "":
         case["verdict"] = "pass" if not case["hypothesis"].strip() else "fail"
     else:
-        ops, edits = align(ref, case["hypothesis"].lower())  # the model's vocabulary is upper case
+        ops, edits = align(
+            normalize(ref), normalize(case["hypothesis"])
+        )  # same scoring as scripts/scoring.py
         case["diff"] = ops
-        case["wer"] = round(edits / max(len(ref.split()), 1), 4)
+        case["wer"] = round(edits / max(len(normalize(ref).split()), 1), 4)
         case["verdict"] = (
             "pass" if case["wer"] <= 0.15 else "warn" if case["wer"] <= 0.4 else "fail"
         )

@@ -68,7 +68,7 @@ def test_no_secrets_in_image_metadata(image):
 
 
 def models_staged() -> None:
-    assert (MODELS / "gipformer1.5-68M-rnnt").is_dir(), "models not staged; run scripts/stage_models.py"
+    assert (MODELS / "viet-asr").is_dir(), "models not staged; run scripts/stage_models.py"
 
 
 def wait_ready(cid: str, timeout: float = 600) -> None:
@@ -135,6 +135,7 @@ def running_container(image, *env):
 
 
 def test_offline_ready_and_smoke(image):
+    baseline_is_current()
     with running_container(image) as cid:
         r = sidecar(cid, image, "/w/scripts/smoke_server.py", "--base-url", "http://127.0.0.1:18001")
         assert r.returncode == 0, r.stderr[-4000:]
@@ -195,7 +196,17 @@ print('auth/errors/overload/isolation passed')
 """
 
 
+def baseline_is_current() -> None:
+    """The transcript hashes of docs/baseline/offline.json only hold for the model pin they were measured on."""
+    measured = json.loads((ROOT / "docs/baseline/offline.json").read_text()).get("model_revision")
+    pinned = json.loads((ROOT / "assets/manifest.json").read_text())["models"]["viet-asr"]["revision"]
+    if measured != pinned:
+        pytest.fail(f"docs/baseline/offline.json was measured on model revision {measured}, not the pinned "
+                    f"viet-asr@{pinned}: run scripts/baseline_offline.py for a new baseline first")
+
+
 def test_errors_overload_and_isolation(image):
+    baseline_is_current()
     with running_container(image, "GATEWAY_QUEUE_MAX_LANES=2", "GATEWAY_MAX_SESSIONS=2") as cid:
         r = sidecar(cid, image, "-c", ERRORS_AND_ISOLATION)
         assert r.returncode == 0, r.stdout[-4000:] + r.stderr[-4000:]

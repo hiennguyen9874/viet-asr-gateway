@@ -22,7 +22,7 @@ const MODEL = 'viet-asr';
 const model = { id: MODEL, object: 'model', created: 1789615207, owned_by: 'g-group-ai-lab' } satisfies Model;
 
 const TEXT =
-  'các sản phẩm thủ công có thể được coi là độ cổ mặc dù tuổi đời của chúng ch trẻ hơn rất nhiều các sản phẩm tương tự được sản xuất hàng loạt';
+  'Các sản phẩm thủ công có thể được coi là đồ cổ, mặc dù tuổi đời của chúng trẻ hơn rất nhiều các sản phẩm tương tự được sản xuất hàng loạt.';
 const verbose = {
   text: TEXT,
   language: 'vietnamese',
@@ -31,8 +31,8 @@ const verbose = {
 } satisfies TranscriptionVerbose;
 // R2b shape (served only after the alignment gate): `words` without `segments`.
 const firstWords = [
-  { word: 'các', start: 1.18, end: 1.22 },
-  { word: 'sản', start: 1.38, end: 1.42 },
+  { word: 'Các', start: 0, end: 0.92 },
+  { word: 'sản', start: 0.92, end: 1 },
 ];
 const verboseWords = { ...verbose, words: firstWords } satisfies TranscriptionVerbose;
 
@@ -89,21 +89,21 @@ const serverEvents = [
     event_id: 'event_0005',
     item_id: 'item_0001',
     content_index: 0,
-    delta: 'một số loài động vật như voi',
+    delta: 'Một số loài động vật như voi',
   },
   {
     type: 'conversation.item.input_audio_transcription.delta',
     event_id: 'event_0006',
     item_id: 'item_0001',
     content_index: 0,
-    delta: ' và hươu cao cổ',
+    delta: ' và hươu cao cổ.',
   },
   {
     type: 'conversation.item.input_audio_transcription.completed',
     event_id: 'event_0007',
     item_id: 'item_0001',
     content_index: 0,
-    transcript: 'một số loài động vật như voi và hươu cao cổ',
+    transcript: 'Một số loài động vật như voi và hươu cao cổ.',
     usage: { type: 'duration', seconds: 4.2 },
   },
   { type: 'input_audio_buffer.cleared', event_id: 'event_0008' },
@@ -228,7 +228,7 @@ test('json and text transcription', async () => {
   const seen: Sent[] = [];
   const c = client(200, read('transcription.json'), 'application/json', seen);
   const t = await c.audio.transcriptions.create({ file: await audio(), model: MODEL, language: 'vi' });
-  assert.ok(t.text.startsWith('các sản phẩm'));
+  assert.ok(t.text.startsWith('Các sản phẩm'));
   const form = await new Response(seen[0]!.body as BodyInit).formData(); // encode + parse as multipart
   assert.deepEqual([...form.keys()].sort(), ['file', 'language', 'model']);
 

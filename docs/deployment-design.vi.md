@@ -76,14 +76,16 @@ xử lý FIFO qua cùng `split`/`run_chunks`/`Joiner` như REST. Gửi có giớ
 
 ## 4. Model và dữ liệu
 
-- `SherpaEngine.load` nạp encoder/decoder/joiner (`fp32` hoặc `.int8`, `GATEWAY_PRECISION`) và `tokens.txt` từ
-  thư mục đã stage, chỉ đường dẫn local, không truy cập Hub. Text giống hệt `references/gipformer/infer_onnx.py` trên
-  cùng audio và setting (`tests/model/test_engine.py`, fp32/int8 × beam/greedy). Kết quả mỗi chunk: text + token +
-  thời điểm phát token (mẫu, tính từ đầu chunk).
+- `SherpaEngine.load` nạp `viet-asr/int8/{encoder,decoder,joiner}.int8.onnx` và `tokens.txt` từ thư mục đã stage
+  (luôn int8, không có setting precision), chỉ đường dẫn local, không truy cập Hub. Text, token và thời điểm phát token
+  giống hệt script tham chiếu sherpa-onnx tối giản `tests/model/reference.py` trên cùng audio và setting
+  (`tests/model/test_engine.py`, beam/greedy). Kết quả mỗi chunk: text + token + thời điểm phát token (mẫu, tính từ
+  đầu chunk). sherpa-onnx đã ghép token byte fallback `<0xNN>` trong text nhưng trả token thô, nên engine ghép mỗi
+  chuỗi token byte liền nhau thành ký tự UTF-8 (giữ thời điểm của byte đầu); fixture `vi_bytes.wav` kiểm việc này.
 - Pins duy nhất: `assets/manifest.json` (repo, commit, size, SHA256 từng file); `scripts/stage_models.py` tải và
   kiểm tra. Chi tiết: [baseline.vi.md](baseline.vi.md).
-- Decode `modified_beam_search` beam 4 (mặc định, hoặc `greedy_search`), không KenLM. Output giữ nguyên: chữ IN HOA,
-  không dấu câu, số viết bằng chữ.
+- Decode `modified_beam_search` beam 4 (mặc định, hoặc `greedy_search`), không KenLM. Output giữ nguyên dạng viết
+  của model: chữ hoa/thường, dấu câu, số bằng chữ số.
 - Peak RSS đo được (chunk 20 s, 4 thread): ~0.8 GB fp32, ~0.46 GB int8 (baseline §4, §5).
 
 ## 5. Đóng gói

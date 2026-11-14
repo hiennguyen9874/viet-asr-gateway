@@ -191,6 +191,18 @@ def test_timed_formats_agree_with_json_text_and_stream(tmp_path):
         assert outcomes(srv.app, "ok", "srt") == 2 and outcomes(srv.app, "ok", "verbose_json") == 1
 
 
+def test_written_form_text_is_returned_verbatim_in_every_format(tmp_path):
+    written = "Dạ. Em chào anh, hôm nay thế nào? Ngân sách: 50 triệu…"
+    audio = wav_file(tmp_path / "a.wav", noise(1.5, seed=5))
+    with serve(FakeEngine(text_fn=lambda _: written), max_chunk_seconds=2.0) as srv:
+        assert post(srv, audio).json()["text"] == written
+        assert post(srv, audio, response_format="text").text == written
+        assert events(post(srv, audio, stream="true"))[-1]["text"] == written
+        assert post(srv, audio, response_format="verbose_json").json()["text"] == written
+        for fmt in ("srt", "vtt"):
+            assert " ".join(c[2] for c in parse_cues(post(srv, audio, response_format=fmt).text, fmt)) == written
+
+
 def test_word_timestamps_after_the_gate(tmp_path, monkeypatch):
     monkeypatch.setattr(transcription, "WORD_TIMESTAMPS", True)
     x = noise(3.5, seed=12)

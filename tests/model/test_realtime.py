@@ -43,7 +43,7 @@ DELTA = "conversation.item.input_audio_transcription.delta"
 
 @pytest.fixture(scope="module")
 def srv():
-    engine = SherpaEngine(MODELS, "fp32", "modified_beam_search", 4, 4, warmup_seconds=config().max_chunk_seconds)
+    engine = SherpaEngine(MODELS, "modified_beam_search", 4, 4, warmup_seconds=config().max_chunk_seconds)
     with serve(engine, ready_timeout=300, http_timeout=300, models_dir=MODELS) as s:
         yield s
 
@@ -59,7 +59,7 @@ def gate():
         dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=ROOT,
                                capture_output=True, text=True).stdout.strip()
         report = {"commit": commit + ("-dirty" if dirty else ""), "sherpa_onnx": sherpa_onnx.__version__,
-                  "settings": "fp32, modified_beam_search, beam 4, 4 threads",
+                  "settings": "viet-asr int8, modified_beam_search, beam 4, 4 threads",
                   "max_chunk_seconds": config().max_chunk_seconds, "packet_ms": 20, **sections}
         REPORT.write_text(json.dumps(report, indent=2) + "\n")
 
@@ -132,7 +132,7 @@ def test_turns_match_rest_on_the_committed_waveform_and_wer(srv, tmp_path, gate)
         assert len(deltas) == chunks(pcm)
         row = {"audio_s": done["usage"]["seconds"], "chunks": len(deltas), "empty": not text}
         if ref := refs[name]["reference"]:
-            score, base = wer(ref, text.lower()), wer(ref, rest(srv, FIXTURES / name).lower())
+            score, base = wer(ref, text), wer(ref, rest(srv, FIXTURES / name))
             assert score <= base + 0.02, (name, score, base)  # (b)
             row |= {"wer": round(score, 4), "rest_wer": round(base, 4)}
         rows[name] = row

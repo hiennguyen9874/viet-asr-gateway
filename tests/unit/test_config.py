@@ -14,17 +14,17 @@ def test_defaults_with_one_key():
     assert cfg.api_keys == (KEY,) and cfg.whisper_alias is False
     assert cfg.queue_max_buffered_samples == int(cfg.queue_max_buffered_seconds * 16000)
     assert KEY not in repr(cfg)
-    assert (cfg.precision, cfg.decoding_method, cfg.beam_size, cfg.num_threads) == ("fp32", "modified_beam_search", 4, 4)
+    assert (cfg.decoding_method, cfg.beam_size, cfg.num_threads) == ("modified_beam_search", 4, 4)
 
 
 def test_parses_typed_values():
     cfg = Config.from_env({
         "GATEWAY_API_KEYS": f" {KEY} , {'j' * 20} ", "GATEWAY_WHISPER_ALIAS": "true", "GATEWAY_QUEUE_MAX_JOBS": "8",
         "GATEWAY_MAX_CHUNK_SECONDS": "20.5", "GATEWAY_MODELS_DIR": "/srv/models", "GATEWAY_LOG_LEVEL": "debug",
-        "GATEWAY_SPOOL_DIR": "/var/spool/gateway", "GATEWAY_PRECISION": "int8",
+        "GATEWAY_SPOOL_DIR": "/var/spool/gateway",
         "GATEWAY_DECODING_METHOD": "greedy_search", "GATEWAY_BEAM_SIZE": "8", "GATEWAY_NUM_THREADS": "2",
     })
-    assert (cfg.precision, cfg.decoding_method, cfg.beam_size, cfg.num_threads) == ("int8", "greedy_search", 8, 2)
+    assert (cfg.decoding_method, cfg.beam_size, cfg.num_threads) == ("greedy_search", 8, 2)
     assert cfg.api_keys == (KEY, "j" * 20) and cfg.whisper_alias is True and cfg.queue_max_jobs == 8
     assert cfg.max_chunk_seconds == 20.5 and cfg.models_dir == Path("/srv/models") and cfg.log_level == "DEBUG"
     assert cfg.max_chunk_samples == 328000 and cfg.spool_dir == Path("/var/spool/gateway")
@@ -53,7 +53,6 @@ def test_api_keys_file(tmp_path):
     {"GATEWAY_API_KEYS": KEY, "QUAN_GPU": "0"},
     {"GATEWAY_API_KEYS": KEY, "GIPFORMER_QUEUE_MAX_JOBS": "4"},  # leftover pre-rename variable
     {"GIPFORMER_API_KEYS": KEY},  # old prefix only: no key under GATEWAY_*
-    {"GATEWAY_API_KEYS": KEY, "GATEWAY_PRECISION": "fp16"},
     {"GATEWAY_API_KEYS": KEY, "GATEWAY_DECODING_METHOD": "ctc"},
     {"GATEWAY_API_KEYS": KEY, "GATEWAY_BEAM_SIZE": "0"},
     {"GATEWAY_API_KEYS": KEY, "GATEWAY_BEAM_SIZE": "four"},
@@ -78,6 +77,13 @@ def test_invalid_config_fails_startup(env):
     with pytest.raises(ConfigError) as e:
         Config.from_env(env)
     assert KEY not in str(e.value)
+
+
+@pytest.mark.parametrize("value", ["int8", "fp32"])
+def test_removed_precision_setting_fails_startup(value):
+    # The engine always loads the int8 weights; the old setting is now an unknown variable.
+    with pytest.raises(ConfigError, match="unknown configuration variables: GATEWAY_PRECISION$"):
+        Config.from_env({"GATEWAY_API_KEYS": KEY, "GATEWAY_PRECISION": value})
 
 
 @pytest.mark.parametrize("name", ["GIPFORMER_API_KEYS", "GIPFORMER_MODELS_DIR", "QUAN_GPU"])

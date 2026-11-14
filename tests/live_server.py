@@ -39,7 +39,8 @@ SR = 16000
 
 
 def name(w: np.ndarray) -> str:
-    return f"{float(w[0]):.7f}"
+    """Written-form text identifying a chunk by its first sample (casing and punctuation, like the model)."""
+    return f"Mẫu {float(w[0]):.7f}, xong."
 
 
 def noise(seconds: float, seed: int) -> np.ndarray:

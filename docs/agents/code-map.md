@@ -6,8 +6,8 @@ Each file's job, and the tests that cover it. Area rules live in [change-rules.m
 
 ```text
 config.py         typed GATEWAY_* env config, validated at startup; no default API key
-engine.py         SherpaEngine (sherpa-onnx offline transducer, CPU, local files only) + EngineWorker, the single
-                    thread that runs the model;
+engine.py         SherpaEngine (sherpa-onnx offline transducer, viet-asr int8, CPU, local files only) + EngineWorker,
+                    the single thread that runs the model; merge_byte_tokens (<0xNN> runs -> UTF-8 characters);
                     ChunkResult = text + tokens + token emission times (samples, relative to the chunk)
 scheduler.py      bounded fair queue (lanes = requests/sessions, jobs = chunks) feeding the worker
 audio.py          AudioIngress: multipart ingress (body limit before parser, bounded spool), sandboxed FFmpeg
@@ -32,7 +32,7 @@ observability.py  JSON logs + Prometheus-style metrics (metadata only)
 ```text
 stage_models.py     download pinned assets (assets/manifest.json) into ./models or $GATEWAY_MODELS_DIR, verify SHA256
 fetch_fixtures.py   build fixtures from FLEURS vi_vn (CC BY 4.0) at a pinned revision, verify SHA256
-baseline_offline.py RTF/WER per precision x decoding, thread sweep -> default threads and queue bounds; metadata-only
+baseline_offline.py RTF/WER per decoding method, thread sweep -> default threads and queue bounds; metadata-only
                       JSON with transcript SHA256; checks the app/config.py defaults
 smoke_server.py     stdlib smoke of a running gateway (local or container) against the offline baseline's transcript
                       hashes -> metadata-only JSON
@@ -43,7 +43,8 @@ probe_limits.py     short-audio floor + latency/peak RSS/WER vs chunk length on 
 probe_alignment.py  token emission times: resolution, shift, delay at known silences, cues -> JSON; checks the
                       app/alignment.py constants
 eval_alignment.py   R2b gate: words vs hand annotations in tests/fixtures/alignment/ (none exist yet)
-scoring.py          dependency-free WER, shared by both smoke scripts
+scoring.py          dependency-free WER (lower case, Unicode punctuation removed on both sides), shared by the smoke
+                      scripts, baselines and demo page
 subtitles.py        dependency-free SRT/VTT parser, shared by smoke_server.py and tests/live_server.py
 ```
 
@@ -51,11 +52,11 @@ subtitles.py        dependency-free SRT/VTT parser, shared by smoke_server.py an
 
 | Path | Needs | Covers |
 |---|---|---|
-| `unit/` | CPU + ffmpeg | manifests/pins, config, app over real Uvicorn with the fake engine, transcription params/joiner/end-to-end API (disconnect, SSE, drain, timed formats), alignment, subtitles, realtime (`test_realtime_units.py` pure, `test_realtime_api.py` real WS), observability, benchmark, capacity hardening |
+| `unit/` | CPU + ffmpeg | manifests/pins, config, byte-fallback token merge (`test_engine_tokens.py`), WER scoring, app over real Uvicorn with the fake engine, transcription params/joiner/end-to-end API (disconnect, SSE, drain, timed formats), alignment, subtitles, realtime (`test_realtime_units.py` pure, `test_realtime_api.py` real WS), observability, benchmark, capacity hardening |
 | `scheduler/` | CPU | scheduler/worker gate with the fake engine: serialization, bounds, fairness, cancel |
 | `audio/` | CPU + ffmpeg | formats, hostile inputs, decode bounds, multipart limits, temp cleanup |
 | `contract/` | CPU (+ Node for `js/`) | `examples/` parsed by the pinned Python SDK (`test_python_sdk.py`) and JS SDK (`js/contract.test.ts`); `test_server_sdk.py` runs a real server against both SDKs (REST over http, Realtime over wss with a self-signed cert, JS via `js/server.test.ts`) |
-| `model/` | CPU + staged models | real engine text vs the reference `infer_onnx.py` (`test_engine.py`, fp32/int8 x beam/greedy, token times), worker + lanes, `test_server.py` (json/text/SSE and the R2a cue gate on the real model, writes `docs/baseline/r2a_gate.json`), `test_realtime.py` (R3a realtime gate: turns vs REST, FIFO, short turns, concurrent sessions, long turn; writes `docs/baseline/r3a_gate.json`). Marked `model`; skipped when the model is not staged |
+| `model/` | CPU + staged models | real engine text/tokens/times vs the minimal sherpa-onnx reference `reference.py` (`test_engine.py`, beam/greedy, byte-fallback merge on `vi_bytes.wav`, 1,360-sample floor), worker + lanes, `test_server.py` (json/text/SSE and the R2a cue gate on the real model, writes `docs/baseline/r2a_gate.json`), `test_realtime.py` (R3a realtime gate: turns vs REST, FIFO, short turns, concurrent sessions, long turn; writes `docs/baseline/r3a_gate.json`). Marked `model`; skipped when the model is not staged |
 | `container/` | docker + staged models | image gate; skips without docker |
 
 Shared helpers:
@@ -63,7 +64,8 @@ Shared helpers:
 - `fake_engine.py`: engine stand-in for CPU tests (`text_fn` for real decoded audio; tokens + times).
 - `live_server.py`: `serve(...)` runs real Uvicorn (websockets-sansio, optional self-signed TLS via `tls_dir`)
   around `create_app`; also float-WAV/PCM24 audio helpers and the raw realtime client `WS`.
-- `fixtures/`: small committed fixtures + `manifest.json` (hashes, references, license).
+- `fixtures/`: small committed fixtures + `manifest.json` (hashes, references, license); `vi_bytes.wav` makes the
+  model emit byte-fallback tokens.
 
 ## Other paths
 

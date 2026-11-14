@@ -13,6 +13,7 @@ import concurrent.futures
 import enum
 import logging
 import queue
+import re
 import threading
 import time
 from pathlib import Path
@@ -25,12 +26,15 @@ from app.errors import inference_failed, model_not_ready
 from app.observability import log, Metrics
 
 # The recognizer fails below 1,360 samples (85 ms: fewer than 7 feature frames for the encoder's input convolution),
-# for every precision and decoding method (docs/baseline/limits_probe.json, docs/baseline.vi.md §5). Audio policy for
-# short clips (return "" without inference) belongs to the callers; this is the hard safety floor.
+# for every decoding method (tests/model/test_engine.py). Audio policy for short clips (return "" without inference)
+# belongs to the callers; this is the hard safety floor.
 MIN_FORWARD_SAMPLES = 1360
-MODEL_DIR = "gipformer1.5-68M-rnnt"  # under the staging root of scripts/stage_models.py
+MODEL_DIR = (
+    "viet-asr/int8"  # under the staging root of scripts/stage_models.py (assets/manifest.json)
+)
 FEATURE_DIM = 80
 WORD_START = "\u2581"
+_BYTE_TOKEN = re.compile(r"<0x([0-9A-Fa-f]{2})>")  # SentencePiece byte fallback
 
 
 class ChunkResult(NamedTuple):
@@ -52,20 +56,48 @@ class Engine(Protocol):
     def transcribe(self, wav: np.ndarray) -> ChunkResult: ...
 
 
+def merge_byte_tokens(
+    tokens: tuple[str, ...], times: tuple[int, ...]
+) -> tuple[tuple[str, ...], tuple[int, ...]]:
+    """Decode each run of byte-fallback tokens (`<0xNN>`) into the UTF-8 text it spells, as one token.
+
+    sherpa-onnx already decodes the bytes in its text but returns them as raw tokens, which would not spell the text.
+    The bytes of a run are concatenated and decoded as UTF-8 (upstream viet-asr detokenizer rule); an invalid sequence
+    becomes U+FFFD, as in the recognizer's text. The merged token keeps the emission time of its first byte.
+    """
+    out_tokens: list[str] = []
+    out_times: list[int] = []
+    run = bytearray()
+    for token, t in zip(tokens, times, strict=True):
+        m = _BYTE_TOKEN.fullmatch(token)
+        if m:
+            if not run:
+                out_times.append(t)
+            run.append(int(m.group(1), 16))
+            continue
+        if run:
+            out_tokens.append(run.decode("utf-8", "replace"))
+            run.clear()
+        out_tokens.append(token)
+        out_times.append(t)
+    if run:
+        out_tokens.append(run.decode("utf-8", "replace"))
+    return tuple(out_tokens), tuple(out_times)
+
+
 class SherpaEngine:
-    """One sherpa-onnx offline transducer recognizer on CPU; one 16 kHz mono chunk per call (the reference's settings)."""
+    """One sherpa-onnx offline transducer recognizer on CPU (int8 weights); one 16 kHz mono chunk per call."""
 
     def __init__(
         self,
         models_dir: Path,
-        precision: str,
         decoding_method: str,
         beam_size: int,
         num_threads: int,
         warmup_seconds: float,
     ):
         self._dir = Path(models_dir) / MODEL_DIR
-        self._precision, self._decoding_method = precision, decoding_method
+        self._decoding_method = decoding_method
         self._beam_size, self._num_threads, self._warmup_seconds = (
             beam_size,
             num_threads,
@@ -77,8 +109,7 @@ class SherpaEngine:
         """Local files only: nothing is resolved against the Hub."""
         import sherpa_onnx
 
-        suffix = ".int8" if self._precision == "int8" else ""
-        paths = {n: self._dir / f"{n}{suffix}.onnx" for n in ("encoder", "decoder", "joiner")}
+        paths = {n: self._dir / f"{n}.int8.onnx" for n in ("encoder", "decoder", "joiner")}
         paths["tokens"] = self._dir / "tokens.txt"
         for path in paths.values():
             if not path.is_file():
@@ -107,8 +138,10 @@ class SherpaEngine:
         self._recognizer.decode_streams([stream])
         result = stream.result
         # sherpa-onnx renders the word marker "▁" as a leading space; times are seconds from the chunk start.
-        tokens = tuple(t.replace(" ", WORD_START) for t in result.tokens)
-        times = tuple(round(t * SAMPLE_RATE) for t in result.timestamps)
+        tokens, times = merge_byte_tokens(
+            tuple(t.replace(" ", WORD_START) for t in result.tokens),
+            tuple(round(t * SAMPLE_RATE) for t in result.timestamps),
+        )
         return ChunkResult(result.text.strip(), tokens, times)
 
 

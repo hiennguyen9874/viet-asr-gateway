@@ -17,7 +17,6 @@ SAMPLE_RATE = 16000  # model input rate; queue budgets are counted in 16 kHz sam
 PREFIX = "GATEWAY_"
 # Pre-rename settings (Gipformer era, then the CTC era): a leftover one means a half-migrated deployment.
 OLD_PREFIXES = ("GIPFORMER_", "QUAN_")
-PRECISIONS = ("fp32", "int8")
 DECODING_METHODS = ("modified_beam_search", "greedy_search")
 MIN_API_KEY_LENGTH = 16
 MIN_CHUNK_SECONDS = 1.0
@@ -31,7 +30,6 @@ class ConfigError(ValueError):
 class Config:
     api_keys: tuple[str, ...] = dataclasses.field(repr=False)
     models_dir: Path = Path("models")
-    precision: str = "fp32"  # fp32 | int8 weights
     decoding_method: str = "modified_beam_search"  # or greedy_search
     beam_size: int = 4  # active paths of modified_beam_search; ignored by greedy_search
     num_threads: int = 4  # intra-op threads of the one recognizer; measured: docs/baseline.vi.md §4
@@ -103,10 +101,6 @@ class Config:
         if self.log_level not in ("DEBUG", "INFO", "WARNING", "ERROR"):
             raise ConfigError(
                 f"GATEWAY_LOG_LEVEL must be DEBUG, INFO, WARNING or ERROR, got {self.log_level!r}"
-            )
-        if self.precision not in PRECISIONS:
-            raise ConfigError(
-                f"GATEWAY_PRECISION must be one of {', '.join(PRECISIONS)}, got {self.precision!r}"
             )
         if self.decoding_method not in DECODING_METHODS:
             raise ConfigError(

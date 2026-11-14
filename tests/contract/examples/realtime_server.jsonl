@@ -2,9 +2,9 @@
 {"type": "session.updated", "event_id": "event_0002", "session": {"type": "transcription", "audio": {"input": {"format": {"type": "audio/pcm", "rate": 24000}, "transcription": {"model": "viet-asr", "language": "vi"}, "turn_detection": null}}}}
 {"type": "input_audio_buffer.committed", "event_id": "event_0003", "item_id": "item_0001", "previous_item_id": null}
 {"type": "conversation.item.added", "event_id": "event_0004", "previous_item_id": null, "item": {"id": "item_0001", "object": "realtime.item", "type": "message", "role": "user", "status": "completed", "content": [{"type": "input_audio"}]}}
-{"type": "conversation.item.input_audio_transcription.delta", "event_id": "event_0005", "item_id": "item_0001", "content_index": 0, "delta": "một số loài động vật như voi"}
-{"type": "conversation.item.input_audio_transcription.delta", "event_id": "event_0006", "item_id": "item_0001", "content_index": 0, "delta": " và hươu cao cổ"}
-{"type": "conversation.item.input_audio_transcription.completed", "event_id": "event_0007", "item_id": "item_0001", "content_index": 0, "transcript": "một số loài động vật như voi và hươu cao cổ", "usage": {"type": "duration", "seconds": 4.2}}
+{"type": "conversation.item.input_audio_transcription.delta", "event_id": "event_0005", "item_id": "item_0001", "content_index": 0, "delta": "Một số loài động vật như voi"}
+{"type": "conversation.item.input_audio_transcription.delta", "event_id": "event_0006", "item_id": "item_0001", "content_index": 0, "delta": " và hươu cao cổ."}
+{"type": "conversation.item.input_audio_transcription.completed", "event_id": "event_0007", "item_id": "item_0001", "content_index": 0, "transcript": "Một số loài động vật như voi và hươu cao cổ.", "usage": {"type": "duration", "seconds": 4.2}}
 {"type": "input_audio_buffer.cleared", "event_id": "event_0008"}
 {"type": "error", "event_id": "event_0009", "error": {"type": "invalid_request_error", "code": "invalid_audio", "message": "input_audio_buffer.append: audio is not valid base64.", "param": "audio", "event_id": "client_evt_5"}}
 {"type": "input_audio_buffer.committed", "event_id": "event_0010", "item_id": "item_0002", "previous_item_id": "item_0001"}

@@ -5,11 +5,11 @@
 CPU only; needs the staged model (scripts/stage_models.py) and, for part (c), fixtures-large/vi_long.wav
 (scripts/fetch_fixtures.py). Reports numbers and counts only: no audio, no transcripts.
 
-(a) Shortest input: for every precision x decoding method, the smallest waveform length (samples at 16 kHz) the
+(a) Shortest input: for every decoding method, the smallest waveform length (samples at 16 kHz) the
     recognizer accepts, for digital zeros and for noise, found by bisection and then checked exhaustively around it
     and on a grid up to 3 s above it (a length below it must fail, every length checked above it must succeed).
 (b) Short speech: cuts of the speech fixtures at several lengths and offsets -> how many cuts yield any text.
-(c) Chunk length: for each length, a fresh process loads the default engine (fp32, modified_beam_search, beam 4,
+(c) Chunk length: for each length, a fresh process loads the default engine (modified_beam_search, beam 4,
     `--threads`), warms up on that length (as the gateway does with GATEWAY_MAX_CHUNK_SECONDS) and decodes speech
     of that length (vi_long.wav, tiled when shorter): latency, real-time factor, RSS after load and peak RSS.
 (d) Accuracy against chunk length: vi_long.wav split by app.chunking.split at each length -> WER.
@@ -39,7 +39,6 @@ from app.config import SAMPLE_RATE as SR  # noqa: E402
 
 FIXTURES = ROOT / "tests/fixtures"
 LONG = ROOT / "fixtures-large/vi_long.wav"
-PRECISIONS = ("fp32", "int8")
 DECODINGS = ("modified_beam_search", "greedy_search")
 SPEECH = ("vi_a.wav", "vi_b.wav")
 SHORT_LENGTHS = (1360, 1600, 1601, 2400, 3200, 4800, 8000)
@@ -52,10 +51,10 @@ def models_dir() -> Path:
     return Path(os.environ.get("GATEWAY_MODELS_DIR", ROOT / "models"))
 
 
-def engine(precision="fp32", decoding="modified_beam_search", threads=4, warmup_seconds=1.0):
+def engine(decoding="modified_beam_search", threads=4, warmup_seconds=1.0):
     from app.engine import SherpaEngine
 
-    e = SherpaEngine(models_dir(), precision, decoding, 4, threads, warmup_seconds)
+    e = SherpaEngine(models_dir(), decoding, 4, threads, warmup_seconds)
     e.load()
     return e
 
@@ -90,12 +89,9 @@ def shortest(e, kind: str) -> dict:
 
 def probe_floor() -> dict:
     out = {}
-    for precision in PRECISIONS:
-        for decoding in DECODINGS:
-            e = engine(precision, decoding)
-            out[f"{precision}/{decoding}"] = {
-                kind: shortest(e, kind) for kind in ("zeros", "noise")
-            }
+    for decoding in DECODINGS:
+        e = engine(decoding)
+        out[decoding] = {kind: shortest(e, kind) for kind in ("zeros", "noise")}
     return out
 
 
@@ -176,7 +172,7 @@ def probe_chunk_wer() -> list[dict]:
         hyp = " ".join(t for s in spans if (t := e.transcribe(x[s.start : s.end]).text))
         # The model's vocabulary is upper case; FLEURS references are lower case.
         rows.append(
-            {"seconds": seconds, "chunks": len(spans), "wer": round(wer(reference, hyp.lower()), 4)}
+            {"seconds": seconds, "chunks": len(spans), "wer": round(wer(reference, hyp), 4)}
         )
     return rows
 

@@ -16,7 +16,7 @@ uv run pre-commit install                               # autoflake, isort, ruff
 
 ```bash
 uv run pytest                                           # CPU tiers; tests/model skips without the staged model, container without docker
-uv run pytest tests/model                               # real model on CPU: parity with references/gipformer/infer_onnx.py, API
+uv run pytest tests/model                               # real model on CPU: parity with tests/model/reference.py, API
 (cd tests/contract/js && npm ci && npm test)            # JS SDK contract (tsc --strict + node --test)
 uv run pytest tests/container                           # image gate (needs docker)
 uv run pre-commit run --all-files                       # lint + format

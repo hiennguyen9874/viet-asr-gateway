@@ -1,4 +1,4 @@
-data: {"type": "transcript.text.delta", "delta": "một số loài động vật như voi"}
+data: {"type": "transcript.text.delta", "delta": "Một số loài động vật như voi"}
 
 data: {"error": {"message": "Inference failed; the transcript is incomplete.", "type": "server_error", "param": null, "code": "inference_failed"}}
 

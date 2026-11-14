@@ -5,8 +5,8 @@ follow the release tags (`vX.Y.Z-rc.N`).
 
 ## [Unreleased] - targets v0.2.0-rc.1
 
-Spec #1: replace the served model with viet-asr while keeping the API. The gateway still serves Gipformer until the
-model swap lands.
+Spec #1: replace the served model with viet-asr while keeping the API. Baselines, probes and gate reports are
+re-measured on viet-asr in a later ticket; until then smoke and the image gate refuse the old baseline.
 
 ### Changed (breaking)
 
@@ -20,6 +20,17 @@ model swap lands.
     `gateway_api_keys` (was `gipformer_api_keys`), Dockerfile user/group `gateway` (uid/gid 10001 unchanged).
   - JS server-test variables `GIPFORMER_TEST_*` → `GATEWAY_TEST_*`.
   - Engine class `GipformerEngine` → `SherpaEngine`.
+- Served model viet-asr (#3): pin `dangvansam/viet-asr@46adacf` (int8 only, Apache-2.0) replaces Gipformer in
+  `assets/manifest.json`. Transcripts are written form, verbatim from the model (casing, punctuation, digits).
+  `GATEWAY_PRECISION` is removed and now aborts startup as an unknown variable. Byte-fallback tokens (`<0xNN>`) are
+  merged into UTF-8 characters so tokens always spell the text. WER scoring lower-cases and strips Unicode
+  punctuation on both sides. Engine parity is checked against a minimal sherpa-onnx reference
+  (`tests/model/reference.py`) instead of Gipformer's `infer_onnx.py`.
+  - New fixture `tests/fixtures/vi_bytes.wav` (FLEURS dev) exercises byte-fallback tokens.
+  - R2a gate: the shift test compares cue edges only over the common leading words (viet-asr may change a word
+    when audio is shifted); `LONG_MAX_WER` 0.10 → 0.15 (viet-asr measures 0.114 on `vi_long`). Both are re-measured
+    with the new baseline (#5).
+  - Smoke and the image gate refuse `docs/baseline/offline.json` measured on another model pin.
 
 Migration: rename every `GIPFORMER_*` variable to `GATEWAY_*`, move `secrets/gipformer_api_keys` to
 `secrets/gateway_api_keys`, switch clients to `model=viet-asr` and dashboards to `gateway_*` metrics.

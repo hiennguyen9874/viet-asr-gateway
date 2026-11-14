@@ -5,7 +5,7 @@
 CPU only; needs the staged model (scripts/stage_models.py) and fixtures-large/vi_long.wav (scripts/fetch_fixtures.py).
 Reports numbers and counts only: no audio, no transcripts.
 
-(a) Resolution: emission times of the speech fixtures for every precision x decoding method -> their common step.
+(a) Resolution: emission times of the speech fixtures for every decoding method -> their common step.
 (b) Shift equivariance: prepend `s` digital zeros; when the tokens are unchanged, each time should move by `s`.
 (c) Known silences: insert 1 s of digital zeros at quiet points inside utterances (vi_a, vi_b and the ten utterances
     of vi_long), where speech stops at the gap start g0 and resumes at the gap end g1: first token after the gap - g1
@@ -44,7 +44,6 @@ from app.config import SAMPLE_RATE as SR  # noqa: E402
 
 FIXTURES = ROOT / "tests/fixtures"
 LONG = ROOT / "fixtures-large/vi_long.wav"
-PRECISIONS = ("fp32", "int8")
 DECODINGS = ("modified_beam_search", "greedy_search")
 SPEECH = ("vi_a.wav", "vi_b.wav")
 SHIFTS = (160, 320, 640, 1000, 1280, 3200, 8000, 16000)
@@ -72,11 +71,11 @@ def stats(values) -> dict:
     }
 
 
-def engine(precision="fp32", decoding="modified_beam_search", warmup_seconds=1.0):
+def engine(decoding="modified_beam_search", warmup_seconds=1.0):
     from app.engine import SherpaEngine
 
     models = Path(os.environ.get("GATEWAY_MODELS_DIR", ROOT / "models"))
-    e = SherpaEngine(models, precision, decoding, 4, 4, warmup_seconds)
+    e = SherpaEngine(models, decoding, 4, 4, warmup_seconds)
     e.load()
     return e
 
@@ -110,13 +109,12 @@ def quiet_points(x: np.ndarray) -> list[int]:
 
 def probe_resolution(clips: dict) -> dict:
     out, steps = {}, []
-    for precision in PRECISIONS:
-        for decoding in DECODINGS:
-            e = engine(precision, decoding)
-            times = [t for x in clips.values() for t in e.transcribe(x).times]
-            step = math.gcd(*times)
-            steps.append(step)
-            out[f"{precision}/{decoding}"] = {"tokens": len(times), "step_samples": step}
+    for decoding in DECODINGS:
+        e = engine(decoding)
+        times = [t for x in clips.values() for t in e.transcribe(x).times]
+        step = math.gcd(*times)
+        steps.append(step)
+        out[decoding] = {"tokens": len(times), "step_samples": step}
     return {"step_samples": math.gcd(*steps), "settings": out}
 
 
@@ -258,7 +256,7 @@ def main() -> int:
     e = engine(warmup_seconds=Config.max_chunk_seconds)
     report = {
         "sherpa_onnx": sherpa_onnx.__version__,
-        "settings": "fp32, modified_beam_search, beam 4, 4 threads (except a)",
+        "settings": "viet-asr int8, modified_beam_search, beam 4, 4 threads (except a)",
         "max_chunk_seconds": Config.max_chunk_seconds,
         "a_resolution": resolution,
         "b_shift": probe_shift(e, clips, step),

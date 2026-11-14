@@ -59,7 +59,6 @@ def create_app(config: Config | None = None, engine: Engine | None = None) -> Fa
             )
         engine = SherpaEngine(
             config.models_dir,
-            config.precision,
             config.decoding_method,
             config.beam_size,
             config.num_threads,

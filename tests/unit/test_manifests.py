@@ -14,7 +14,7 @@ COMMIT = re.compile(r"^[0-9a-f]{40}$")
 
 def test_asset_manifest_pins_commits_and_hashes():
     manifest = json.loads((ROOT / "assets/manifest.json").read_text())
-    assert list(manifest["models"]) == ["gipformer1.5-68M-rnnt"]
+    assert list(manifest["models"]) == ["viet-asr"]
     for entry in manifest["models"].values():
         assert COMMIT.match(entry["revision"])
         for meta in entry["files"].values():
@@ -22,9 +22,11 @@ def test_asset_manifest_pins_commits_and_hashes():
 
 
 def test_manifest_lists_only_the_files_the_gateway_needs():
-    entry = json.loads((ROOT / "assets/manifest.json").read_text())["models"]["gipformer1.5-68M-rnnt"]
-    onnx = {f"{part}{suffix}.onnx" for part in ("encoder", "decoder", "joiner") for suffix in ("", ".int8")}
-    assert set(entry["files"]) == onnx | {"tokens.txt", "config.json", "README.md"}
+    entry = json.loads((ROOT / "assets/manifest.json").read_text())["models"]["viet-asr"]
+    assert (entry["repo_id"], entry["revision"], entry["dir"], entry["license"]) == (
+        "dangvansam/viet-asr", "46adacf22d379e3d6b860d5d08e9fb02cbc122ea", "viet-asr", "apache-2.0")
+    onnx = {f"int8/{part}.int8.onnx" for part in ("encoder", "decoder", "joiner")}
+    assert set(entry["files"]) == onnx | {"int8/tokens.txt", "README.md"}
 
 
 def test_pyproject_and_lockfile_pin_sherpa_onnx_to_manifest_version():

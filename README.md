@@ -11,7 +11,8 @@ Không phải tương thích OpenAI đầy đủ. Payload, mã lỗi và capabil
 
 Giới hạn cần biết:
 
-- Output là text gốc của model: chữ HOA, không dấu câu, số viết bằng chữ. Chỉ `language=vi`; không có logprobs.
+- Output là text dạng viết, nguyên văn như model sinh ra (chữ hoa/thường, dấu câu, số bằng chữ số); server không
+  chuẩn hoá. Chỉ `language=vi`; không có logprobs.
 - `srt`/`vtt` có thời gian từ thời điểm model phát từng token (bước 40 ms; cue có thể bắt đầu sớm tới ~1 s sau khoảng
   lặng, xem [baseline §6](docs/baseline.vi.md)). `verbose_json` không có `segments`; word timestamps chưa bật.
 - Realtime: transcript chỉ có sau `input_audio_buffer.commit`; không có partial, không có VAD.
@@ -128,7 +129,6 @@ Thêm biến `GATEWAY_*` vào `environment:` của service (ví dụ trong `comp
 | `GATEWAY_API_KEYS_FILE` / `GATEWAY_API_KEYS` | (bắt buộc) | Key Bearer (compose dùng file secret) |
 | `GATEWAY_WHISPER_ALIAS` | `false` | Chấp nhận model id `whisper-1` |
 | `GATEWAY_LOG_LEVEL` | `INFO` | Mức log |
-| `GATEWAY_PRECISION` | `fp32` | Trọng số `fp32` hoặc `int8` (nhanh hơn, kém chính xác hơn); giá trị khác → không start |
 | `GATEWAY_DECODING_METHOD` | `modified_beam_search` | Hoặc `greedy_search` (nhanh hơn, mặc định của reference là beam search) |
 | `GATEWAY_BEAM_SIZE` | 4 | Số path của `modified_beam_search` (số nguyên > 0; bỏ qua khi greedy) |
 | `GATEWAY_NUM_THREADS` | 4 | Số intra-op thread của recognizer duy nhất (số nguyên > 0). Đo: chunk 20 s mất 1.7 / 0.81 / 0.63 s ở 1 / 4 / 8 thread; trên 4 thread hiệu suất < 50%: [baseline §4](docs/baseline.vi.md) |

@@ -32,6 +32,8 @@ SR = 16000
 
 CLIP_A = "10282809127467658620.wav"  # two clips with different content, for isolation tests
 CLIP_B = "10467396475561744099.wav"
+# Makes viet-asr emit byte-fallback tokens (<0xC3><0x9A> = "Ú", absent from its vocabulary) with both decodings.
+CLIP_BYTES = "2335344692138890377.wav"
 LONG_COUNT = 10  # utterances in the long recording (> 30 s, so it exercises splitting)
 LONG_GAP_S = 0.3
 
@@ -64,7 +66,7 @@ def build(cache: Path) -> dict:
     )
     by_file = {r[1]: r for r in rows}
     clean = sorted((r for r in rows if not any(c.isdigit() for c in r[2])), key=lambda r: r[1])
-    long_rows = [r for r in clean if r[1] not in (CLIP_A, CLIP_B)]
+    long_rows = [r for r in clean if r[1] not in (CLIP_A, CLIP_B, CLIP_BYTES)]
     seen, picked = set(), []
     for r in long_rows:  # one recording per sentence id
         if r[0] not in seen:
@@ -73,7 +75,7 @@ def build(cache: Path) -> dict:
         if len(picked) == LONG_COUNT:
             break
 
-    wanted = {CLIP_A, CLIP_B, *(r[1] for r in picked)}
+    wanted = {CLIP_A, CLIP_B, CLIP_BYTES, *(r[1] for r in picked)}
     audio = {}
     with tarfile.open(fetch("audio/dev.tar.gz", cache)) as tar:
         for member in tar:
@@ -93,7 +95,7 @@ def build(cache: Path) -> dict:
     SMALL_DIR.mkdir(parents=True, exist_ok=True)
     LARGE_DIR.mkdir(parents=True, exist_ok=True)
     entries = {}
-    for out, name in (("vi_a.wav", CLIP_A), ("vi_b.wav", CLIP_B)):
+    for out, name in (("vi_a.wav", CLIP_A), ("vi_b.wav", CLIP_B), ("vi_bytes.wav", CLIP_BYTES)):
         (SMALL_DIR / out).write_bytes(audio[name])  # verbatim copy of the source file
         entries[out] = {"set": "small", "source": source(name), "reference": by_file[name][3]}
 

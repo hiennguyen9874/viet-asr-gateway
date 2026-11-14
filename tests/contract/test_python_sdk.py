@@ -72,7 +72,7 @@ def test_json_transcription_and_request_encoding():
     with FIXTURE.open("rb") as f:
         t = c.audio.transcriptions.create(file=f, model=MODEL, language="vi", temperature=0)
     assert isinstance(t, openai.types.audio.Transcription)
-    assert t.text.startswith("các sản phẩm") and t.usage.type == "duration" and t.usage.seconds == 8.88
+    assert t.text.startswith("Các sản phẩm") and t.usage.type == "duration" and t.usage.seconds == 8.88
     req = seen[0]
     assert req.method == "POST" and req.url.path == "/v1/audio/transcriptions"
     fields = parse_multipart(req)

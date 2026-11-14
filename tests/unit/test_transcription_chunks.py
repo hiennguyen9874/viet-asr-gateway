@@ -70,3 +70,10 @@ def test_shared_word_error_rate():
     assert wer("one two three", "one four three five") == pytest.approx(2 / 3)
     assert wer("", "") == 0
     assert wer("one", "") == 1
+
+
+def test_word_error_rate_ignores_case_and_punctuation_on_both_sides():
+    assert wer("Ngân sách, dưới 50 triệu.", "ngân sách dưới 50 triệu") == 0
+    assert wer("ngân sách dưới 50 triệu", "Ngân sách, dưới 50 triệu.") == 0
+    assert wer("“Dạ” – vâng…", "dạ vâng") == 0  # Unicode punctuation, not only ASCII
+    assert wer("năm mươi", "50") == 1  # digits vs spelled-out numbers stay a mismatch

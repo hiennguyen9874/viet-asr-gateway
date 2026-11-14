@@ -138,7 +138,7 @@ def main() -> int:
     from app.formats import seconds
 
     engine = SherpaEngine(
-        args.models_dir, "fp32", "modified_beam_search", 4, 4, warmup_seconds=args.max_chunk_seconds
+        args.models_dir, "modified_beam_search", 4, 4, warmup_seconds=args.max_chunk_seconds
     )
     engine.load()
     max_chunk = int(args.max_chunk_seconds * 16000)

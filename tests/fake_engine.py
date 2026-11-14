@@ -3,8 +3,9 @@
 A waveform's identity is its fill value: `wav(7)` transcribes to "7", so tests can check results are not mixed up.
 Tests on real (decoded) audio pass `text_fn` to derive the text from the chunk instead.
 
-Results carry tokens consistent with the text: each word is a "▁"-prefixed first character followed by one token per
-character, emitted at times spread evenly over the chunk.
+Results carry tokens consistent with the text, shaped like the model's written form: each word is a "▁"-prefixed first
+character followed by one token per character, so punctuation ("Dạ." -> "▁D" "ạ" ".") is a token without "▁".
+Times are spread evenly over the chunk.
 """
 
 import threading
