@@ -37,6 +37,9 @@ Read the section for each area you touch before editing it. File roles: [code-ma
 - `EMISSION_SHIFT`, `LAST_WORD_SAMPLES`, `PAUSE_SAMPLES` and the cue limits come from `scripts/probe_alignment.py`
   (docs/baseline.vi.md §6), which exits 1 if they drift. Change them only with a new probe report, then rerun the R2a
   gate (`tests/model/test_server.py`) and commit both reports. Rerun both after changing sherpa-onnx or the model pin.
+- Current measured constants: `EMISSION_SHIFT=3200` (200 ms, tapering at a chunk end), `LAST_WORD_SAMPLES=1920`
+  (120 ms), `PAUSE_SAMPLES=10240` (640 ms). Cues end after a word ending in `.`, `?`, `!`, `…` (one-word cues are
+  valid); `,`, `;`, `:` do not end a cue. Keep the 7 s / 80-character limits.
 - `WORD_TIMESTAMPS = False` in `app/transcription.py` until the R2b gate passes (docs/roadmap.md §2); flip it in the
   commit that carries the gate report.
 
@@ -61,8 +64,9 @@ Read the section for each area you touch before editing it. File roles: [code-ma
 
 ## Config (`config.py`)
 
-- Every `GATEWAY_*` variable is a server setting, and unknown ones abort startup. Leftover `GIPFORMER_*` or `QUAN_*`
-  variables (old prefixes) abort too, naming the variable. `GATEWAY_TEST_*` (JS server test) is therefore kept out of the server's environment.
+- Every `GATEWAY_*` variable is a server setting, and unknown ones abort startup. Leftover variables matching
+  `OLD_PREFIXES` in `app/config.py` abort too, naming the variable. `GATEWAY_TEST_*` (JS server test) is therefore
+  kept out of the server's environment.
 - Each limit is finite and validated at startup. A new setting also gets a row in the README config table.
 - `decoding_method`, `num_threads` and `queue_max_buffered_seconds` defaults come from `scripts/baseline_offline.py`
   (docs/baseline.vi.md §4: greedy only if it loses <= 0.5 WER point on the eval set), which exits 1 if they drift;

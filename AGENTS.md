@@ -1,8 +1,9 @@
-# Deploy gipformer1.5-68M-rnnt
+# Deploy viet-asr gateway
 
-Docker-only gateway serving gipformer1.5-68M-rnnt (Vietnamese RNN-T ASR, sherpa-onnx on CPU) through a scoped OpenAI API: REST/SSE (R1),
-verbose_json/srt/vtt (R2a), Realtime with explicit commit (R3a). Pre-release `v0.1.0-rc.1`. TLS, CORS and
-per-client rate limits belong to the operator's infrastructure in front of it.
+Docker-only gateway serving viet-asr (Vietnamese Zipformer2 transducer, int8, Apache-2.0, sherpa-onnx on CPU)
+through a scoped OpenAI API: REST/SSE (R1), verbose_json/srt/vtt (R2a), Realtime with explicit commit (R3a).
+Target pre-release `v0.2.0-rc.1`; tag only after the full container gate passes. TLS, CORS and per-client rate limits
+belong to the operator's infrastructure in front of it.
 
 ## Agent docs
 
@@ -25,8 +26,8 @@ per-client rate limits belong to the operator's infrastructure in front of it.
 
 - The runtime is CPU only (sherpa-onnx): plain `uv sync` / `uv run`, no `--extra`.
 - The host is shared: run local servers on a free port (8000 is taken).
-- One model instance, one thread: only `app/engine.py` calls the model, fed through `Scheduler` lanes. Endpoints reach
-  it via `run_chunks` + `Joiner`.
+- One recognizer, one worker thread (2 intra-op threads by default): only `app/engine.py` calls the model, fed
+  through `Scheduler` lanes. Endpoints reach it via `run_chunks` + `Joiner`.
 - A feature ships only after its gate passes with recorded evidence; until then it stays switched off.
 - Treat `references/` (upstream submodules) as read-only: read it for behaviour; app code and images stay
   independent of it.
@@ -35,16 +36,15 @@ per-client rate limits belong to the operator's infrastructure in front of it.
 
 ## References
 
-- references/gipformer (inference scripts, sherpa-onnx usage; `infer_onnx.py` is the parity reference)
-- references/gipformer1.5-68M-rnnt (config, tokens, model card; weights are Git LFS pointers, stage them instead)
+- tests/model/reference.py (minimal sherpa-onnx parity reference; no dependency on upstream submodules)
 - references/viet-asr (upstream VietASR: C++ core, bindings, server, model card and benchmark; source for the
-  replacement model `dangvansam/viet-asr`, which the gateway runs with its own sherpa-onnx engine, not this library)
+  served model `dangvansam/viet-asr`, which the gateway runs with its own sherpa-onnx engine, not this library)
 
 ## Agent skills
 
 ### Issue tracker
 
-Issues live in GitHub Issues, via the `gh` CLI (no git remote is configured yet; add one before using it). See `docs/agents/issue-tracker.md`.
+Issues live in GitHub Issues, via the `gh` CLI (repository from `git remote -v`). See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 

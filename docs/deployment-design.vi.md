@@ -1,16 +1,17 @@
-# Kiến trúc triển khai gipformer1.5-68M-rnnt
+# Kiến trúc triển khai viet-asr gateway
 
 Cách chạy: [README](../README.md). Payload: [api-contract.vi.md](api-contract.vi.md). Việc chưa làm: [roadmap.md](roadmap.md).
 
 ## 1. Lựa chọn
 
 **sherpa-onnx (offline transducer recognizer, CPU, version đã pin) + một gateway FastAPI mỏng, đóng gói Docker.**
-Lý do chọn Gipformer trên CPU thay cho model CTC trên GPU trước đây: [ADR 0001](adr/0001-transducer-on-cpu-replaces-quan-ctc-on-gpu.md).
+Lý do chạy transducer qua sherpa-onnx trên CPU: [ADR 0001](adr/0001-transducer-on-cpu-replaces-quan-ctc-on-gpu.md); lý do
+chọn model viet-asr: [ADR 0002](adr/0002-viet-asr-as-served-model.md).
 
 - Dùng export ONNX chính thức của model qua sherpa-onnx; không torch, CUDA, icefall/k2, không vLLM/Triton/Redis/Celery.
 - REST, SSE và Realtime WebSocket dùng chung một engine, mỗi giao thức có adapter riêng.
 - Một container = một process = một recognizer = một worker thread, chạy trên CPU.
-- Phạm vi: *OpenAI Audio Transcriptions và Realtime transcription trong phạm vi công bố*. Gipformer là ASR tiếng Việt;
+- Phạm vi: *OpenAI Audio Transcriptions và Realtime transcription trong phạm vi công bố*. viet-asr là ASR tiếng Việt;
   dịch, TTS, chat hay Realtime hội thoại cần engine khác, không thuộc gateway này.
 
 ## 2. Kiến trúc
@@ -64,9 +65,11 @@ OpenAI SDK / curl / WebSocket client
 ### Timestamps (`srt`/`vtt`)
 
 Lấy từ thời điểm phát token (token emission time) của chính lần inference sinh ra text (`app/alignment.py`), cộng
-offset tuyệt đối của chunk; không chạy thêm inference. Bước 40 ms, không có độ trễ cố định cần bù; độ dài từ cuối chunk
-và ngưỡng pause đo bằng `scripts/probe_alignment.py` (`docs/baseline/alignment_probe.json`, baseline §6). Nếu token
-không khớp transcript → 500 `alignment_failed`; không bao giờ chia đều thời gian.
+offset tuyệt đối của chunk; không chạy thêm inference. Bước 40 ms; model phát token sớm hơn lời nói nên start của từ được
+dịch `EMISSION_SHIFT` (0.2 s). Độ dịch, độ dài từ cuối chunk (0.12 s) và ngưỡng pause (0.64 s) đo bằng
+`scripts/probe_alignment.py` (`docs/baseline/alignment_probe.json`, baseline §6). Cue kết thúc ở từ cuối câu (`.`,
+`?`, `!`, `…`), ở pause, hoặc ở giới hạn 7 s / 80 ký tự. Nếu token không khớp transcript → 500 `alignment_failed`;
+không bao giờ chia đều thời gian.
 
 ### Realtime
 

@@ -1,8 +1,12 @@
 ---
-status: accepted
+status: partially superseded by ADR 0002
 ---
 
 # A transducer on CPU through sherpa-onnx replaces QUAN CTC on GPU
+
+> **Partially superseded** by [ADR 0002](0002-viet-asr-as-served-model.md): the model choice (Gipformer, fp32 by
+> default) is replaced by viet-asr int8. The runtime decision (sherpa-onnx on CPU, one recognizer on one worker
+> thread, no torch/CUDA, GPU deferred) still holds.
 
 The gateway serves one model: Gipformer 1.5 (`gipformer1.5-68M-rnnt`, a 68M-parameter Zipformer transducer, MIT) through sherpa-onnx on CPU, replacing QUAN-Transcribe-1.0 (CTC, Gemma license) on GPU. Gipformer's published Vietnamese WER is better on most benchmarks, its ONNX export runs well on CPU, and the image drops torch, CUDA and the GPU requirement. QUAN is not kept as a second option; it stays reachable only through git history.
 

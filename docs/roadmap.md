@@ -1,95 +1,88 @@
 # Roadmap
 
-Current release: `v0.1.0-rc.1` (pre-release). Details of what ships: [implementation-plan.vi.md](implementation-plan.vi.md).
+Mục tiêu pre-release: `v0.2.0-rc.1` (viet-asr int8); **chưa gắn tag**, chờ [container gate](container-gate.vi.md).
+Phần đã đạt trên model mới: [implementation-plan.vi.md](implementation-plan.vi.md).
 
-## Shipped
+## Phạm vi đã có
 
-| Release | Scope |
+| Release | Phạm vi |
 |---|---|
-| R1 | `/v1/models`, `POST /v1/audio/transcriptions` (`json`, `text`, SSE), auth, OpenAI errors, limits, Docker (CPU, sherpa-onnx) |
-| R2a | `verbose_json` (no `segments`), `srt`, `vtt` with timestamps from token emission times |
-| R3a | Realtime transcription over WebSocket `/v1/realtime`, explicit commit (`turn_detection: null`) |
+| R1 | `/v1/models`, `POST /v1/audio/transcriptions` (json/text/SSE), auth, lỗi OpenAI, giới hạn, Docker CPU |
+| R2a | `verbose_json` (không segments), `srt`/`vtt` từ thời điểm phát token, cue cuối câu/pause/giới hạn |
+| R3a | Realtime transcription qua WS `/v1/realtime`, commit tường minh (`turn_detection: null`) |
 
-## Not implemented yet
+## Chưa triển khai
 
-Ordered by priority. A feature is enabled only after its gate passes with recorded evidence.
+Theo thứ tự ưu tiên. Chỉ bật tính năng sau khi gate đạt và có bằng chứng.
 
-### 1. Production capacity and limits (R4)
+### 1. Capacity và giới hạn production (R4)
 
-Current defaults (`GATEWAY_QUEUE_MAX_LANES=32`, `GATEWAY_MAX_SESSIONS=16`, …) are finite safety budgets, **not measured
-capacity**. `GATEWAY_NUM_THREADS=2` and `GATEWAY_QUEUE_MAX_BUFFERED_SECONDS=450` come from the single-stream CPU
-baseline (docs/baseline.vi.md §4: RTF 0.057 at viet-asr int8, beam 4, 2 threads), not from load. Tooling exists
-(`scripts/benchmark.py`); the load measurement does not.
+Mặc định `GATEWAY_QUEUE_MAX_LANES=32`, `GATEWAY_MAX_SESSIONS=16`, … là ngân sách an toàn hữu hạn, **không phải
+capacity đã đo**. `GATEWAY_NUM_THREADS=2`, `GATEWAY_QUEUE_MAX_BUFFERED_SECONDS=450` đến từ baseline một stream
+(viet-asr int8, beam 4, RTF eval 0.057; baseline §4). Tooling `scripts/benchmark.py` có, số đo tải chưa có.
 
-- [ ] Benchmark on an **exclusive** CPU host (record CPU model, core count, `GATEWAY_NUM_THREADS`, precision and
-  decoding method): REST short/long, SSE, WebSocket commits and mixed, ramping clients; ≥ 3 runs per level, ≥ 100
-  successes per group for p95. Fix workload, p95 SLO and error budget before measuring.
-- [ ] Soak ≥ 1 h at the chosen level behind real TLS; RSS headroom, no occupancy growth.
-- [ ] Failure drills on the real deployment: SIGTERM drain, process/container kill and restart, inference-failure
-  recovery, hung-worker watchdog restart.
-- [ ] Set limits from the measurements, record a decision table (hardware, image digest, config, max tested load,
-  selected limit) and a rollback digest.
+- [ ] Benchmark trên CPU **riêng** (ghi CPU, core, `GATEWAY_NUM_THREADS`, decoding, model int8): REST ngắn/dài,
+  SSE, WS commit, tải hỗn hợp; tăng client; ≥3 lượt mỗi mức, ≥100 thành công mỗi nhóm cho p95. Chốt workload,
+  SLO p95 và ngân sách lỗi trước khi đo.
+- [ ] Soak ≥1 giờ ở mức chọn, sau TLS thật; có RAM dự phòng, occupancy không tăng dần.
+- [ ] Diễn tập trên deployment thật: SIGTERM drain, kill/restart container, recovery sau inference lỗi,
+  watchdog restart khi worker treo.
+- [ ] Chọn giới hạn theo số đo, ghi bảng quyết định (hardware, image digest, config, tải thử tối đa, giới hạn
+  chọn) và digest rollback.
 
 ```bash
-uv run scripts/benchmark.py --engine cpu --hardware '<cpu>-<cores>c-exclusive' \
+uv run python scripts/benchmark.py --engine cpu --hardware '<cpu>-<cores>c-exclusive' \
   --base-url http://127.0.0.1:18001 --clients 1,2,4,8,16,32 --requests-per-client 100 \
   --workload mixed --phase warm --server-pid <host pid> --out docs/baseline/capacity-mixed-warm.json
 ```
 
-A benchmark report (exit 0) is not a capacity claim; client counts are closed-loop, not microphone sessions.
-No load measurement exists for the CPU image yet; the single-stream numbers (RTF ≈ 0.058 for a 15 s chunk at the
-defaults) bound one worker at roughly 17 s of audio per second of wall time.
+Report exit 0 không tự là tuyên bố capacity: số client là closed-loop, không phải số microphone session.
+RTF chunk 15 s ≈0.058 chỉ cho cận một worker khoảng 17 s audio mỗi giây thực.
 
 ### 2. Word timestamps (R2b)
 
-`timestamp_granularities[]=word` returns 400 until this gate passes (`WORD_TIMESTAMPS = False` in
-`app/transcription.py`). Alignment code and the evaluator (`scripts/eval_alignment.py`) exist. The emission-time probe
-(docs/baseline.vi.md §6) puts the first word after a silence a median 75 ms early with quartiles -255 / +120 ms, so
-raw emission times are unlikely to pass this gate without a better word-start estimate.
+`timestamp_granularities[]=word` vẫn trả 400 (`WORD_TIMESTAMPS = False`). Alignment và evaluator
+`scripts/eval_alignment.py` có sẵn. Probe (baseline §6), sau dịch 200 ms, đặt từ đầu sau khoảng lặng median 75 ms
+sớm, tứ phân vị −255 / +120 ms; khó đạt gate nếu không cải thiện ước lượng start.
 
-- [ ] Hand-annotated word boundaries in `tests/fixtures/alignment/` (Praat/Audacity, not another aligner):
-  ≥ 200 words, ≥ 10 utterances, `dev`/`test` splits.
-- [ ] Gate on `test`: ≥ 90 % of matched words within 100 ms, median error ≤ 50 ms (thresholds fixed in advance).
-- [ ] Flip the switch in the commit that carries the report; add `words` to `verbose_json`.
+- [ ] Annotate tay ranh giới từ trong `tests/fixtures/alignment/` (Praat/Audacity, không dùng aligner khác):
+  ≥200 từ, ≥10 câu, chia dev/test.
+- [ ] Gate trên test: ≥90% từ khớp trong 100 ms, median lỗi ≤50 ms (ngưỡng chốt trước).
+- [ ] Bật switch trong commit có report; thêm words vào verbose_json.
 
-### 3. Server VAD and partial transcripts (R3b)
+### 3. Server VAD và partial (R3b)
 
-- [ ] Acoustic VAD (pin model, check license and CPU cost) with `threshold`, `prefix_padding_ms`,
-  `silence_duration_ms`; emit `input_audio_buffer.speech_started/stopped` and auto-commit. Do not use the
-  transducer's token emissions as VAD. `semantic_vad` stays rejected.
-- [ ] Optional: partial text before commit via a stable-prefix decoder (append-only deltas, defined final
-  correction policy), only with full integration tests.
+- [ ] VAD âm học (pin model, kiểm license và CPU), threshold/prefix_padding_ms/silence_duration_ms; phát
+  speech_started/stopped và auto-commit. Không dùng thời điểm phát token làm VAD; semantic_vad vẫn bị từ chối.
+- [ ] Nếu cần partial trước commit: decoder stable-prefix (delta chỉ nối thêm, luật sửa kết quả cuối xác định),
+  phải có integration test đầy đủ. Model đã tự viết dấu câu/chữ số, server không thêm chuẩn hoá text.
 
-### 4. Scale and performance
+### 4. Scale và hiệu năng
 
-Each item below changes the "one recognizer, one worker thread, one chunk per call" rule, so each needs its own gate:
-identical text vs `docs/baseline/offline.json`, per-request deadlines and cancel kept, and a capacity measurement (§1).
+Các mục sau đổi quy tắc một recognizer/một worker/một chunk mỗi call, nên đều cần gate riêng: text bằng
+`docs/baseline/offline.json`, giữ deadline/cancel mỗi request, và đo capacity (§1).
 
-- [ ] Batching (R4): decode chunks from different lanes in one `decode_streams` call; measure throughput and
-  latency against single-chunk calls at the same thread count before enabling.
-- [ ] Multiple recognizer instances (R4): several recognizers on separate worker threads in one container, sharing
-  the core budget with `GATEWAY_NUM_THREADS`; needs a RAM budget per instance (~0.45 GB peak for viet-asr int8 at 15 s chunks).
-- [ ] Horizontal scale: several containers behind a load balancer with sticky WebSocket routing (works today; needs
-  the §1 measurement to size).
-- [ ] Optional GPU runtime: sherpa-onnx with the onnxruntime CUDA provider, only if CPU measurements fall short of the
-  required capacity. Needs its own image, pins and a full gate run; the CPU image stays the default
-  ([ADR 0001](adr/0001-transducer-on-cpu-replaces-quan-ctc-on-gpu.md)).
+- [ ] Batching: decode chunk từ nhiều lane bằng một decode_streams; so throughput/latency với call từng chunk ở
+  cùng số thread trước khi bật.
+- [ ] Nhiều recognizer trên worker riêng trong một container, chia ngân sách core với `GATEWAY_NUM_THREADS`;
+  ngân sách RAM mỗi instance (~0.45 GB peak, viet-asr int8, chunk 15 s).
+- [ ] Scale ngang: nhiều container sau load balancer, sticky WS (làm được hiện tại, cần §1 để định cỡ).
+- [ ] Runtime GPU tùy chọn: sherpa-onnx với CUDA provider, chỉ khi CPU không đủ. Cần image, pins và full gate riêng;
+  CPU vẫn mặc định ([ADR 0001](adr/0001-transducer-on-cpu-replaces-quan-ctc-on-gpu.md)).
 
-### 5. Smaller items
+### 5. Việc nhỏ hơn
 
-- [ ] `conversation.item.created` in Realtime if a real client needs it (currently `conversation.item.added`).
-- [ ] G.711 `audio/pcmu` / `audio/pcma` Realtime input formats.
-- [ ] Browser access: ephemeral client secrets or a token service (today: server-to-server Bearer only).
-- [ ] Optional punctuation / inverse text normalization as a separate, versioned post-processor.
-- [ ] Python 3.11 support (only 3.12 tested).
+- [ ] conversation.item.created nếu client thật cần (hiện phát conversation.item.added).
+- [ ] Audio G.711 audio/pcmu / audio/pcma cho Realtime.
+- [ ] Truy cập browser: ephemeral client secret hoặc token service (hiện chỉ server-to-server Bearer).
+- [ ] Python 3.11 (mới thử 3.12).
 
-## Out of scope
+## Ngoài phạm vi
 
-Not provided by this model; would need other engines behind the gateway:
+Cần engine khác hoặc hạ tầng phía trước, không phải tính năng của model này:
 
-- Languages other than Vietnamese, language auto-detection, `/v1/audio/translations`.
-- `/v1/audio/speech` (TTS), chat/responses, Realtime conversation, WebRTC/SIP.
-- Diarization (`diarized_json`, `known_speaker_*`), `prompt`/keywords biasing, `include[]=logprobs`.
-- `verbose_json.segments`: the SDK schema requires Whisper-only fields (`avg_logprob`, `no_speech_prob`, `tokens`)
-  that this model cannot fill with real data.
-- TLS, CORS and per-client rate limiting inside the gateway: provided by the infrastructure in front of it.
+- Ngôn ngữ khác tiếng Việt, tự phát hiện ngôn ngữ, translations.
+- TTS, chat/responses, Realtime hội thoại, WebRTC/SIP.
+- Diarization, prompt/keyword biasing, logprobs.
+- verbose_json.segments: SDK bắt buộc field Whisper-only mà model không có dữ liệu thật.
+- TLS, CORS, rate limit theo client trong gateway (thuộc hạ tầng phía trước).

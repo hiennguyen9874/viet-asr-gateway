@@ -13,7 +13,8 @@ scheduler.py      bounded fair queue (lanes = requests/sessions, jobs = chunks) 
 audio.py          AudioIngress: multipart ingress (body limit before parser, bounded spool), sandboxed FFmpeg
                     `decode`, decoded-audio RAM budget (`hold`, `reserve`)
 chunking.py       `split`: quiet-point splitter, contiguous spans; <=100 ms audio -> no chunk (empty transcript)
-alignment.py      pure: token emission times -> words (absolute samples) -> cues; raises AlignmentError
+alignment.py      pure: token emission times -> words (absolute samples, +200 ms shift) -> sentence-end/pause/
+                    length-limited cues (7 s, 80 chars); raises AlignmentError
 formats.py        pure: verbose_json / srt / vtt serializers
 main.py           FastAPI app factory: lifespan, /health, /ready, /metrics, auth, request ids
 transcription.py  /v1/models, POST /v1/audio/transcriptions (raw ASGI: json/text/SSE/verbose_json/srt/vtt,
@@ -55,7 +56,7 @@ subtitles.py        dependency-free SRT/VTT parser, shared by smoke_server.py an
 
 | Path | Needs | Covers |
 |---|---|---|
-| `unit/` | CPU + ffmpeg | manifests/pins, config, eval tooling and probe decision rules (`test_eval_tooling.py`), byte-fallback token merge (`test_engine_tokens.py`), WER scoring, app over real Uvicorn with the fake engine, transcription params/joiner/end-to-end API (disconnect, SSE, drain, timed formats), alignment, subtitles, realtime (`test_realtime_units.py` pure, `test_realtime_api.py` real WS), observability, benchmark, capacity hardening |
+| `unit/` | CPU + ffmpeg | manifests/pins, config, eval tooling and probe decision rules (`test_eval_tooling.py`), byte-fallback token merge (`test_engine_tokens.py`), WER scoring (including the listening page in `test_demo_page.py`), app over real Uvicorn with the fake engine, transcription params/joiner/end-to-end API (disconnect, SSE, drain, timed formats), alignment, subtitles, realtime (`test_realtime_units.py` pure, `test_realtime_api.py` real WS), observability, benchmark, capacity hardening |
 | `scheduler/` | CPU | scheduler/worker gate with the fake engine: serialization, bounds, fairness, cancel |
 | `audio/` | CPU + ffmpeg | formats, hostile inputs, decode bounds, multipart limits, temp cleanup |
 | `contract/` | CPU (+ Node for `js/`) | `examples/` parsed by the pinned Python SDK (`test_python_sdk.py`) and JS SDK (`js/contract.test.ts`); `test_server_sdk.py` runs a real server against both SDKs (REST over http, Realtime over wss with a self-signed cert, JS via `js/server.test.ts`) |

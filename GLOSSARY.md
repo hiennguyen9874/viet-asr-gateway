@@ -67,7 +67,7 @@ Deriving word times and cue times from token emission times of the same inferenc
 _Avoid_: forced alignment, synchronization
 
 **Cue**:
-A timed line of subtitles: an `srt` or `vtt` entry, and equally a `segments` entry of `verbose_json`. A cue ends at a pause, at a word ending a sentence (`.`, `?`, `!`, `…`), or at a length limit.
+A timed line of subtitles: an `srt` or `vtt` entry. `verbose_json` does not expose cues as `segments`. A cue ends at a pause, at a word ending a sentence (`.`, `?`, `!`, `…`), or at a length limit.
 _Avoid_: caption, subtitle line, segment
 
 **Word timestamps**:

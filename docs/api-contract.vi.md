@@ -1,4 +1,4 @@
-# API contract — Gipformer gateway (profile OpenAI đã pin)
+# API contract — viet-asr gateway (profile OpenAI đã pin)
 
 Kiến trúc: [deployment-design.vi.md](deployment-design.vi.md). Cách chạy: [README](../README.md). Chưa hỗ trợ: [roadmap.md](roadmap.md).
 
@@ -39,10 +39,10 @@ Không có endpoint nào trả `logprobs`, `avg_logprob`, `no_speech_prob`, conf
 ## 3. Models
 
 - Id: `viet-asr`. Alias `whisper-1` chỉ khi bật cấu hình (mặc định tắt); khi bật, `whisper-1` được chấp
-  nhận ở mọi field `model` và được liệt kê trong `/v1/models` như một model riêng (cùng backend Gipformer, output khác
+  nhận ở mọi field `model` và được liệt kê trong `/v1/models` như một model riêng (cùng backend viet-asr, output khác
   Whisper; ghi rõ trong README). Mọi id khác: 404 `model_not_found`.
-- Object: `{"id", "object": "model", "created", "owned_by": "g-group-ai-lab"}`. `created` = commit time của revision
-  weights đã pin (`dd9227d…` → `1789615207`). Ví dụ: `examples/models.json`, `examples/model.json`.
+- Object: `{"id", "object": "model", "created", "owned_by": "dangvansam"}`. `created` = commit time của revision
+  weights đã pin (`46adacf…` → `1793867382`, 2026-11-05T08:29:42Z). Ví dụ: `examples/models.json`, `examples/model.json`.
 
 ## 4. `POST /v1/audio/transcriptions`
 
@@ -77,7 +77,7 @@ Kết quả:
 - `text` → `200 text/plain; charset=utf-8`, body đúng bằng transcript, không thêm newline. SDK trả nguyên body.
 - `verbose_json` → `200 application/json`: `{"text", "language": "vietnamese", "duration", "usage": {"type":
   "duration", "seconds"}}`, `duration == usage.seconds`. **Không có `segments`** (schema SDK bắt buộc
-  `avg_logprob`, `no_speech_prob`, `compression_ratio`, `tokens` kiểu Whisper — Gipformer không có dữ liệu thật) và
+  `avg_logprob`, `no_speech_prob`, `compression_ratio`, `tokens` kiểu Whisper — model không có dữ liệu thật) và
   không có `words` cho tới R2b. Ví dụ `examples/transcription_verbose.json`; dạng R2b (có `words`, chưa phục vụ):
   `examples/transcription_verbose_words.json`.
 - `srt` → `200 text/plain; charset=utf-8`: cue `n\nHH:MM:SS,mmm --> HH:MM:SS,mmm\ntext\n\n`, đánh số từ 1; không có

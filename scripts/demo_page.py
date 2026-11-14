@@ -12,7 +12,7 @@ the same cache. Cases, all deterministic:
 - FLEURS clips: clean, same sentence by two speakers, numbers, foreign names, shortest, longest;
 - one base clip degraded: white noise, babble, music, reverb, telephone (8 kHz mu-law), low-bitrate MP3/Opus,
   stereo 44.1 kHz AAC, fast/slow tempo, very quiet, clipped, long silence padding;
-- a > 1 min recording (several 20 s chunks), and edge cases: silence, pure noise, a tone, 200 ms and 80 ms cuts.
+- a > 1 min recording (several 15 s chunks), and edge cases: silence, pure noise, a tone, 200 ms and 80 ms cuts.
 
 Each case is sent as `verbose_json` (text, duration) and `srt` (cues). Request errors are recorded on the case, not
 raised. Output stays local: `outputs/` is gitignored (no audio or transcripts in commits).
@@ -445,7 +445,7 @@ def build_cases(cache: Path, audio_dir: Path, extra: list[Path]) -> list[dict]:
         dst = audio_dir / f"custom_{i}_{path.name}"
         shutil.copyfile(path, dst)
         txt = path.with_suffix(".txt")
-        ref = txt.read_text(encoding="utf-8").strip().lower() if txt.is_file() else None
+        ref = txt.read_text(encoding="utf-8").strip() if txt.is_file() else None
         add(f"custom_{i}", "Tự thêm", path.name, f"File người dùng: {path}", ref, path=dst)
     return cases
 

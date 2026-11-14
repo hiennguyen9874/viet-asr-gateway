@@ -43,6 +43,16 @@ re-measured on viet-asr (#5); the container gate still has to be run on a Docker
     clips, gitignored, hash manifest). `probe_limits.py` and `baseline_offline.py` derive and check the chunk length
     and the decoding method; the model-tier gates run the default engine settings.
 
+- Removed the two Gipformer reference submodules (#6); ADR 0002 supersedes the model choice of ADR 0001.
+  Project/agent docs describe viet-asr; generated listening outputs are no longer tracked and stay local.
+  Model object metadata now uses `dangvansam` and the pinned revision's timestamp (`1793867382`).
+  - Listening demo regenerated on the default server: 33 cases, no request errors; WER normalizes both sides
+    without changing displayed text. Three regression tests cover casing, punctuation and the digit limitation.
+  - Validation: 484 CPU-tier tests and 24 model-tier tests passed; pre-commit passed.
+  - Legacy-prefix literals remain only in the startup rejection guard and its regression tests, as required
+    by spec #1; this is the documented exception to the old-name grep criterion.
+  - Container report and `v0.2.0-rc.1` tag remain an operator handoff, not agent-generated evidence.
+
 Migration: rename every `GIPFORMER_*` variable to `GATEWAY_*`, move `secrets/gipformer_api_keys` to
 `secrets/gateway_api_keys`, switch clients to `model=viet-asr` and dashboards to `gateway_*` metrics.
 

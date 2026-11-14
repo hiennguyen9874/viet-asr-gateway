@@ -179,7 +179,7 @@ chỉ có số đo và số đếm: [`baseline/alignment_probe.json`](baseline/a
 | (d) Khoảng cách giữa hai lần bắt đầu từ (trong câu) | median 280 ms, p90 640 ms, p95 920 ms |
 | (e) Cue (`vi_long`, 106.6 s, 9 chunk) | 21 cue, dài nhất 7.0 s, nhiều nhất 80 ký tự; tốc độ đọc median 12 ký tự/s |
 
-viet-asr phát token **sớm** hơn lời nói một khoảng khá ổn định (khác Gipformer, có độ lệch đổi dấu): tứ phân vị của
+viet-asr phát token **sớm** hơn lời nói một khoảng khá ổn định: tứ phân vị của
 (c) cùng âm, nên luật bù độ trễ có hiệu lực. Encoder nhìn toàn bộ chunk nên thời điểm phát vẫn không bám chặt âm thanh:
 từ đầu sau khoảng lặng có khi vẫn sớm tới ~0.8 s sau khi bù.
 

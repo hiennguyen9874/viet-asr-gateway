@@ -23,7 +23,8 @@ uv run pytest tests/container                           # image gate (needs dock
 uv run pre-commit run --all-files                       # lint + format
 ```
 
-The CPU tiers need `ffmpeg` on PATH. Image gate details: docs/container-gate.vi.md.
+The CPU tiers need `ffmpeg` on PATH. If a relocated venv's `pytest` script imports the wrong environment, use
+`uv run python -m pytest` instead. Image gate details: docs/container-gate.vi.md.
 
 ## Local server and smoke
 
@@ -46,7 +47,8 @@ If `uv run ... uvicorn` fails with `Failed to spawn`, the venv was created under
 use `uv run python -m uvicorn ...` or recreate `.venv`.
 
 One recognizer per process, always one worker. Start the server from a shell with no `GATEWAY_TEST_*` exported:
-unknown `GATEWAY_*` variables abort startup, as do leftover `GIPFORMER_*` / `QUAN_*` ones.
+unknown `GATEWAY_*` variables abort startup, as do leftover variables matching `app/config.py:OLD_PREFIXES`.
+The model is int8 only; there is no precision setting.
 
 ## Baselines and probes
 
