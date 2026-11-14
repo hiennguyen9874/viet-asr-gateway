@@ -6,7 +6,7 @@ follow the release tags (`vX.Y.Z-rc.N`).
 ## [Unreleased] - targets v0.2.0-rc.1
 
 Spec #1: replace the served model with viet-asr while keeping the API. Baselines, probes and gate reports are
-re-measured on viet-asr in a later ticket; until then smoke and the image gate refuse the old baseline.
+re-measured on viet-asr (#5); the container gate still has to be run on a Docker host.
 
 ### Changed (breaking)
 
@@ -28,11 +28,20 @@ re-measured on viet-asr in a later ticket; until then smoke and the image gate r
   (`tests/model/reference.py`) instead of Gipformer's `infer_onnx.py`.
   - New fixture `tests/fixtures/vi_bytes.wav` (FLEURS dev) exercises byte-fallback tokens.
   - R2a gate: the shift test compares cue edges only over the common leading words (viet-asr may change a word
-    when audio is shifted); `LONG_MAX_WER` 0.10 → 0.15 (viet-asr measures 0.114 on `vi_long`). Both are re-measured
-    with the new baseline (#5).
+    when audio is shifted); `LONG_MAX_WER` 0.10 → 0.15 (viet-asr: 0.08–0.13 on `vi_long` across decodings, threads
+    and chunk lengths, #5).
   - Smoke and the image gate refuse `docs/baseline/offline.json` measured on another model pin.
 - Cues end at sentence ends (#4): a word ending in `.`, `?`, `!` or `…` closes its `srt`/`vtt` cue (`,` `;` `:` do
   not); the pause, 7 s and 80-character rules are unchanged.
+- Defaults and constants re-measured on viet-asr (#5; docs/baseline.vi.md):
+  - `GATEWAY_NUM_THREADS` 4 → 2, `GATEWAY_MAX_CHUNK_SECONDS` 20 → 15, `GATEWAY_QUEUE_MAX_BUFFERED_SECONDS` 600 → 450.
+  - Decoding stays `modified_beam_search`, beam 4: greedy loses 0.97 WER point on the eval set (rule: switch at
+    ≤ 0.5). Known limitation: beam 4 emits a word or two on silence and noise; greedy returns `""`.
+  - Cue timing: word starts move 200 ms later (`EMISSION_SHIFT` 0 → 3200, shrinking near a chunk end), last word
+    of a chunk 0.28 → 0.12 s, pause 0.52 → 0.64 s.
+  - New local eval set (`scripts/fetch_fixtures.py --eval`: 200 FLEURS vi_vn test clips + 24 seeded non-speech
+    clips, gitignored, hash manifest). `probe_limits.py` and `baseline_offline.py` derive and check the chunk length
+    and the decoding method; the model-tier gates run the default engine settings.
 
 Migration: rename every `GIPFORMER_*` variable to `GATEWAY_*`, move `secrets/gipformer_api_keys` to
 `secrets/gateway_api_keys`, switch clients to `model=viet-asr` and dashboards to `gateway_*` metrics.

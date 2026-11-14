@@ -24,8 +24,9 @@ Read the section for each area you touch before editing it. File roles: [code-ma
 - FFmpeg gets fixed argv, the `file` protocol and the demuxer/decoder allowlists; client filenames, paths and URLs
   stay out of its arguments, out of disk paths and out of logs.
 - The engine refuses fewer than 1,360 samples (`MIN_FORWARD_SAMPLES`, the recognizer's measured floor). Audio <= 100 ms
-  (1,600 samples) yields `""` without a model call; `GATEWAY_MAX_CHUNK_SECONDS` defaults to 20 s. Both come from
-  `scripts/probe_limits.py` (docs/baseline.vi.md §5); change them only with a new report.
+  (1,600 samples) yields `""` without a model call; `GATEWAY_MAX_CHUNK_SECONDS` defaults to 15 s. All three come
+  from `scripts/probe_limits.py` (docs/baseline.vi.md §5), which exits 1 if they drift; change them only with a new
+  report.
 - Every resource is budgeted: body limit before the multipart parser, spool bytes, decoded audio in RAM (`hold`,
   realtime pending audio via `reserve`). Exceeding one returns 413/429/503 in the OpenAI envelope.
 
@@ -63,8 +64,10 @@ Read the section for each area you touch before editing it. File roles: [code-ma
 - Every `GATEWAY_*` variable is a server setting, and unknown ones abort startup. Leftover `GIPFORMER_*` or `QUAN_*`
   variables (old prefixes) abort too, naming the variable. `GATEWAY_TEST_*` (JS server test) is therefore kept out of the server's environment.
 - Each limit is finite and validated at startup. A new setting also gets a row in the README config table.
-- `num_threads` and `queue_max_buffered_seconds` defaults come from `scripts/baseline_offline.py` (docs/baseline.vi.md
-  §4), which exits 1 if they drift; change them only with a new `docs/baseline/offline.json`.
+- `decoding_method`, `num_threads` and `queue_max_buffered_seconds` defaults come from `scripts/baseline_offline.py`
+  (docs/baseline.vi.md §4: greedy only if it loses <= 0.5 WER point on the eval set), which exits 1 if they drift;
+  change them only with a new `docs/baseline/offline.json`. It and `scripts/probe_limits.py` depend on each other's
+  defaults: after changing one, rerun both until both exit 0.
 
 ## Pins, dependencies, image
 

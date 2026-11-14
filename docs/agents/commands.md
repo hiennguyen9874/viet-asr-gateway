@@ -9,6 +9,7 @@ shared: pick a free `<port>` (8000 is taken; the container binds 18001).
 uv sync                                                 # Python 3.12; sherpa-onnx pinned in uv.lock
 uv run scripts/stage_models.py                          # pinned model -> ./models (--verify: offline hash check)
 uv run scripts/fetch_fixtures.py                        # fixtures (--verify [--small-only]: hash check only)
+uv run scripts/fetch_fixtures.py --eval                 # local eval set for baselines/probes (~550 MB download; --verify --eval)
 uv run pre-commit install                               # autoflake, isort, ruff-format, ruff (ruff.toml)
 ```
 
@@ -52,9 +53,10 @@ unknown `GATEWAY_*` variables abort startup, as do leftover `GIPFORMER_*` / `QUA
 Benchmark invocation (R4): docs/roadmap.md §1.
 
 ```bash
-uv run scripts/baseline_offline.py --out docs/baseline/offline.json  # RTF/WER per setting, threads -> defaults (~3.5 min, needs vi_long.wav)
-uv run scripts/probe_limits.py --out docs/baseline/limits_probe.json  # short-audio floor, chunk length (~6 min, needs vi_long.wav)
+uv run scripts/probe_limits.py --out docs/baseline/limits_probe.json  # short-audio floor, chunk length -> max_chunk_seconds (~15 min)
+uv run scripts/baseline_offline.py --out docs/baseline/offline.json  # decoding, threads -> defaults (~13 min); both need vi_long.wav + eval set
 uv run scripts/probe_alignment.py --out docs/baseline/alignment_probe.json  # emission times -> cue constants (~1 min)
 uv run pytest tests/model/test_server.py              # R2a cue gate; writes docs/baseline/r2a_gate.json when it passes
 uv run pytest tests/model/test_realtime.py            # R3a realtime gate; writes docs/baseline/r3a_gate.json when it passes
+# Run each gate file on its own with a clean tree: a report written by the other marks the commit -dirty.
 ```

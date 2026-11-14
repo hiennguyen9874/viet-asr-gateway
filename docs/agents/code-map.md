@@ -31,20 +31,23 @@ observability.py  JSON logs + Prometheus-style metrics (metadata only)
 
 ```text
 stage_models.py     download pinned assets (assets/manifest.json) into ./models or $GATEWAY_MODELS_DIR, verify SHA256
-fetch_fixtures.py   build fixtures from FLEURS vi_vn (CC BY 4.0) at a pinned revision, verify SHA256
-baseline_offline.py RTF/WER per decoding method, thread sweep -> default threads and queue bounds; metadata-only
-                      JSON with transcript SHA256; checks the app/config.py defaults
+fetch_fixtures.py   build fixtures from FLEURS vi_vn (CC BY 4.0) at a pinned revision, verify SHA256; --eval: local eval set
+                      (200 FLEURS test clips + seeded non-speech clips, gitignored; hashes in tests/fixtures/eval_manifest.json)
+baseline_offline.py RTF/WER per decoding method (fixtures + eval set: corpus WER, text rate on non-speech), 0.5-point rule
+                      -> default decoding, thread sweep -> default threads and queue bounds; metadata-only JSON with
+                      transcript SHA256; checks the app/config.py defaults
 smoke_server.py     stdlib smoke of a running gateway (local or container) against the offline baseline's transcript
                       hashes -> metadata-only JSON
 benchmark.py        R4 closed-loop REST/SSE/WS/mixed ramp + bounded soak; metadata-only JSON, not a capacity claim
 demo_page.py        listening page: FLEURS clips + synthetic hard/edge cases -> running gateway -> outputs/<dir>/
                       (audio/, results.json, static index.html with WER, word diff, clickable SRT cues)
-probe_limits.py     short-audio floor + latency/peak RSS/WER vs chunk length on the real recognizer -> JSON
+probe_limits.py     short-audio floor + latency/peak RSS/eval WER/cut artifacts vs chunk length (<= 30 s) on the real
+                      recognizer -> default max_chunk_seconds; JSON, checks the config default
 probe_alignment.py  token emission times: resolution, shift, delay at known silences, cues -> JSON; checks the
                       app/alignment.py constants
 eval_alignment.py   R2b gate: words vs hand annotations in tests/fixtures/alignment/ (none exist yet)
-scoring.py          dependency-free WER (lower case, Unicode punctuation removed on both sides), shared by the smoke
-                      scripts, baselines and demo page
+scoring.py          dependency-free WER and corpus edit counts (lower case, Unicode punctuation removed on both sides),
+                      shared by the smoke scripts, baselines and demo page
 subtitles.py        dependency-free SRT/VTT parser, shared by smoke_server.py and tests/live_server.py
 ```
 
@@ -52,7 +55,7 @@ subtitles.py        dependency-free SRT/VTT parser, shared by smoke_server.py an
 
 | Path | Needs | Covers |
 |---|---|---|
-| `unit/` | CPU + ffmpeg | manifests/pins, config, byte-fallback token merge (`test_engine_tokens.py`), WER scoring, app over real Uvicorn with the fake engine, transcription params/joiner/end-to-end API (disconnect, SSE, drain, timed formats), alignment, subtitles, realtime (`test_realtime_units.py` pure, `test_realtime_api.py` real WS), observability, benchmark, capacity hardening |
+| `unit/` | CPU + ffmpeg | manifests/pins, config, eval tooling and probe decision rules (`test_eval_tooling.py`), byte-fallback token merge (`test_engine_tokens.py`), WER scoring, app over real Uvicorn with the fake engine, transcription params/joiner/end-to-end API (disconnect, SSE, drain, timed formats), alignment, subtitles, realtime (`test_realtime_units.py` pure, `test_realtime_api.py` real WS), observability, benchmark, capacity hardening |
 | `scheduler/` | CPU | scheduler/worker gate with the fake engine: serialization, bounds, fairness, cancel |
 | `audio/` | CPU + ffmpeg | formats, hostile inputs, decode bounds, multipart limits, temp cleanup |
 | `contract/` | CPU (+ Node for `js/`) | `examples/` parsed by the pinned Python SDK (`test_python_sdk.py`) and JS SDK (`js/contract.test.ts`); `test_server_sdk.py` runs a real server against both SDKs (REST over http, Realtime over wss with a self-signed cert, JS via `js/server.test.ts`) |
@@ -65,7 +68,7 @@ Shared helpers:
 - `live_server.py`: `serve(...)` runs real Uvicorn (websockets-sansio, optional self-signed TLS via `tls_dir`)
   around `create_app`; also float-WAV/PCM24 audio helpers and the raw realtime client `WS`.
 - `fixtures/`: small committed fixtures + `manifest.json` (hashes, references, license); `vi_bytes.wav` makes the
-  model emit byte-fallback tokens.
+  model emit byte-fallback tokens; `eval_manifest.json` (hashes and counts of the local eval set, no audio or text).
 
 ## Other paths
 
@@ -73,5 +76,5 @@ Shared helpers:
 - `Dockerfile`, `.dockerignore`, `compose.yaml`: the image and how it runs.
 - `docs/baseline/*.json`: saved reports (offline baseline, server smoke, container gate, alignment probe, R2a gate,
   R3a gate, limits probe).
-- `models/`, `fixtures-large/`: staged assets and large fixtures (gitignored).
+- `models/`, `fixtures-large/`: staged assets, large fixtures and the eval set `fixtures-large/eval/` (gitignored).
 - `references/`: read-only upstream sources (git submodules).

@@ -25,7 +25,7 @@ OpenAI SDK / curl / WebSocket client
    ├─ REST / SSE / verbose_json / srt / vtt                     app/transcription.py, app/formats.py
    ├─ Realtime transcription (explicit commit)                  app/realtime.py
    ├─ audio ingress: giới hạn body, spool, FFmpeg sandbox       app/audio.py
-   ├─ chunking tại điểm yên lặng (≤ 20 s, phủ liền audio)       app/chunking.py
+   ├─ chunking tại điểm yên lặng (≤ 15 s, phủ liền audio)       app/chunking.py
    ├─ scheduler: queue có giới hạn, công bằng giữa lane         app/scheduler.py
    └─ EngineWorker: thread duy nhất gọi model                   app/engine.py
                  |
@@ -86,7 +86,7 @@ xử lý FIFO qua cùng `split`/`run_chunks`/`Joiner` như REST. Gửi có giớ
   kiểm tra. Chi tiết: [baseline.vi.md](baseline.vi.md).
 - Decode `modified_beam_search` beam 4 (mặc định, hoặc `greedy_search`), không KenLM. Output giữ nguyên dạng viết
   của model: chữ hoa/thường, dấu câu, số bằng chữ số.
-- Peak RSS đo được (chunk 20 s, 4 thread): ~0.8 GB fp32, ~0.46 GB int8 (baseline §4, §5).
+- Peak RSS đo được (viet-asr int8, chunk 15 s, 2 thread): ~0.45 GB (baseline §4, §5).
 
 ## 5. Đóng gói
 

@@ -17,8 +17,8 @@ Ordered by priority. A feature is enabled only after its gate passes with record
 ### 1. Production capacity and limits (R4)
 
 Current defaults (`GATEWAY_QUEUE_MAX_LANES=32`, `GATEWAY_MAX_SESSIONS=16`, …) are finite safety budgets, **not measured
-capacity**. `GATEWAY_NUM_THREADS=4` and `GATEWAY_QUEUE_MAX_BUFFERED_SECONDS=600` come from the single-stream CPU
-baseline (docs/baseline.vi.md §4: RTF 0.04 at fp32, beam 4, 4 threads), not from load. Tooling exists
+capacity**. `GATEWAY_NUM_THREADS=2` and `GATEWAY_QUEUE_MAX_BUFFERED_SECONDS=450` come from the single-stream CPU
+baseline (docs/baseline.vi.md §4: RTF 0.057 at viet-asr int8, beam 4, 2 threads), not from load. Tooling exists
 (`scripts/benchmark.py`); the load measurement does not.
 
 - [ ] Benchmark on an **exclusive** CPU host (record CPU model, core count, `GATEWAY_NUM_THREADS`, precision and
@@ -37,8 +37,8 @@ uv run scripts/benchmark.py --engine cpu --hardware '<cpu>-<cores>c-exclusive' \
 ```
 
 A benchmark report (exit 0) is not a capacity claim; client counts are closed-loop, not microphone sessions.
-No load measurement exists for the CPU image yet; the single-stream numbers (RTF ≈ 0.04 for a 20 s chunk at the
-defaults) bound one worker at roughly 25 s of audio per second of wall time.
+No load measurement exists for the CPU image yet; the single-stream numbers (RTF ≈ 0.058 for a 15 s chunk at the
+defaults) bound one worker at roughly 17 s of audio per second of wall time.
 
 ### 2. Word timestamps (R2b)
 
@@ -68,7 +68,7 @@ identical text vs `docs/baseline/offline.json`, per-request deadlines and cancel
 - [ ] Batching (R4): decode chunks from different lanes in one `decode_streams` call; measure throughput and
   latency against single-chunk calls at the same thread count before enabling.
 - [ ] Multiple recognizer instances (R4): several recognizers on separate worker threads in one container, sharing
-  the core budget with `GATEWAY_NUM_THREADS`; needs a RAM budget per instance (~0.8 GB fp32, ~0.46 GB int8).
+  the core budget with `GATEWAY_NUM_THREADS`; needs a RAM budget per instance (~0.45 GB peak for viet-asr int8 at 15 s chunks).
 - [ ] Horizontal scale: several containers behind a load balancer with sticky WebSocket routing (works today; needs
   the §1 measurement to size).
 - [ ] Optional GPU runtime: sherpa-onnx with the onnxruntime CUDA provider, only if CPU measurements fall short of the

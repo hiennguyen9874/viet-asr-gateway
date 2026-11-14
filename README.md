@@ -129,17 +129,17 @@ Thêm biến `GATEWAY_*` vào `environment:` của service (ví dụ trong `comp
 | `GATEWAY_API_KEYS_FILE` / `GATEWAY_API_KEYS` | (bắt buộc) | Key Bearer (compose dùng file secret) |
 | `GATEWAY_WHISPER_ALIAS` | `false` | Chấp nhận model id `whisper-1` |
 | `GATEWAY_LOG_LEVEL` | `INFO` | Mức log |
-| `GATEWAY_DECODING_METHOD` | `modified_beam_search` | Hoặc `greedy_search` (nhanh hơn, mặc định của reference là beam search) |
+| `GATEWAY_DECODING_METHOD` | `modified_beam_search` | Hoặc `greedy_search`: nhanh hơn ~33%, WER kém ~1 điểm, nhưng gần như luôn trả `""` trên im lặng/nhiễu (beam 4 thường sinh vài chữ): [baseline §4](docs/baseline.vi.md) |
 | `GATEWAY_BEAM_SIZE` | 4 | Số path của `modified_beam_search` (số nguyên > 0; bỏ qua khi greedy) |
-| `GATEWAY_NUM_THREADS` | 4 | Số intra-op thread của recognizer duy nhất (số nguyên > 0). Đo: chunk 20 s mất 1.7 / 0.81 / 0.63 s ở 1 / 4 / 8 thread; trên 4 thread hiệu suất < 50%: [baseline §4](docs/baseline.vi.md) |
+| `GATEWAY_NUM_THREADS` | 2 | Số intra-op thread của recognizer duy nhất (số nguyên > 0). Đo: chunk 15 s mất 1.18 / 0.86 / 0.75 s ở 1 / 2 / 4 thread; từ 4 thread hiệu suất < 50%. Transcript có thể đổi theo số thread: [baseline §2, §4](docs/baseline.vi.md) |
 | `GATEWAY_MAX_UPLOAD_BYTES` | 25 MiB | Cả body multipart → 413 |
 | `GATEWAY_MAX_AUDIO_SECONDS` | 1800 | Thời lượng sau decode → 400 `audio_too_long` |
 | `GATEWAY_MAX_DECODED_SECONDS` | 3600 | Audio đã decode giữ trong RAM của mọi request (≈ 64 KB/s) → 429 |
 | `GATEWAY_MAX_SPOOL_BYTES` | 200 MiB | File tạm của upload đang nhận (nằm trong tmpfs 512 MiB) → 429 |
-| `GATEWAY_MAX_CHUNK_SECONDS` | 20 | Độ dài chunk tối đa (cũng là độ dài warm-up). Trên 30 s RAM peak tăng nhanh (60 s ≈ 2 GB, 120 s ≈ 8 GB): [baseline §5](docs/baseline.vi.md) |
+| `GATEWAY_MAX_CHUNK_SECONDS` | 15 | Độ dài chunk tối đa (cũng là độ dài warm-up). Chunk dài nhất có latency ≤ 1 s ở 2 thread; WER 10–30 s gần như bằng nhau; không nên quá 30 s (độ dài huấn luyện của model): [baseline §5](docs/baseline.vi.md) |
 | `GATEWAY_QUEUE_MAX_LANES` | 32 | Request/session đồng thời → 429 |
 | `GATEWAY_QUEUE_TIMEOUT_SECONDS` | 30 | Chờ chỗ trong queue tối đa → 429 |
-| `GATEWAY_QUEUE_MAX_BUFFERED_SECONDS` | 600 | Audio trong queue + đang chạy → chờ chỗ (rồi 429). Chọn để queue đầy chạy hết trong ≤ 30 s ở RTF đo được (beam 4, 4 thread): [baseline §4](docs/baseline.vi.md). Giảm nếu CPU chậm hơn hoặc tăng `GATEWAY_BEAM_SIZE` |
+| `GATEWAY_QUEUE_MAX_BUFFERED_SECONDS` | 450 | Audio trong queue + đang chạy → chờ chỗ (rồi 429). Chọn để queue đầy chạy hết trong ≤ 30 s ở RTF đo được (beam 4, 2 thread): [baseline §4](docs/baseline.vi.md). Giảm nếu CPU chậm hơn hoặc tăng `GATEWAY_BEAM_SIZE` |
 | `GATEWAY_REQUEST_TIMEOUT_SECONDS` | 600 | Tổng upload + decode + queue + infer + gửi → 503 `request_timeout` |
 | `GATEWAY_SEND_TIMEOUT_SECONDS` | 10 | Một lần gửi SSE/WebSocket; client không đọc → ngắt |
 | `GATEWAY_MAX_SESSIONS` | 16 | Realtime session đồng thời (≤ lanes) → handshake 429 |
@@ -147,7 +147,7 @@ Thêm biến `GATEWAY_*` vào `environment:` của service (ví dụ trong `comp
 | `GATEWAY_SESSION_IDLE_TIMEOUT_SECONDS` | 120 | Session không hoạt động → `idle_timeout` |
 | `GATEWAY_MAX_TURN_SECONDS` | 120 | Audio chưa commit của một session → `input_audio_buffer_full` |
 | `GATEWAY_MAX_PENDING_ITEMS` | 4 | Item đã commit chưa xong → `too_many_pending_items` |
-| `GATEWAY_INFER_HANG_SECONDS` | 120 | Một call inference lâu hơn → worker "hung", `/health` 503 (call dài nhất đo được: 1.8 s) |
+| `GATEWAY_INFER_HANG_SECONDS` | 120 | Một call inference lâu hơn → worker "hung", `/health` 503 (call dài nhất đo được: 1.3 s) |
 | `GATEWAY_SHUTDOWN_DRAIN_SECONDS` | 30 | Chờ job đang chạy khi tắt |
 
 Các mặc định là giới hạn an toàn hữu hạn, **chưa phải capacity đã đo** (xem [roadmap](docs/roadmap.md) R4). Đo
