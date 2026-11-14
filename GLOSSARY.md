@@ -1,4 +1,4 @@
-# Gipformer Gateway
+# Viet ASR Gateway
 
 A gateway that serves one Vietnamese speech-recognition model through a scoped OpenAI audio API (REST/SSE, timed formats, Realtime with explicit commit). This glossary fixes the words used across code, tests, docs and tickets.
 
@@ -7,7 +7,7 @@ A gateway that serves one Vietnamese speech-recognition model through a scoped O
 ### Model
 
 **Served model**:
-The single speech-recognition model the gateway exposes, `gipformer1.5-68M-rnnt`. There is exactly one at a time.
+The single speech-recognition model the gateway exposes, `viet-asr`. There is exactly one at a time.
 _Avoid_: backend, checkpoint
 
 **Transducer**:
@@ -15,7 +15,7 @@ A model that emits tokens frame by frame and may emit several tokens, or none, o
 _Avoid_: RNN-T model (when the family matters, say "transducer"), CTC path
 
 **Token**:
-One unit of the served model's subword vocabulary; a token that starts a word carries the word-start marker `▁`. The blank symbol is not a token.
+One unit of the served model's subword vocabulary, which also holds punctuation and digits; a token that starts a word carries the word-start marker `▁`. The blank symbol is not a token.
 _Avoid_: piece, unit, subword
 
 **Engine**:
@@ -25,10 +25,6 @@ _Avoid_: model wrapper, recognizer (that is the library's object inside the engi
 **Decoding method**:
 How the engine turns the model's output into tokens: greedy search or modified beam search.
 _Avoid_: decoder (that is a network inside the transducer)
-
-**Precision**:
-Which weight variant the engine loads: full precision (fp32) or quantized (int8).
-_Avoid_: quantization level, mode
 
 **Pin**:
 The exact model revision plus per-file size and SHA256 that the gateway is allowed to run.
@@ -41,7 +37,7 @@ _Avoid_: provisioning, caching
 ### Audio and transcripts
 
 **Transcript**:
-The final text of one request or one realtime item: uppercase Vietnamese, unpunctuated, numbers spoken out, as the served model writes it.
+The final text of one request or one realtime item in written form (casing, punctuation, numbers as digits), exactly as the served model writes it.
 _Avoid_: result, output text
 
 **Chunk**:
@@ -57,7 +53,7 @@ The single place where chunk texts become one transcript: one space between non-
 _Avoid_: merger, concatenator
 
 **Word**:
-A maximal run of non-whitespace characters of the transcript. In Vietnamese this is a syllable, not a compound.
+A maximal run of non-whitespace characters of the transcript, including any punctuation attached to it. In Vietnamese this is a syllable, not a compound.
 _Avoid_: syllable, term
 
 ### Timing
@@ -71,7 +67,7 @@ Deriving word times and cue times from token emission times of the same inferenc
 _Avoid_: forced alignment, synchronization
 
 **Cue**:
-A timed line of subtitles: an `srt` or `vtt` entry, and equally a `segments` entry of `verbose_json`.
+A timed line of subtitles: an `srt` or `vtt` entry, and equally a `segments` entry of `verbose_json`. A cue ends at a pause, at a word ending a sentence (`.`, `?`, `!`, `…`), or at a length limit.
 _Avoid_: caption, subtitle line, segment
 
 **Word timestamps**:
