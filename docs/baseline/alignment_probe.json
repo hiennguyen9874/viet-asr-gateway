@@ -1,23 +1,21 @@
 {
   "sherpa_onnx": "1.13.8",
-  "settings": "fp32, modified_beam_search, beam 4, 4 threads (except a)",
-  "max_chunk_seconds": 20.0,
+  "settings": {
+    "model": "viet-asr int8",
+    "decoding_method": "modified_beam_search",
+    "beam_size": 4,
+    "threads": 2,
+    "note": "(a) runs every decoding method"
+  },
+  "max_chunk_seconds": 15.0,
   "a_resolution": {
     "step_samples": 640,
     "settings": {
-      "fp32/modified_beam_search": {
+      "modified_beam_search": {
         "tokens": 58,
         "step_samples": 640
       },
-      "fp32/greedy_search": {
-        "tokens": 58,
-        "step_samples": 640
-      },
-      "int8/modified_beam_search": {
-        "tokens": 58,
-        "step_samples": 640
-      },
-      "int8/greedy_search": {
+      "greedy_search": {
         "tokens": 58,
         "step_samples": 640
       }
@@ -31,16 +29,16 @@
         "same_tokens": true,
         "within_1_step": 1.0,
         "delta_ms": {
-          "n": 32,
+          "n": 34,
           "min": -10.0,
           "p10": -10.0,
           "p25": -10.0,
           "p50": -10.0,
-          "p75": -10.0,
+          "p75": 20.0,
           "p90": 30.0,
           "p95": 30.0,
           "max": 30.0,
-          "mean": -1.2
+          "mean": 0.6
         },
         "first_token_ms": 0.0
       },
@@ -50,16 +48,16 @@
         "same_tokens": true,
         "within_1_step": 1.0,
         "delta_ms": {
-          "n": 32,
+          "n": 34,
           "min": -20.0,
           "p10": -20.0,
           "p25": -20.0,
-          "p50": 0.0,
+          "p50": -20.0,
           "p75": 20.0,
           "p90": 20.0,
           "p95": 20.0,
           "max": 20.0,
-          "mean": 0.0
+          "mean": -3.5
         },
         "first_token_ms": 0.0
       },
@@ -69,16 +67,16 @@
         "same_tokens": true,
         "within_1_step": 1.0,
         "delta_ms": {
-          "n": 32,
+          "n": 34,
           "min": -40.0,
-          "p10": -36.0,
+          "p10": 0.0,
           "p25": 0.0,
           "p50": 0.0,
           "p75": 0.0,
-          "p90": 36.0,
+          "p90": 28.0,
           "p95": 40.0,
           "max": 40.0,
-          "mean": 0.0
+          "mean": 1.2
         },
         "first_token_ms": 0.0
       },
@@ -86,10 +84,162 @@
         "clip": "vi_a.wav",
         "shift_samples": 1000,
         "same_tokens": true,
-        "within_1_step": 0.9375,
+        "within_1_step": 0.9706,
         "delta_ms": {
-          "n": 32,
-          "min": -102.5,
+          "n": 34,
+          "min": -62.5,
+          "p10": -22.5,
+          "p25": -22.5,
+          "p50": -22.5,
+          "p75": 17.5,
+          "p90": 17.5,
+          "p95": 17.5,
+          "max": 17.5,
+          "mean": -6.0
+        },
+        "first_token_ms": 0.0
+      },
+      {
+        "clip": "vi_a.wav",
+        "shift_samples": 1280,
+        "same_tokens": true,
+        "within_1_step": 0.9706,
+        "delta_ms": {
+          "n": 34,
+          "min": -80.0,
+          "p10": -40.0,
+          "p25": 0.0,
+          "p50": 0.0,
+          "p75": 0.0,
+          "p90": 0.0,
+          "p95": 14.0,
+          "max": 40.0,
+          "mean": -4.7
+        },
+        "first_token_ms": 0.0
+      },
+      {
+        "clip": "vi_a.wav",
+        "shift_samples": 3200,
+        "same_tokens": true,
+        "within_1_step": 0.9706,
+        "delta_ms": {
+          "n": 34,
+          "min": -200.0,
+          "p10": -28.0,
+          "p25": 0.0,
+          "p50": 0.0,
+          "p75": 0.0,
+          "p90": 28.0,
+          "p95": 40.0,
+          "max": 40.0,
+          "mean": -4.7
+        },
+        "first_token_ms": 0.0
+      },
+      {
+        "clip": "vi_a.wav",
+        "shift_samples": 8000,
+        "same_tokens": true,
+        "within_1_step": 0.9706,
+        "delta_ms": {
+          "n": 34,
+          "min": -500.0,
+          "p10": -20.0,
+          "p25": -20.0,
+          "p50": -20.0,
+          "p75": 20.0,
+          "p90": 20.0,
+          "p95": 20.0,
+          "max": 20.0,
+          "mean": -16.5
+        },
+        "first_token_ms": 0.0
+      },
+      {
+        "clip": "vi_a.wav",
+        "shift_samples": 16000,
+        "same_tokens": true,
+        "within_1_step": 0.9706,
+        "delta_ms": {
+          "n": 34,
+          "min": -1000.0,
+          "p10": -28.0,
+          "p25": 0.0,
+          "p50": 0.0,
+          "p75": 0.0,
+          "p90": 0.0,
+          "p95": 40.0,
+          "max": 40.0,
+          "mean": -29.4
+        },
+        "first_token_ms": 0.0
+      },
+      {
+        "clip": "vi_b.wav",
+        "shift_samples": 160,
+        "same_tokens": true,
+        "within_1_step": 1.0,
+        "delta_ms": {
+          "n": 24,
+          "min": -10.0,
+          "p10": -10.0,
+          "p25": -10.0,
+          "p50": -10.0,
+          "p75": -10.0,
+          "p90": 30.0,
+          "p95": 30.0,
+          "max": 30.0,
+          "mean": -3.3
+        },
+        "first_token_ms": 0.0
+      },
+      {
+        "clip": "vi_b.wav",
+        "shift_samples": 320,
+        "same_tokens": true,
+        "within_1_step": 1.0,
+        "delta_ms": {
+          "n": 24,
+          "min": -20.0,
+          "p10": -20.0,
+          "p25": -20.0,
+          "p50": -20.0,
+          "p75": 20.0,
+          "p90": 20.0,
+          "p95": 20.0,
+          "max": 20.0,
+          "mean": -5.0
+        },
+        "first_token_ms": 0.0
+      },
+      {
+        "clip": "vi_b.wav",
+        "shift_samples": 640,
+        "same_tokens": true,
+        "within_1_step": 1.0,
+        "delta_ms": {
+          "n": 24,
+          "min": -40.0,
+          "p10": -28.0,
+          "p25": 0.0,
+          "p50": 0.0,
+          "p75": 0.0,
+          "p90": 28.0,
+          "p95": 40.0,
+          "max": 40.0,
+          "mean": 0.0
+        },
+        "first_token_ms": 0.0
+      },
+      {
+        "clip": "vi_b.wav",
+        "shift_samples": 1000,
+        "same_tokens": true,
+        "within_1_step": 0.9583,
+        "delta_ms": {
+          "n": 24,
+          "min": -62.5,
           "p10": -22.5,
           "p25": -22.5,
           "p50": 17.5,
@@ -102,173 +252,21 @@
         "first_token_ms": 0.0
       },
       {
-        "clip": "vi_a.wav",
-        "shift_samples": 1280,
-        "same_tokens": true,
-        "within_1_step": 0.9375,
-        "delta_ms": {
-          "n": 32,
-          "min": -120.0,
-          "p10": 0.0,
-          "p25": 0.0,
-          "p50": 0.0,
-          "p75": 0.0,
-          "p90": 0.0,
-          "p95": 18.0,
-          "max": 40.0,
-          "mean": -3.8
-        },
-        "first_token_ms": 0.0
-      },
-      {
-        "clip": "vi_a.wav",
-        "shift_samples": 3200,
-        "same_tokens": true,
-        "within_1_step": 0.9375,
-        "delta_ms": {
-          "n": 32,
-          "min": -240.0,
-          "p10": -40.0,
-          "p25": 0.0,
-          "p50": 0.0,
-          "p75": 0.0,
-          "p90": 36.0,
-          "p95": 40.0,
-          "max": 40.0,
-          "mean": -12.5
-        },
-        "first_token_ms": 0.0
-      },
-      {
-        "clip": "vi_a.wav",
-        "shift_samples": 8000,
-        "same_tokens": true,
-        "within_1_step": 0.9375,
-        "delta_ms": {
-          "n": 32,
-          "min": -500.0,
-          "p10": -20.0,
-          "p25": -20.0,
-          "p50": -20.0,
-          "p75": 20.0,
-          "p90": 20.0,
-          "p95": 20.0,
-          "max": 20.0,
-          "mean": -31.2
-        },
-        "first_token_ms": 0.0
-      },
-      {
-        "clip": "vi_a.wav",
-        "shift_samples": 16000,
-        "same_tokens": true,
-        "within_1_step": 0.9375,
-        "delta_ms": {
-          "n": 32,
-          "min": -1000.0,
-          "p10": 0.0,
-          "p25": 0.0,
-          "p50": 0.0,
-          "p75": 0.0,
-          "p90": 40.0,
-          "p95": 40.0,
-          "max": 520.0,
-          "mean": -12.5
-        },
-        "first_token_ms": 0.0
-      },
-      {
-        "clip": "vi_b.wav",
-        "shift_samples": 160,
-        "same_tokens": true,
-        "within_1_step": 1.0,
-        "delta_ms": {
-          "n": 26,
-          "min": -10.0,
-          "p10": -10.0,
-          "p25": -10.0,
-          "p50": -10.0,
-          "p75": -10.0,
-          "p90": 30.0,
-          "p95": 30.0,
-          "max": 30.0,
-          "mean": -3.8
-        },
-        "first_token_ms": 0.0
-      },
-      {
-        "clip": "vi_b.wav",
-        "shift_samples": 320,
-        "same_tokens": true,
-        "within_1_step": 1.0,
-        "delta_ms": {
-          "n": 26,
-          "min": -20.0,
-          "p10": -20.0,
-          "p25": -20.0,
-          "p50": -20.0,
-          "p75": 20.0,
-          "p90": 20.0,
-          "p95": 20.0,
-          "max": 20.0,
-          "mean": -6.2
-        },
-        "first_token_ms": 0.0
-      },
-      {
-        "clip": "vi_b.wav",
-        "shift_samples": 640,
-        "same_tokens": true,
-        "within_1_step": 1.0,
-        "delta_ms": {
-          "n": 26,
-          "min": -40.0,
-          "p10": -40.0,
-          "p25": -30.0,
-          "p50": 0.0,
-          "p75": 0.0,
-          "p90": 40.0,
-          "p95": 40.0,
-          "max": 40.0,
-          "mean": -4.6
-        },
-        "first_token_ms": 0.0
-      },
-      {
-        "clip": "vi_b.wav",
-        "shift_samples": 1000,
-        "same_tokens": true,
-        "within_1_step": 0.9231,
-        "delta_ms": {
-          "n": 26,
-          "min": -62.5,
-          "p10": -22.5,
-          "p25": -22.5,
-          "p50": -2.5,
-          "p75": 17.5,
-          "p90": 17.5,
-          "p95": 17.5,
-          "max": 17.5,
-          "mean": -5.6
-        },
-        "first_token_ms": 0.0
-      },
-      {
         "clip": "vi_b.wav",
         "shift_samples": 1280,
         "same_tokens": true,
-        "within_1_step": 0.9231,
+        "within_1_step": 0.9583,
         "delta_ms": {
-          "n": 26,
+          "n": 24,
           "min": -80.0,
           "p10": -40.0,
           "p25": 0.0,
           "p50": 0.0,
           "p75": 0.0,
           "p90": 0.0,
-          "p95": 30.0,
+          "p95": 34.0,
           "max": 40.0,
-          "mean": -7.7
+          "mean": -5.0
         },
         "first_token_ms": 0.0
       },
@@ -276,176 +274,162 @@
         "clip": "vi_b.wav",
         "shift_samples": 3200,
         "same_tokens": true,
-        "within_1_step": 0.9231,
+        "within_1_step": 0.9583,
         "delta_ms": {
-          "n": 26,
+          "n": 24,
           "min": -200.0,
           "p10": -40.0,
-          "p25": -30.0,
+          "p25": 0.0,
           "p50": 0.0,
           "p75": 0.0,
-          "p90": 40.0,
-          "p95": 40.0,
+          "p90": 0.0,
+          "p95": 0.0,
           "max": 40.0,
-          "mean": -15.4
+          "mean": -11.7
         },
         "first_token_ms": 0.0
       },
       {
         "clip": "vi_b.wav",
         "shift_samples": 8000,
-        "same_tokens": true,
-        "within_1_step": 0.9231,
-        "delta_ms": {
-          "n": 26,
-          "min": -500.0,
-          "p10": -20.0,
-          "p25": -20.0,
-          "p50": -20.0,
-          "p75": 20.0,
-          "p90": 20.0,
-          "p95": 20.0,
-          "max": 20.0,
-          "mean": -41.5
-        },
-        "first_token_ms": 0.0
+        "same_tokens": false
       },
       {
         "clip": "vi_b.wav",
         "shift_samples": 16000,
         "same_tokens": true,
-        "within_1_step": 0.9231,
+        "within_1_step": 0.9167,
         "delta_ms": {
-          "n": 26,
-          "min": -1000.0,
+          "n": 24,
+          "min": -1440.0,
           "p10": -40.0,
-          "p25": -30.0,
+          "p25": 0.0,
           "p50": 0.0,
           "p75": 0.0,
-          "p90": 40.0,
+          "p90": 28.0,
           "p95": 40.0,
           "max": 40.0,
-          "mean": -76.9
+          "mean": -101.7
         },
         "first_token_ms": 0.0
       }
     ],
-    "same_tokens": "16/16",
-    "min_within_1_step": 0.9231
+    "same_tokens": "15/16",
+    "min_within_1_step": 0.9167
   },
   "c_known_silences": {
     "gaps": 27,
-    "text_unchanged": 20,
+    "text_unchanged": 19,
     "first_after_gap_minus_g1_ms": {
       "n": 27,
       "min": -985.0,
-      "p10": -957.0,
-      "p25": -255.0,
-      "p50": -75.0,
-      "p75": 120.0,
-      "p90": 187.0,
-      "p95": 240.0,
-      "max": 365.0,
-      "mean": -201.3
+      "p10": -773.0,
+      "p25": -375.0,
+      "p50": -205.0,
+      "p75": -65.0,
+      "p90": 107.0,
+      "p95": 188.0,
+      "max": 495.0,
+      "mean": -262.0
     },
-    "first_after_gap_inside_gap": 17,
+    "first_after_gap_inside_gap": 22,
     "g0_minus_last_before_gap_ms": {
       "n": 27,
-      "min": 5.0,
-      "p10": 71.0,
-      "p25": 195.0,
-      "p50": 265.0,
-      "p75": 345.0,
-      "p90": 743.0,
-      "p95": 1157.0,
-      "max": 1545.0,
-      "mean": 361.3
+      "min": 15.0,
+      "p10": 25.0,
+      "p25": 130.0,
+      "p50": 305.0,
+      "p75": 405.0,
+      "p90": 757.0,
+      "p95": 1136.0,
+      "max": 1505.0,
+      "mean": 373.1
     }
   },
   "d_rhythm": {
     "word_start_interval_ms": {
-      "n": 317,
-      "min": 160.0,
-      "p10": 200.0,
-      "p25": 240.0,
+      "n": 308,
+      "min": 40.0,
+      "p10": 188.0,
+      "p25": 200.0,
       "p50": 280.0,
       "p75": 360.0,
-      "p90": 520.0,
-      "p95": 880.0,
-      "max": 2280.0,
-      "mean": 347.9
+      "p90": 640.0,
+      "p95": 920.0,
+      "max": 2200.0,
+      "mean": 348.2
     }
   },
   "constants": {
     "derived": {
-      "EMISSION_SHIFT": 0,
-      "LAST_WORD_SAMPLES": 4480,
-      "PAUSE_SAMPLES": 8320,
+      "EMISSION_SHIFT": 3200,
+      "LAST_WORD_SAMPLES": 1920,
+      "PAUSE_SAMPLES": 10240,
       "MAX_CUE_SAMPLES": 112000,
       "MAX_CUE_CHARS": 80
     },
     "app.alignment": {
-      "EMISSION_SHIFT": 0,
-      "LAST_WORD_SAMPLES": 4480,
-      "PAUSE_SAMPLES": 8320,
+      "EMISSION_SHIFT": 3200,
+      "LAST_WORD_SAMPLES": 1920,
+      "PAUSE_SAMPLES": 10240,
       "MAX_CUE_SAMPLES": 112000,
       "MAX_CUE_CHARS": 80
     },
-    "onset_delay_constant": false
+    "onset_delay_constant": true
   },
   "e_cues": {
     "composite": {
       "audio_ms": 37680.0,
-      "chunks": 2,
-      "words": 114,
+      "chunks": 3,
+      "words": 109,
       "cues": 8,
       "cue_ms": {
         "n": 8,
-        "min": 280.0,
-        "p10": 280.0,
-        "p25": 4210.0,
-        "p50": 5700.0,
-        "p75": 5910.0,
-        "p90": 6012.0,
-        "p95": 6026.0,
-        "max": 6040.0,
-        "mean": 4425.0
+        "min": 760.0,
+        "p10": 1236.0,
+        "p25": 3390.0,
+        "p50": 4580.0,
+        "p75": 5950.0,
+        "p90": 6700.0,
+        "p95": 6770.0,
+        "max": 6840.0,
+        "mean": 4325.0
       },
       "cue_chars": {
         "n": 8,
-        "min": 4,
-        "p10": 4.0,
-        "p25": 59.5,
-        "p50": 78.5,
-        "p75": 79.2,
-        "p90": 80.0,
-        "p95": 80.0,
+        "min": 19,
+        "p10": 28.8,
+        "p25": 51.0,
+        "p50": 61.5,
+        "p75": 77.5,
+        "p90": 79.3,
+        "p95": 79.7,
         "max": 80,
-        "mean": 60.2
+        "mean": 58.5
       },
       "cue_chars_per_s": {
         "n": 6,
-        "min": 13.2,
-        "p10": 13.3,
-        "p25": 13.3,
-        "p50": 13.3,
-        "p75": 14.1,
-        "p90": 14.3,
-        "p95": 14.3,
-        "max": 14.3,
-        "mean": 13.6
+        "min": 9.2,
+        "p10": 10.6,
+        "p25": 12.4,
+        "p50": 13.5,
+        "p75": 14.0,
+        "p90": 15.4,
+        "p95": 16.0,
+        "max": 16.6,
+        "mean": 13.2
       },
       "cross_chunk_gap_ms": {
-        "n": 1,
-        "min": 1640.6,
-        "p10": 1640.6,
-        "p25": 1640.6,
-        "p50": 1640.6,
-        "p75": 1640.6,
-        "p90": 1640.6,
-        "p95": 1640.6,
-        "max": 1640.6,
-        "mean": 1640.6
+        "n": 2,
+        "min": 498.6,
+        "p10": 598.9,
+        "p25": 749.4,
+        "p50": 1000.2,
+        "p75": 1250.9,
+        "p90": 1401.4,
+        "p95": 1451.5,
+        "max": 1501.7,
+        "mean": 1000.2
       },
       "known_gaps": [
         {
@@ -455,80 +439,80 @@
           ],
           "chunk_cut_inside": false,
           "cues_straddling": 1,
-          "first_word_after_minus_g1_ms": -200.0
+          "first_word_after_minus_g1_ms": 440.0
         },
         {
           "gap_ms": [
             18340.0,
             19340.0
           ],
-          "chunk_cut_inside": true,
-          "cues_straddling": 0,
-          "first_word_after_minus_g1_ms": -19.4
+          "chunk_cut_inside": false,
+          "cues_straddling": 1,
+          "first_word_after_minus_g1_ms": 798.6
         },
         {
           "gap_ms": [
             28220.0,
             29220.0
           ],
-          "chunk_cut_inside": false,
-          "cues_straddling": 1,
-          "first_word_after_minus_g1_ms": -179.4
+          "chunk_cut_inside": true,
+          "cues_straddling": 0,
+          "first_word_after_minus_g1_ms": 180.3
         }
       ]
     },
     "vi_long": {
       "audio_ms": 106620.0,
-      "chunks": 7,
-      "words": 272,
-      "cues": 20,
+      "chunks": 9,
+      "words": 266,
+      "cues": 21,
       "cue_ms": {
-        "n": 20,
-        "min": 560.0,
-        "p10": 1516.0,
-        "p25": 3750.0,
-        "p50": 6200.0,
-        "p75": 6780.0,
-        "p90": 6920.0,
-        "p95": 6922.7,
-        "max": 6973.8,
-        "mean": 5125.8
+        "n": 21,
+        "min": 320.0,
+        "p10": 2480.0,
+        "p25": 3680.0,
+        "p50": 5000.0,
+        "p75": 6320.0,
+        "p90": 6960.0,
+        "p95": 6960.0,
+        "max": 7000.0,
+        "mean": 4678.1
       },
       "cue_chars": {
-        "n": 20,
-        "min": 7,
-        "p10": 21.6,
-        "p25": 53.8,
-        "p50": 64.0,
-        "p75": 76.5,
-        "p90": 78.2,
-        "p95": 80.0,
+        "n": 21,
+        "min": 3,
+        "p10": 13.0,
+        "p25": 52.0,
+        "p50": 59.0,
+        "p75": 69.0,
+        "p90": 79.0,
+        "p95": 79.0,
         "max": 80,
-        "mean": 58.7
+        "mean": 54.8
       },
       "cue_chars_per_s": {
         "n": 16,
-        "min": 8.5,
-        "p10": 8.8,
-        "p25": 9.1,
-        "p50": 10.6,
-        "p75": 12.4,
-        "p90": 18.5,
-        "p95": 20.2,
-        "max": 21.0,
-        "mean": 12.0
+        "min": 7.5,
+        "p10": 8.3,
+        "p25": 10.0,
+        "p50": 12.1,
+        "p75": 15.7,
+        "p90": 17.9,
+        "p95": 19.4,
+        "max": 21.5,
+        "mean": 12.9
       },
       "cross_chunk_gap_ms": {
-        "n": 6,
-        "min": 13.8,
-        "p10": 46.9,
-        "p25": 194.5,
-        "p50": 673.8,
-        "p75": 876.0,
-        "p90": 1209.5,
-        "p95": 1365.3,
-        "max": 1521.0,
-        "mean": 643.4
+        "n": 8,
+        "min": 309.7,
+        "p10": 353.2,
+        "p25": 715.5,
+        "p50": 894.8,
+        "p75": 1185.9,
+        "p90": 1405.7,
+        "p95": 1623.9,
+        "max": 1842.2,
+        "mean": 942.1
       }
     }
   },

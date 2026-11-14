@@ -5,8 +5,10 @@ alignment. Times are absolute 16 kHz sample offsets (ints) until serialization.
 
 - A word is a maximal run of non-whitespace characters of the final text (a Vietnamese syllable, not a compound).
   Token pieces start a new word with "▁" and never contain it elsewhere, so each word is a run of tokens.
-- A word starts when its first token (the one carrying its "▁", even a lone "▁") was emitted and ends where
-  the next word of the chunk starts; the last word of a chunk lasts `LAST_WORD_SAMPLES` (or until the chunk ends).
+- A word starts when its first token (the one carrying its "▁", even a lone "▁") was emitted, moved later by
+  `EMISSION_SHIFT`, and ends where the next word of the chunk starts; the last word of a chunk lasts
+  `LAST_WORD_SAMPLES` (or until the chunk ends). Near a chunk end the shift shrinks (down to 0) so the last word
+  keeps `LAST_WORD_SAMPLES` inside the chunk; one shift per chunk keeps every other word's duration.
 - Any inconsistency (the tokens do not spell the text, times out of order or outside the chunk, a word with no
   duration) raises `AlignmentError`: timestamps are never guessed or spread evenly.
 """
@@ -22,16 +24,16 @@ from app.engine import ChunkResult
 
 # Values from scripts/probe_alignment.py (docs/baseline/alignment_probe.json, docs/baseline.vi.md §6); the probe exits 1
 # if they drift. Emission times come in steps of 640 samples (40 ms).
+# Constant emission delay compensation in samples: the first token after a known silence is emitted a median 205 ms
+# before speech resumes (quartiles -375 / -65 ms, same sign), so word starts move 200 ms later.
+EMISSION_SHIFT = 3200
 # Duration given to the last word of a chunk: nothing marks where it ends. Median time from the last emission before
-# a known silence to that silence (265 ms), rounded up to a step.
-LAST_WORD_SAMPLES = 4480
-# Constant emission delay compensation in samples. 0: the onset delay is not constant (median -75 ms, quartiles
-# -255 / +120 ms), so no shift improves it.
-EMISSION_SHIFT = 0
+# a known silence to that silence (305 ms), minus EMISSION_SHIFT, rounded up to a step.
+LAST_WORD_SAMPLES = 1920
 WORD_START = "\u2581"
 
 # Cue (subtitle segment) limits.
-PAUSE_SAMPLES = 8320  # an aligned gap of at least this ends the cue: p90 of word-start intervals (520 ms), step-rounded
+PAUSE_SAMPLES = 10240  # an aligned gap of at least this ends the cue: p90 of word-start intervals (640 ms), step-rounded
 MAX_CUE_SAMPLES = 7 * SAMPLE_RATE  # subtitle conventions: at most 7 s on screen,
 MAX_CUE_CHARS = 80  # two 40-character lines
 SENTENCE_END = (
@@ -91,7 +93,10 @@ def words(span: Span, result: ChunkResult) -> list[Word]:
         first = max(0, m.start() - 1)
         while ranges[j][1] <= first:
             j += 1
-        found.append((m.group(), max(0, ranges[j][2] + EMISSION_SHIFT)))
+        found.append((m.group(), ranges[j][2]))
+    if found:
+        shift = min(EMISSION_SHIFT, max(0, n - LAST_WORD_SAMPLES - found[-1][1]))
+        found = [(text, max(0, t + shift)) for text, t in found]
     out: list[Word] = []
     for i, (text, start) in enumerate(found):
         end = found[i + 1][1] if i + 1 < len(found) else min(n, start + LAST_WORD_SAMPLES)

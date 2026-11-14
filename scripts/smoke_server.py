@@ -41,8 +41,9 @@ from scripts.subtitles import parse_cues  # noqa: E402
 FIXTURES = ROOT / "tests/fixtures"
 LONG = ROOT / "fixtures-large/vi_long.wav"
 MODEL = "viet-asr"
-# Guards chunking/joining, not model accuracy: viet-asr measures 0.114 on vi_long (20 s chunks, both decodings; misses
-# are mostly foreign names). To be re-measured with the new offline baseline.
+# Guards chunking/joining, not model accuracy. Offline baseline (docs/baseline.vi.md §4): viet-asr measures 0.081 on
+# vi_long with the defaults (beam 4, 2 threads, 15 s chunks), 0.08-0.13 across decodings, threads and chunk lengths
+# of 10-30 s (misses are mostly foreign names).
 LONG_MAX_WER = 0.15
 SMALL = ("vi_a.wav", "vi_b.wav", "silence_2s.wav", "short_200ms.wav")
 TEXT_FIELDS = (

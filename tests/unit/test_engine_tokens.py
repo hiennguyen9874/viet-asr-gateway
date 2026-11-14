@@ -1,6 +1,6 @@
 """Byte-fallback tokens (`<0xNN>`) are merged into the characters they spell, keeping the first byte's time."""
 
-from app.alignment import words
+from app.alignment import EMISSION_SHIFT, words
 from app.chunking import Span
 from app.engine import ChunkResult, merge_byte_tokens
 
@@ -44,4 +44,5 @@ def test_invalid_bytes_become_replacement_characters_like_the_recognizer_text():
 def test_merged_tokens_align():
     tokens, times = merge_byte_tokens(("\u2581việc", "\u2581", "<0xC3>", "<0x9A>", "t", "."), (0, 640, 1280, 1920, 2560, 3200))
     result = ChunkResult("việc Út.", tokens, times)
-    assert [(w.text, w.start) for w in words(Span(0, 16000), result)] == [("việc", 0), ("Út.", 640)]
+    got = [(w.text, w.start - EMISSION_SHIFT) for w in words(Span(0, 16000), result)]
+    assert got == [("việc", 0), ("Út.", 640)]

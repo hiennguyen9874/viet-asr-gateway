@@ -10,9 +10,11 @@ import random
 
 import pytest
 
+import app.alignment
 from app.alignment import (
     align,
     AlignmentError,
+    EMISSION_SHIFT,
     LAST_WORD_SAMPLES,
     MAX_CUE_CHARS,
     MAX_CUE_SAMPLES,
@@ -32,6 +34,12 @@ S = "\u2581"
 
 def result(text, tokens, times):
     return ChunkResult(text, tuple(tokens), tuple(times))
+
+
+@pytest.fixture(autouse=True)
+def no_shift(monkeypatch):
+    """Exact-time tests read raw emission times; the shift tests restore the committed constant."""
+    monkeypatch.setattr(app.alignment, "EMISSION_SHIFT", 0)
 
 
 # -- words ----------------------------------------------------------------------------------------------------------
@@ -90,7 +98,30 @@ def test_inconsistent_results_raise(r):
         words(Span(0, 3200), r)
 
 
-def test_random_fake_results_round_trip():
+def test_words_start_at_their_emission_plus_the_shift(monkeypatch):
+    monkeypatch.setattr(app.alignment, "EMISSION_SHIFT", EMISSION_SHIFT)
+    assert EMISSION_SHIFT > 0  # the committed constant (alignment probe)
+    r = result("các sản", [S + "các", S + "sản"], [1000, 4000])
+    got = words(Span(16000, 16000 + 32000), r)
+    start = 16000 + 1000 + EMISSION_SHIFT
+    assert got == [Word("các", start, start + 3000), Word("sản", start + 3000, start + 3000 + LAST_WORD_SAMPLES)]
+
+
+def test_shift_shrinks_near_the_chunk_end_so_the_last_word_keeps_its_duration(monkeypatch):
+    monkeypatch.setattr(app.alignment, "EMISSION_SHIFT", EMISSION_SHIFT)
+    n = 32000
+    last = n - LAST_WORD_SAMPLES - EMISSION_SHIFT // 2  # fully shifted, the last word would be cut by the chunk end
+    got = words(Span(0, n), result("a b", [S + "a", S + "b"], [last - 1000, last]))
+    shift = EMISSION_SHIFT // 2
+    assert got == [Word("a", last - 1000 + shift, last + shift), Word("b", last + shift, n)]
+    # No room at all: no shift (and the last word is clipped to the chunk as without one).
+    got = words(Span(0, n), result("a", [S + "a"], [n - 10]))
+    assert got == [Word("a", n - 10, n)]
+
+
+@pytest.mark.parametrize("shift", [0, EMISSION_SHIFT])
+def test_random_fake_results_round_trip(monkeypatch, shift):
+    monkeypatch.setattr(app.alignment, "EMISSION_SHIFT", shift)
     rnd = random.Random(1)
     letters = "aăâbcdđeêghiklmnoôơpqrstuưvxyàáảãạ0123456789-"
     for _ in range(300):

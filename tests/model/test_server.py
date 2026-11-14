@@ -21,7 +21,7 @@ import numpy as np
 import pytest
 import soundfile as sf
 
-from app.alignment import MAX_CUE_CHARS, MAX_CUE_SAMPLES
+from app.alignment import EMISSION_SHIFT, MAX_CUE_CHARS, MAX_CUE_SAMPLES
 from app.chunking import MIN_AUDIO_SAMPLES
 from app.config import Config, SAMPLE_RATE
 from app.engine import MIN_FORWARD_SAMPLES
@@ -44,8 +44,8 @@ LONG = ROOT / "fixtures-large/vi_long.wav"
 REPORT = ROOT / "docs/baseline/r2a_gate.json"
 GATE_SECTIONS = {"fixtures", "chunk_cut", "shift", "long"}
 STEP_S = 0.04  # token emission times come in 40 ms steps (alignment probe a)
-# Alignment probe c: the last emission before a known silence is <= 1.16 s (p95) before it; the first word after
-# one is stamped up to ~1 s early, inside the silence.
+# Alignment probe c: the last emission before a known silence is <= 1.14 s (p95) before it; the first word after
+# one is stamped up to ~0.8 s early (after the 200 ms EMISSION_SHIFT), inside the silence.
 EDGE_TOLERANCE_S = 1.5
 SHIFTS_S = (0.25, 0.5, 0.75)  # small enough that the first cue stays under the duration limit
 
@@ -215,7 +215,8 @@ def edges(cues) -> dict[tuple[str, int], float]:
 
 def test_cue_times_follow_a_shift_of_the_audio(srv, tmp_path, gate):
     # Prepending silence moves every cue edge by the same amount (within one emission step), except the start of
-    # the first word: the model stamps the first token at the chunk start (alignment probe b). That also lengthens
+    # the first word: the model stamps the first token at the chunk start (alignment probe b), so it starts at
+    # EMISSION_SHIFT. That also lengthens
     # the first cue, which may then reach the duration limit and end earlier: only edges at the same word in both
     # cue lists are compared. viet-asr may change a word after the shift (seen in the vi_b half), so only edges in
     # the common leading words count.
@@ -232,7 +233,7 @@ def test_cue_times_follow_a_shift_of_the_audio(srv, tmp_path, gate):
         path = wav_file(tmp_path / f"shift{shift}.wav", y)
         text = post(srv, path).json()["text"]
         moved = cues_of(srv, path, text, len(y) / SAMPLE_RATE)
-        assert moved[0][0] == 0.0
+        assert moved[0][0] == EMISSION_SHIFT / SAMPLE_RATE
         old, new = edges(base), edges(moved)
         same = next((i for i, (u, v) in enumerate(zip(base_text.split(), text.split())) if u != v),
                     min(len(base_text.split()), len(text.split())))

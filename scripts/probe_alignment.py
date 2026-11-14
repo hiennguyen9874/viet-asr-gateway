@@ -17,7 +17,8 @@ Reports numbers and counts only: no audio, no transcripts.
 Constants derived from the report (docs/api-contract.vi.md §4, docs/baseline.vi.md §6):
 - EMISSION_SHIFT = -median of (c) onset delays, in whole steps, only if the delay is constant (its 25th and 75th
   percentiles have the same sign); otherwise 0.
-- LAST_WORD_SAMPLES = median of (c) "g0 - last token", rounded up to a step.
+- LAST_WORD_SAMPLES = median of (c) "g0 - last token" minus EMISSION_SHIFT (the last word starts at its shifted
+  emission), rounded up to a step, at least one step.
 - PAUSE_SAMPLES = 90th percentile of (d), rounded up to a step: a gap longer than normal rhythm.
 - MAX_CUE_CHARS (80) and MAX_CUE_SAMPLES (7 s) are subtitle conventions (two 40-character lines, at most 7 s on
   screen), not model properties; (e) shows which of them binds on real speech.
@@ -278,11 +279,11 @@ def main() -> int:
     }
     onset = report["c_known_silences"]["first_after_gap_minus_g1_ms"]
     constant = (onset["p25"] > 0) == (onset["p75"] > 0)
+    shift = -round(onset["p50"] * SR / 1000 / step) * step if constant else 0
+    tail_ms = report["c_known_silences"]["g0_minus_last_before_gap_ms"]["p50"]
     derived = {
-        "EMISSION_SHIFT": -round(onset["p50"] * SR / 1000 / step) * step if constant else 0,
-        "LAST_WORD_SAMPLES": up(
-            report["c_known_silences"]["g0_minus_last_before_gap_ms"]["p50"], step
-        ),
+        "EMISSION_SHIFT": shift,
+        "LAST_WORD_SAMPLES": max(step, up(tail_ms - ms(shift), step)),
         "PAUSE_SAMPLES": up(report["d_rhythm"]["word_start_interval_ms"]["p90"], step),
         "MAX_CUE_SAMPLES": 7 * SR,
         "MAX_CUE_CHARS": 80,
