@@ -95,7 +95,7 @@ def build(cache: Path) -> dict:
     SMALL_DIR.mkdir(parents=True, exist_ok=True)
     LARGE_DIR.mkdir(parents=True, exist_ok=True)
     entries = {}
-    for out, name in (("vi_a.wav", CLIP_A), ("vi_b.wav", CLIP_B), ("vi_bytes.wav", CLIP_BYTES)):
+    for out, name in (("vi_a.wav", CLIP_A), ("vi_b.wav", CLIP_B)):
         (SMALL_DIR / out).write_bytes(audio[name])  # verbatim copy of the source file
         entries[out] = {"set": "small", "source": source(name), "reference": by_file[name][3]}
 
@@ -108,6 +108,17 @@ def build(cache: Path) -> dict:
     entries["short_200ms.wav"] = {
         "set": "small",
         "source": source(CLIP_A) | {"samples": [2 * SR, 2 * SR + SR // 5]},
+        "reference": None,
+    }
+
+    # The part of CLIP_BYTES around "Út" (6.5 s, PCM_16 to stay small); its FLEURS reference covers the whole clip.
+    x, sr = sf.read(io.BytesIO(audio[CLIP_BYTES]), dtype="float32")
+    assert sr == SR
+    cut = [int(4.5 * SR), 11 * SR]
+    write_wav(SMALL_DIR / "vi_bytes.wav", x[cut[0] : cut[1]])
+    entries["vi_bytes.wav"] = {
+        "set": "small",
+        "source": source(CLIP_BYTES) | {"samples": cut},
         "reference": None,
     }
 

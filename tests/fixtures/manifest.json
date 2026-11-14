@@ -31,21 +31,6 @@
       "samples": 135360,
       "sample_rate": 16000
     },
-    "vi_bytes.wav": {
-      "set": "small",
-      "source": {
-        "dataset": "google/fleurs",
-        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
-        "split": "vi_vn/dev",
-        "files": [
-          "2335344692138890377.wav"
-        ]
-      },
-      "reference": "trong số 1.400 người tham gia thăm dò ý kiến trước kỳ bầu cử liên bang năm 2010 số người phản đối việc úc trở thành một nước cộng hòa tăng thêm 8% so với năm 2008",
-      "sha256": "bcf9933c13ebe3cacac00c780bb458ce977e3753cca891693c7e3e8ae02b24f0",
-      "samples": 222720,
-      "sample_rate": 16000
-    },
     "silence_2s.wav": {
       "set": "small",
       "source": "digital zeros",
@@ -71,6 +56,25 @@
       "reference": null,
       "sha256": "cf5378876f24768fc525f0aa316d3a5aa2643b46a92ba74794d160704545aa21",
       "samples": 3200,
+      "sample_rate": 16000
+    },
+    "vi_bytes.wav": {
+      "set": "small",
+      "source": {
+        "dataset": "google/fleurs",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "split": "vi_vn/dev",
+        "files": [
+          "2335344692138890377.wav"
+        ],
+        "samples": [
+          72000,
+          176000
+        ]
+      },
+      "reference": null,
+      "sha256": "20055a9c6e11006aeefd0125b9e86a768f65e4ce98cde1f1768812588f19ddf9",
+      "samples": 104000,
       "sample_rate": 16000
     },
     "vi_long.wav": {

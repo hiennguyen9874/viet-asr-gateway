@@ -37,7 +37,7 @@ fp32/int8 × `modified_beam_search`/`greedy_search`; thời điểm phát token 
 | `tests/fixtures/vi_a.wav`, `vi_b.wav` | 2 clip FLEURS khác nội dung (8.88 s, 8.46 s) + transcript tham chiếu |
 | `tests/fixtures/silence_2s.wav` | 2 s số 0 |
 | `tests/fixtures/short_200ms.wav` | 200 ms cắt giữa câu của `vi_a` |
-| `tests/fixtures/vi_bytes.wav` | clip FLEURS (13.9 s) làm viet-asr phát token byte fallback (`<0xC3><0x9A>` = "Ú") |
+| `tests/fixtures/vi_bytes.wav` | 6.5 s cắt từ một clip FLEURS, làm viet-asr phát token byte fallback (`<0xC3><0x9A>` = "Ú") |
 | `fixtures-large/vi_long.wav` (gitignored) | 10 câu nối nhau, 106.62 s (đi qua splitter) |
 
 FLEURS vi_vn không có speaker id: `vi_a`/`vi_b` chắc chắn khác nội dung, không chắc khác người nói.
