@@ -207,7 +207,9 @@ def test_cues_end_at_sentence_ends(tmp_path):
     written = "Dạ. Em chào anh, hôm nay thế nào? Ngân sách: 50 triệu… Vâng"
     audio = wav_file(tmp_path / "a.wav", noise(3, seed=6))
     with serve(FakeEngine(text_fn=lambda _: written), max_chunk_seconds=5.0) as srv:
-        assert post(srv, audio, response_format="verbose_json").json()["text"] == written
+        verbose = post(srv, audio, response_format="verbose_json").json()
+        assert verbose["text"] == written
+        assert "segments" not in verbose
         for fmt in ("srt", "vtt"):
             cues = parse_cues(post(srv, audio, response_format=fmt).text, fmt)
             assert [c[2] for c in cues] == ["Dạ.", "Em chào anh, hôm nay thế nào?", "Ngân sách: 50 triệu…", "Vâng"]
