@@ -178,3 +178,44 @@ def test_oversized_word_is_its_own_cue():
 
 def test_segments_of_nothing():
     assert segments([]) == []
+
+
+def spaced(text, step=0.2):
+    """Words of `text` back to back (no gap), `step` seconds each."""
+    return [w(t, i * step, (i + 1) * step) for i, t in enumerate(text.split(" "))]
+
+
+def cue_texts(text, step=0.2):
+    return [s.text for s in segments(spaced(text, step))]
+
+
+def test_sentence_end_closes_the_cue_without_a_pause():
+    assert cue_texts("Dạ. Em chào anh, hôm nay thế nào?") == ["Dạ.", "Em chào anh, hôm nay thế nào?"]
+    assert cue_texts("Một hai. Ba bốn.") == ["Một hai.", "Ba bốn."]
+
+
+def test_one_word_sentence_is_a_cue():
+    assert segments(spaced("Dạ.")) == [Segment("Dạ.", 0, 3200)]
+    assert cue_texts("a Dạ. b") == ["a Dạ.", "b"]
+
+
+@pytest.mark.parametrize("mark", [",", ";", ":"])
+def test_clause_punctuation_does_not_split(mark):
+    assert cue_texts(f"Ngân sách{mark} 50 triệu") == [f"Ngân sách{mark} 50 triệu"]
+
+
+@pytest.mark.parametrize("mark", [".", "?", "!", "\u2026"])
+def test_every_sentence_end_splits(mark):
+    assert cue_texts(f"Thế à{mark} Vâng") == [f"Thế à{mark}", "Vâng"]
+
+
+def test_long_sentence_still_splits_by_length_before_its_end():
+    text = " ".join(["x" * 9] * 10) + "."
+    got = cue_texts(text, step=0.3)
+    assert got == [" ".join(["x" * 9] * 8), " ".join(["x" * 9] * 2) + "."]
+
+
+def test_pause_still_splits_inside_a_sentence():
+    pause = PAUSE_SAMPLES / 16000
+    ws = [w("Em", 0, 0.2), w("chào", 0.2, 0.4), w("anh.", 0.4 + pause, 0.6 + pause), w("Vâng", 0.6 + pause, 0.8 + pause)]
+    assert [s.text for s in segments(ws)] == ["Em chào", "anh.", "Vâng"]

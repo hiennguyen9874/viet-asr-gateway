@@ -88,8 +88,10 @@ Kết quả:
   Việt, không phải từ ghép); start của từ = thời điểm phát token đầu tiên của nó; end = start của từ kế tiếp trong chunk,
   hoặc với từ cuối chunk là độ dài giới hạn `LAST_WORD_SAMPLES` (0.28 s) và không quá cuối chunk. Không bù độ trễ
   (`EMISSION_SHIFT = 0`). Thời điểm phát token theo bước 40 ms.
-  Cue mới khi khoảng cách giữa end của từ trước và start của từ sau ≥ 0.52 s, hoặc khi thêm từ sẽ làm cue dài > 7 s
-  hay > 80 ký tự. Các hằng số này lấy từ probe `scripts/probe_alignment.py` (baseline §6). Khoảng cách này chỉ có thể xuất hiện giữa các chunk; trong cùng chunk, end của từ trước bằng start
+  Cue kết thúc ngay sau từ có text tận cùng bằng `.`, `?`, `!` hoặc `…` (cuối câu; một từ như "Dạ." có thể
+  là cả cue); `,`, `;`, `:` không kết thúc cue. Ngoài ra cue mới khi khoảng cách giữa end của từ trước và start
+  của từ sau ≥ 0.52 s, hoặc khi thêm từ sẽ làm cue dài > 7 s hay > 80 ký tự (câu dài vẫn bị cắt theo độ dài trước
+  dấu chấm). Các hằng số này lấy từ probe `scripts/probe_alignment.py` (baseline §6). Khoảng cách này chỉ có thể xuất hiện giữa các chunk; trong cùng chunk, end của từ trước bằng start
   của từ sau. Khoảng cách lớn giữa các lần phát token không chứng minh có khoảng lặng, nên không tự tách cue.
   Độ chính xác (đo ở baseline §6): từ đầu tiên sau một khoảng lặng thường được đóng dấu sớm, có khi tới ~1 s (nằm
   trong khoảng lặng); token đầu tiên của chunk thường được đóng dấu ngay đầu chunk, kể cả khi chunk bắt đầu bằng im lặng. Vì vậy cue

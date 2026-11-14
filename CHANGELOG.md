@@ -31,6 +31,8 @@ re-measured on viet-asr in a later ticket; until then smoke and the image gate r
     when audio is shifted); `LONG_MAX_WER` 0.10 → 0.15 (viet-asr measures 0.114 on `vi_long`). Both are re-measured
     with the new baseline (#5).
   - Smoke and the image gate refuse `docs/baseline/offline.json` measured on another model pin.
+- Cues end at sentence ends (#4): a word ending in `.`, `?`, `!` or `…` closes its `srt`/`vtt` cue (`,` `;` `:` do
+  not); the pause, 7 s and 80-character rules are unchanged.
 
 Migration: rename every `GIPFORMER_*` variable to `GATEWAY_*`, move `secrets/gipformer_api_keys` to
 `secrets/gateway_api_keys`, switch clients to `model=viet-asr` and dashboards to `gateway_*` metrics.

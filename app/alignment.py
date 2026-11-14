@@ -34,6 +34,12 @@ WORD_START = "\u2581"
 PAUSE_SAMPLES = 8320  # an aligned gap of at least this ends the cue: p90 of word-start intervals (520 ms), step-rounded
 MAX_CUE_SAMPLES = 7 * SAMPLE_RATE  # subtitle conventions: at most 7 s on screen,
 MAX_CUE_CHARS = 80  # two 40-character lines
+SENTENCE_END = (
+    ".",
+    "?",
+    "!",
+    "\u2026",
+)  # a word ending in one of these ends its cue ("," ";" ":" do not)
 
 _WORD = re.compile(r"\S+")
 
@@ -113,7 +119,8 @@ def align(chunks: Sequence[tuple[Span, ChunkResult]]) -> list[Word]:
 
 def segments(ws: Sequence[Word]) -> list[Segment]:
     """Group words into subtitle cues: a new cue after an aligned gap of `PAUSE_SAMPLES`, or when the next word
-    would exceed `MAX_CUE_SAMPLES` or `MAX_CUE_CHARS` (a single oversized word is a cue of its own).
+    would exceed `MAX_CUE_SAMPLES` or `MAX_CUE_CHARS` (a single oversized word is a cue of its own). A word whose
+    text ends a sentence (`SENTENCE_END`) closes its cue, so "Dạ." alone is a cue.
 
     Alignment leaves gaps only across chunks: within a chunk each word ends at the next word's start.
     Emission times alone cannot identify silence, so large emission gaps do not imply cue boundaries.
@@ -129,6 +136,9 @@ def segments(ws: Sequence[Word]) -> list[Segment]:
             out.append(_cue(cue))
             cue = []
         cue.append(w)
+        if w.text.endswith(SENTENCE_END):
+            out.append(_cue(cue))
+            cue = []
     if cue:
         out.append(_cue(cue))
     return out
