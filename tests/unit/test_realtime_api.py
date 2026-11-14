@@ -44,7 +44,6 @@ def settled(srv) -> None:
     ("", {"Authorization": "Bearer wrong-key-0123456789"}, 401, "invalid_api_key"),
     ("?model=whisper-1", AUTH, 404, "model_not_found"),
     ("?model=", AUTH, 404, "model_not_found"),
-    ("?model=gipformer1.5-68M-rnnt", AUTH, 404, "model_not_found"),  # the previous served model id
     ("?intent=conversation", AUTH, 400, "invalid_value"),
     ("?call_id=rtc_1", AUTH, 400, "unsupported_parameter"),
     ("?model=viet-asr&model=viet-asr", AUTH, 400, "invalid_value"),

@@ -217,7 +217,6 @@ P = "session.audio.input"
     (update(transcription={"language": 1}), ("invalid_value", f"{P}.transcription.language")),
     (update(transcription={"model": "gpt-4o-transcribe"}), ("model_not_found", f"{P}.transcription.model")),
     (update(transcription={"model": WHISPER_ALIAS}), ("model_not_found", f"{P}.transcription.model")),
-    (update(transcription={"model": "gipformer1.5-68M-rnnt"}), ("model_not_found", f"{P}.transcription.model")),
     (update(transcription={"model": 3}), ("invalid_value", f"{P}.transcription.model")),
     (update(transcription={"x" * 100: 1}), ("unknown_parameter", f"{P}.transcription." + "x" * 100)),
 ])

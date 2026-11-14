@@ -51,9 +51,9 @@ from app.scheduler import JobKind, Lane, Scheduler
 MODEL_ID = "viet-asr"
 WHISPER_ALIAS = "whisper-1"  # opt-in (GATEWAY_WHISPER_ALIAS); same served model, not Whisper output
 MODEL_CREATED = (
-    1789615207  # commit time of the pinned weights revision (docs/api-contract.vi.md §3)
+    1793867382  # commit time of the pinned weights revision (docs/api-contract.vi.md §3)
 )
-MODEL_OWNER = "g-group-ai-lab"
+MODEL_OWNER = "dangvansam"
 
 SINGLE_FIELDS = frozenset(
     {"model", "language", "temperature", "prompt", "response_format", "stream"}

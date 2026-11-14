@@ -19,7 +19,7 @@ const jsonl = (name: string) =>
   read(name).toString('utf8').split('\n').filter((l) => l.trim()).map((l) => JSON.parse(l));
 const MODEL = 'viet-asr';
 
-const model = { id: MODEL, object: 'model', created: 1789615207, owned_by: 'g-group-ai-lab' } satisfies Model;
+const model = { id: MODEL, object: 'model', created: 1793867382, owned_by: 'dangvansam' } satisfies Model;
 
 const TEXT =
   'Các sản phẩm thủ công có thể được coi là đồ cổ, mặc dù tuổi đời của chúng trẻ hơn rất nhiều các sản phẩm tương tự được sản xuất hàng loạt.';

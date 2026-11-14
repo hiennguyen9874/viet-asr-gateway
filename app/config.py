@@ -15,7 +15,7 @@ from pathlib import Path
 
 SAMPLE_RATE = 16000  # model input rate; queue budgets are counted in 16 kHz samples
 PREFIX = "GATEWAY_"
-# Pre-rename settings (Gipformer era, then the CTC era): a leftover one means a half-migrated deployment.
+# Prefixes of earlier releases: a leftover variable means a half-migrated deployment.
 OLD_PREFIXES = ("GIPFORMER_", "QUAN_")
 DECODING_METHODS = ("modified_beam_search", "greedy_search")
 MIN_API_KEY_LENGTH = 16

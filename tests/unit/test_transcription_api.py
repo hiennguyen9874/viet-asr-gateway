@@ -126,8 +126,8 @@ def test_sdk_models_json_text_and_stream(tmp_path):
     with serve(max_chunk_seconds=1.0) as srv:
         assert [m.id for m in srv.sdk.models.list()] == [MODEL_ID]
         m = srv.sdk.models.retrieve(MODEL_ID)
-        assert (m.id, m.object, m.created, m.owned_by) == (MODEL_ID, "model", 1789615207, "g-group-ai-lab")
-        for missing in ("whisper-1", "org/model", "quan-transcribe-1.0", "gipformer1.5-68M-rnnt"):
+        assert (m.id, m.object, m.created, m.owned_by) == (MODEL_ID, "model", 1793867382, "dangvansam")
+        for missing in ("whisper-1", "org/model", "quan-transcribe-1.0"):
             with pytest.raises(openai.NotFoundError) as e:
                 srv.sdk.models.retrieve(missing)
             assert e.value.code == "model_not_found"
@@ -315,7 +315,7 @@ def test_errors_before_headers_are_http_envelopes(tmp_path):
         assert err["param"] == "language"
         err = envelope(post(srv, audio, stream="true", include="x"), 400, "unsupported_parameter")
         assert err["param"] == "include"
-        for model in ("nope", "gipformer1.5-68M-rnnt"):  # also the previous served model id
+        for model in ("nope", "whisper-1"):  # the alias is off by default
             err = envelope(post(srv, audio, model=model), 404, "model_not_found")
             assert err["param"] == "model"
         # Decoding fails before SSE headers: an HTTP error, not an event.
