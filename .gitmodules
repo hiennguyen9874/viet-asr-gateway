@@ -1,12 +1,6 @@
 [submodule "references/WhisperLiveKit"]
 	path = references/WhisperLiveKit
 	url = git@github.com:QuentinFuxa/WhisperLiveKit.git
-[submodule "references/gipformer"]
-	path = references/gipformer
-	url = git@github.com:ggroup-ai-lab/gipformer.git
-[submodule "references/gipformer1.5-68M-rnnt"]
-	path = references/gipformer1.5-68M-rnnt
-	url = https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt
 [submodule "references/viet-asr"]
 	path = references/viet-asr
 	url = https://github.com/dangvansam/viet-asr.git
